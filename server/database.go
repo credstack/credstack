@@ -118,6 +118,9 @@ an additional database call.
 A map is returned representing the errors that were encountered during the initialization process. The maps key
 represents the name of the collection and the value is the error that occurred. If an error occurs during initialization
 then the current iteration of the loop is continued and initialization is continued
+
+Generally, this can be optimized to consume even less DB calls with the CreateMultiple function, however this
+function is only really called once through the entire lifetime of the database
 */
 func (database *Database) Init() map[string]error {
 	// indexingMap - Defines a map for how to create (general) indexes on each collection
