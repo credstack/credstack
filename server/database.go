@@ -55,6 +55,13 @@ func (database *Database) Database() *mongo.Database {
 }
 
 /*
+Collection - A getter for returning the underlying mongo.Collection pointer
+*/
+func (database *Database) Collection(collection string) *mongo.Collection {
+	return database.database.Collection(collection)
+}
+
+/*
 SetSCRAMAuthentication - Instructs the mongo.Client to use SCRAM authentication when establishing
 a connection to the MongoDB database. SCRAM-SHA-256 is used as the default authentication mechanism
 here as it balances security with performance while establishing connections.
