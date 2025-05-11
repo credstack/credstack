@@ -113,6 +113,19 @@ func (database *Database) Connect() error {
 }
 
 /*
+Disconnect - Gracefully disconnects from the MongoDB client. Acts as a wrapper
+around mongo.Client.Disconnect and returns any errors that arise from it
+*/
+func (database *Database) Disconnect() error {
+	err := database.Client().Disconnect(context.Background())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+/*
 Init - Initializes MongoDB with default collections and indexes where they are needed. The Init function anticipates
 that the default database already exists and that authentication has been established on it. Automation for this
 is not provided.
