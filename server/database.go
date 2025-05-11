@@ -1,7 +1,9 @@
 package server
 
 import (
+	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"time"
@@ -87,4 +89,65 @@ func (database *Database) Connect() error {
 	database.database = client.Database(database.defaultDatabase)
 
 	return nil
+}
+
+/*
+Init - Initializes MongoDB with default collections and indexes where they are needed. The Init function anticipates
+that the default database already exists and that authentication has been established on it. Automation for this
+is not provided.
+
+Each collection applies a unique index on header.identifier to ensure that objects with duplicated UUID's do not
+get inserted. This really shouldn't happen any way as these are generated based on unique values for its respective
+object, applying indexes here provides an easier way to determine if an object already exists without consuming
+an additional database call.
+
+A map is returned representing the errors that were encountered during the initialization process. The maps key
+represents the name of the collection and the value is the error that occurred. If an error occurs during initialization
+then the current iteration of the loop is continued and initialization is continued
+*/
+func (database *Database) Init() map[string]error {
+	// indexingMap - Defines a map for how to create (general) indexes on each collection
+	indexingMap := map[string]bson.D{
+		"user":         bson.D{{Key: "email", Value: 1}, {Key: "header.identifier", Value: 1}},
+		"role":         bson.D{{Key: "header.identifier", Value: 1}},
+		"scope":        bson.D{{Key: "header.scope", Value: 1}},
+		"application":  bson.D{{Key: "client_id", Value: 1}, {Key: "header.identifier", Value: 1}},
+		"api":          bson.D{{Key: "header.identifier", Value: 1}},
+		"access_token": bson.D{{Key: "token", Value: 1}, {Key: "header.identifier", Value: 1}},
+	}
+
+	// failed - What is returned at the end of this functions execution
+	failed := make(map[string]error, len(indexingMap))
+
+	for collection, fields := range indexingMap {
+		err := database.Database().CreateCollection(
+			context.Background(),
+			collection,
+		)
+
+		if err != nil {
+			// perform some logging here
+			failed[collection] = err
+			continue // we continue here as if we cant create the collection, we cant create the indexes
+		}
+
+		index := mongo.IndexModel{
+			Keys:    fields,
+			Options: options.Index().SetUnique(true),
+		}
+
+		_, err = database.
+			Database().
+			Collection(collection).
+			Indexes().
+			CreateOne(context.Background(), index)
+
+		if err != nil {
+			// perform some logging here
+			failed[collection] = err
+			continue
+		}
+	}
+
+	return failed
 }
