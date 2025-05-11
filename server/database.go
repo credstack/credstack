@@ -6,6 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 	"time"
 )
 
@@ -81,6 +82,19 @@ are not wasted initiating additional connections to MongoDB.
 */
 func (database *Database) Connect() error {
 	client, err := mongo.Connect(database.options)
+	if err != nil {
+		return err
+	}
+
+	/*
+		Ideally we want to consume as little calls as possible, however mongo.Client.Ping is
+		generally a fairly cheap call. Additionally, authentication errors do not get passed
+		from the error returned with mongo.Connect, only from mongo.Ping
+
+		Read preferences is set to nearest here, as opposed to primary as we really just want
+		to validate that we were able to connect to the database successfully
+	*/
+	err = client.Ping(context.Background(), readpref.Nearest())
 	if err != nil {
 		return err
 	}
