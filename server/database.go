@@ -36,3 +36,17 @@ func NewDatabase(hostname string, port int, database string) *Database {
 		defaultDatabase: database,
 	}
 }
+
+/*
+Client - A getter for returning the underlying mongo.Client pointer
+*/
+func (database *Database) Client() *mongo.Client {
+	return database.client
+}
+
+/*
+Database - A getter for returning the underlying mongo.Database pointer
+*/
+func (database *Database) Database() *mongo.Database {
+	return database.database
+}
