@@ -50,3 +50,20 @@ Database - A getter for returning the underlying mongo.Database pointer
 func (database *Database) Database() *mongo.Database {
 	return database.database
 }
+
+/*
+Connect - General wrapper around mongo.Connect. Generally, the mongo session created with
+this function should be re-used across multiple calls to ensure that excess resources
+are not wasted initiating additional connections to MongoDB.
+*/
+func (database *Database) Connect() error {
+	client, err := mongo.Connect(database.options)
+	if err != nil {
+		return err
+	}
+
+	database.client = client
+	database.database = client.Database(database.defaultDatabase)
+
+	return nil
+}
