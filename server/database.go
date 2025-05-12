@@ -26,8 +26,12 @@ type Database struct {
 }
 
 /*
-NewDatabase - Instantiates a new database object. Does not connect automatically, this needs to be done
-with Database.Connect. The default timeout for database connections is 15 seconds
+NewDatabase - Constructs a new Database using the values passed in each of its parameters. Calling this function does
+not connect to the database automatically. This needs to be done post-construction with Database.Connect. Additionally,
+this does not use authentication by default, if you need to pass authentication values (username/password) then use the
+Database.SetSCRAMAuthentication function.
+
+If you need to construct a new database using configuration values from Viper, then see NewDatabaseFromConfig
 */
 func NewDatabase(hostname string, port int, database string) *Database {
 	opts := options.Client().
