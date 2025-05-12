@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -38,6 +39,27 @@ func NewDatabase(hostname string, port int, database string) *Database {
 		options:         opts,
 		defaultDatabase: database,
 	}
+}
+
+/*
+NewDatabaseFromConfig - Constructs a new database using values provided in viper. Each of the configuration keys
+used here are prefixed with 'mongo'. See documentation for more information on how to use configuration based
+construction. Calling this function does not connect to the Database automatically. This needs to be done with,
+Database.Connect
+*/
+func NewDatabaseFromConfig() *Database {
+	database := NewDatabase(
+		viper.GetString("mongo.hostname"),
+		viper.GetInt("mongo.port"),
+		viper.GetString("mongo.database"),
+	)
+
+	database.SetSCRAMAuthentication(
+		viper.GetString("mongo.username"),
+		viper.GetString("mongo.password"),
+	)
+
+	return database
 }
 
 /*
@@ -151,7 +173,7 @@ func (database *Database) Init() map[string]error {
 	indexingMap := map[string]bson.D{
 		"user":         bson.D{{Key: "email", Value: 1}, {Key: "header.identifier", Value: 1}},
 		"role":         bson.D{{Key: "header.identifier", Value: 1}},
-		"scope":        bson.D{{Key: "header.scope", Value: 1}},
+		"scope":        bson.D{{Key: "header.identifier", Value: 1}},
 		"application":  bson.D{{Key: "client_id", Value: 1}, {Key: "header.identifier", Value: 1}},
 		"api":          bson.D{{Key: "header.identifier", Value: 1}},
 		"access_token": bson.D{{Key: "token", Value: 1}, {Key: "header.identifier", Value: 1}},
