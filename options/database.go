@@ -1,5 +1,7 @@
 package options
 
+import "time"
+
 type DatabaseOptions struct {
 	// Hostname - Defines the hostname that the MongoDB server can be accessed at
 	Hostname string
@@ -21,6 +23,9 @@ type DatabaseOptions struct {
 
 	// AuthenticationDatabase - Defines the database that should be used for authentication
 	AuthenticationDatabase string
+
+	// ConnectionTimeout - The duration that credstack should wait for before force closing a Mongo connection
+	ConnectionTimeout time.Duration
 }
 
 /*
@@ -32,5 +37,6 @@ func Database() *DatabaseOptions {
 		Port:              27017,
 		DefaultDatabase:   "credstack",
 		UseAuthentication: false,
+		ConnectionTimeout: 15 * time.Second,
 	}
 }
