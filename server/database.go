@@ -11,6 +11,19 @@ import (
 	"time"
 )
 
+/*
+Database - Defines the core abstraction around a MongoDB database. This structure provides construction from
+Viper config values, along with basic parameters. Additionally, authentication can be controlled here without
+needing to be aware of MongoDB's underlying API structure.
+
+Queries that would be made on collections (like findOne) are not abstracted here as I didn't want to overcomplicate
+this abstraction. I find that having service level packages (like the Token service) directly interact with the raw
+mongo.Collection pointer vastly simplifies maintenance as I don't need to re-abstract whatever functionality that
+MongoDB is providing to me
+
+If a service wishes to make Database calls, it can call the Database.Collection method and pass the collection that
+it wants to use in the parameter.
+*/
 type Database struct {
 	// options - A structure storing client related options relating to authentication
 	options *options.ClientOptions
