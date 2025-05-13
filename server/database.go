@@ -58,10 +58,16 @@ func NewDatabaseFromConfig() *Database {
 		viper.GetString("mongo.database"),
 	)
 
-	database.SetSCRAMAuthentication(
-		viper.GetString("mongo.username"),
-		viper.GetString("mongo.password"),
-	)
+	/*
+		I provided a top level config value here: 'mongo.use_auth' to ensure that
+		authentication only gets applied when the user intends it.
+	*/
+	if viper.GetBool("mongo.use_auth") {
+		database.SetSCRAMAuthentication(
+			viper.GetString("mongo.username"),
+			viper.GetString("mongo.password"),
+		)
+	}
 
 	return database
 }
@@ -96,6 +102,10 @@ The default authentication source is set to the value passed in Database.default
 using 'admin' as the default authentication source is not recommended as users should be isolated
 only to the database that they need access to. This client expects read/write permissions to the default
 database collections that are created with the Database.Init method.
+
+It is worth noting that this will not be evaluated by MongoDB unless authentication is enabled using either
+the `--auth` flag or a mongo config file. See MongoDB for more documentation as this is outside the scope
+of this comment
 */
 func (database *Database) SetSCRAMAuthentication(username string, password string) {
 	credential := options.Credential{
