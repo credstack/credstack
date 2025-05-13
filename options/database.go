@@ -63,3 +63,94 @@ func (database *DatabaseOptions) FromConfig() *DatabaseOptions {
 		ConnectionTimeout:      viper.GetDuration("mongo.connection_timeout"),
 	}
 }
+
+/*
+SetHostname - Defines the hostname of the MongoDB database that you want to connect to. You do not need
+to prepend this with the mongo:// protocol identifier, this should just be the FQDN of the MongoDB instance
+*/
+func (database *DatabaseOptions) SetHostname(hostname string) *DatabaseOptions {
+	database.Hostname = hostname
+
+	return database
+}
+
+/*
+SetPort - Sets the port that your MongoDB server is listening for connections on. If this value is set lower
+than 0, then a default of 27017 is used instead.
+*/
+func (database *DatabaseOptions) SetPort(port int) *DatabaseOptions {
+	if port < 0 {
+		port = 27017
+	}
+
+	database.Port = uint32(port)
+
+	return database
+}
+
+/*
+SetDefaultDatabase - Set's the default database that cred-stack will assume that its collections will live.
+If server.Database.Init is called with this set, then collections (and indexes) will be initialized here.
+*/
+func (database *DatabaseOptions) SetDefaultDatabase(value string) *DatabaseOptions {
+	database.DefaultDatabase = value
+
+	return database
+}
+
+/*
+SetUseAuthentication - If set to true, then the authentication values provided at DatabaseOptions.Username,
+DatabaseOptions.Password, and DatabaseOptions.AuthenticationDatabase are evaluated and authentication is
+attempted on the MongoDB server
+*/
+func (database *DatabaseOptions) SetUseAuthentication(value bool) *DatabaseOptions {
+	database.UseAuthentication = value
+
+	return database
+}
+
+/*
+SetAuthenticationDatabase - Defines the default database that the MongoDB server will look for users and roles
+within. When calling DatabaseOptions.Database, this is set to 'admin'. Ideally this should be set to the default
+database defined at DatabaseOptions.DefaultDatabase. Users should be seperated to only the databases that they
+need access to, and should be treated more or less as ephemeral
+*/
+func (database *DatabaseOptions) SetAuthenticationDatabase(value string) *DatabaseOptions {
+	database.AuthenticationDatabase = value
+
+	return database
+}
+
+/*
+SetUsername - Defines the username of the MongoDB user that the MongoDB client should use when performing
+authentication
+*/
+func (database *DatabaseOptions) SetUsername(value string) *DatabaseOptions {
+	database.Username = value
+
+	return database
+}
+
+/*
+SetPassword - Defines the clear text password of the MongoDB user that the MongoDB client should use when performing
+authentication
+*/
+func (database *DatabaseOptions) SetPassword(value string) *DatabaseOptions {
+	database.Password = value
+
+	return database
+}
+
+/*
+SetConnectionTimeout - Defines the default for amount of time that the MongoDB client should use when attempting
+to connect to a server. If a value less than 0 is provided, then seconds is set to 15
+*/
+func (database *DatabaseOptions) SetConnectionTimeout(seconds int) *DatabaseOptions {
+	if seconds < 0 {
+		seconds = 15
+	}
+
+	database.ConnectionTimeout = time.Duration(seconds) * time.Second
+
+	return database
+}
