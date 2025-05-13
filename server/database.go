@@ -26,53 +26,6 @@ type Database struct {
 }
 
 /*
-NewDatabase - Constructs a new Database using the values passed in each of its parameters. Calling this function does
-not connect to the database automatically. This needs to be done post-construction with Database.Connect. Additionally,
-this does not use authentication by default, if you need to pass authentication values (username/password) then use the
-Database.SetSCRAMAuthentication function.
-
-If you need to construct a new database using configuration values from Viper, then see NewDatabaseFromConfig
-*/
-func NewDatabase(hostname string, port int, database string) *Database {
-	opts := options.Client().
-		SetHosts([]string{fmt.Sprintf("%s:%d", hostname, port)}).
-		SetDirect(true).
-		SetTimeout(15 * time.Second)
-
-	return &Database{
-		options:         opts,
-		defaultDatabase: database,
-	}
-}
-
-/*
-NewDatabaseFromConfig - Constructs a new database using values provided in viper. Each of the configuration keys
-used here are prefixed with 'mongo'. See documentation for more information on how to use configuration based
-construction. Calling this function does not connect to the Database automatically. This needs to be done with,
-Database.Connect
-*/
-func NewDatabaseFromConfig() *Database {
-	database := NewDatabase(
-		viper.GetString("mongo.hostname"),
-		viper.GetInt("mongo.port"),
-		viper.GetString("mongo.database"),
-	)
-
-	/*
-		I provided a top level config value here: 'mongo.use_auth' to ensure that
-		authentication only gets applied when the user intends it.
-	*/
-	if viper.GetBool("mongo.use_auth") {
-		database.SetSCRAMAuthentication(
-			viper.GetString("mongo.username"),
-			viper.GetString("mongo.password"),
-		)
-	}
-
-	return database
-}
-
-/*
 Client - A getter for returning the underlying mongo.Client pointer
 */
 func (database *Database) Client() *mongo.Client {
@@ -231,4 +184,51 @@ func (database *Database) Init() map[string]error {
 	}
 
 	return failed
+}
+
+/*
+NewDatabase - Constructs a new Database using the values passed in each of its parameters. Calling this function does
+not connect to the database automatically. This needs to be done post-construction with Database.Connect. Additionally,
+this does not use authentication by default, if you need to pass authentication values (username/password) then use the
+Database.SetSCRAMAuthentication function.
+
+If you need to construct a new database using configuration values from Viper, then see NewDatabaseFromConfig
+*/
+func NewDatabase(hostname string, port int, database string) *Database {
+	opts := options.Client().
+		SetHosts([]string{fmt.Sprintf("%s:%d", hostname, port)}).
+		SetDirect(true).
+		SetTimeout(15 * time.Second)
+
+	return &Database{
+		options:         opts,
+		defaultDatabase: database,
+	}
+}
+
+/*
+NewDatabaseFromConfig - Constructs a new database using values provided in viper. Each of the configuration keys
+used here are prefixed with 'mongo'. See documentation for more information on how to use configuration based
+construction. Calling this function does not connect to the Database automatically. This needs to be done with,
+Database.Connect
+*/
+func NewDatabaseFromConfig() *Database {
+	database := NewDatabase(
+		viper.GetString("mongo.hostname"),
+		viper.GetInt("mongo.port"),
+		viper.GetString("mongo.database"),
+	)
+
+	/*
+		I provided a top level config value here: 'mongo.use_auth' to ensure that
+		authentication only gets applied when the user intends it.
+	*/
+	if viper.GetBool("mongo.use_auth") {
+		database.SetSCRAMAuthentication(
+			viper.GetString("mongo.username"),
+			viper.GetString("mongo.password"),
+		)
+	}
+
+	return database
 }
