@@ -1,6 +1,9 @@
 package options
 
-import "time"
+import (
+	"github.com/spf13/viper"
+	"time"
+)
 
 type DatabaseOptions struct {
 	// Hostname - Defines the hostname that the MongoDB server can be accessed at
@@ -38,5 +41,21 @@ func Database() *DatabaseOptions {
 		DefaultDatabase:   "credstack",
 		UseAuthentication: false,
 		ConnectionTimeout: 15 * time.Second,
+	}
+}
+
+/*
+FromConfig - Fills in all fields present in the DatabaseOptions structure with the values from
+viper. Any previously present configuration values will be overwritten with this call
+*/
+func (database *DatabaseOptions) FromConfig() *DatabaseOptions {
+	return &DatabaseOptions{
+		Hostname:          viper.GetString("mongo.hostname"),
+		Port:              uint32(viper.GetInt("mongo.port")),
+		DefaultDatabase:   viper.GetString("mongo.default_database"),
+		UseAuthentication: viper.GetBool("mongo.use_authentication"),
+		Username:          viper.GetString("mongo.username"),
+		Password:          viper.GetString("mongo.password"),
+		ConnectionTimeout: viper.GetDuration("mongo.connection_timeout"),
 	}
 }
