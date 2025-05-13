@@ -32,15 +32,18 @@ type DatabaseOptions struct {
 }
 
 /*
-Database - Returns a DatabaseOptions structure with some sensible defaults
+Database - Returns a DatabaseOptions structure with some sensible defaults. Authentication is not enabled here
+by default as MongoDB does not have default authentication. Despite this not being enabled, the AuthenticationDatabase
+is set to admin by default as this tends to be common when working with MongoDB (although not recommended)
 */
 func Database() *DatabaseOptions {
 	return &DatabaseOptions{
-		Hostname:          "127.0.0.1",
-		Port:              27017,
-		DefaultDatabase:   "credstack",
-		UseAuthentication: false,
-		ConnectionTimeout: 15 * time.Second,
+		Hostname:               "127.0.0.1",
+		Port:                   27017,
+		DefaultDatabase:        "credstack",
+		UseAuthentication:      false,
+		AuthenticationDatabase: "admin",
+		ConnectionTimeout:      15 * time.Second,
 	}
 }
 
