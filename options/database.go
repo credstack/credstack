@@ -18,14 +18,14 @@ type DatabaseOptions struct {
 	// UseAuthentication - If set to false, then any other auth related configs wont be evaluated
 	UseAuthentication bool
 
+	// AuthenticationDatabase - Defines the database that should be used for authentication
+	AuthenticationDatabase string
+
 	// Username - Defines the username that should be used for authentication with MongoDB
 	Username string
 
 	// Password - Defines the password that should be used for authentication with MongoDB
 	Password string
-
-	// AuthenticationDatabase - Defines the database that should be used for authentication
-	AuthenticationDatabase string
 
 	// ConnectionTimeout - The duration that credstack should wait for before force closing a Mongo connection
 	ConnectionTimeout time.Duration
@@ -53,12 +53,13 @@ viper. Any previously present configuration values will be overwritten with this
 */
 func (database *DatabaseOptions) FromConfig() *DatabaseOptions {
 	return &DatabaseOptions{
-		Hostname:          viper.GetString("mongo.hostname"),
-		Port:              uint32(viper.GetInt("mongo.port")),
-		DefaultDatabase:   viper.GetString("mongo.default_database"),
-		UseAuthentication: viper.GetBool("mongo.use_authentication"),
-		Username:          viper.GetString("mongo.username"),
-		Password:          viper.GetString("mongo.password"),
-		ConnectionTimeout: viper.GetDuration("mongo.connection_timeout"),
+		Hostname:               viper.GetString("mongo.hostname"),
+		Port:                   uint32(viper.GetInt("mongo.port")),
+		DefaultDatabase:        viper.GetString("mongo.default_database"),
+		UseAuthentication:      viper.GetBool("mongo.use_authentication"),
+		AuthenticationDatabase: viper.GetString("mongo.authentication_database"),
+		Username:               viper.GetString("mongo.username"),
+		Password:               viper.GetString("mongo.password"),
+		ConnectionTimeout:      viper.GetDuration("mongo.connection_timeout"),
 	}
 }
