@@ -26,20 +26,6 @@ type Database struct {
 }
 
 /*
-Client - A getter for returning the underlying mongo.Client pointer
-*/
-func (database *Database) Client() *mongo.Client {
-	return database.client
-}
-
-/*
-Database - A getter for returning the underlying mongo.Database pointer
-*/
-func (database *Database) Database() *mongo.Database {
-	return database.database
-}
-
-/*
 Collection - A getter for returning the underlying mongo.Collection pointer
 */
 func (database *Database) Collection(collection string) *mongo.Collection {
@@ -106,7 +92,7 @@ Disconnect - Gracefully disconnects from the MongoDB client. Acts as a wrapper
 around mongo.Client.Disconnect and returns any errors that arise from it
 */
 func (database *Database) Disconnect() error {
-	err := database.Client().Disconnect(context.Background())
+	err := database.client.Disconnect(context.Background())
 	if err != nil {
 		return err
 	}
@@ -154,7 +140,7 @@ func (database *Database) Init() map[string]error {
 		function is only really called once through the entire lifetime of the database
 	*/
 	for collection, fields := range indexingMap {
-		err := database.Database().CreateCollection(
+		err := database.database.CreateCollection(
 			context.Background(),
 			collection,
 		)
@@ -171,7 +157,7 @@ func (database *Database) Init() map[string]error {
 		}
 
 		_, err = database.
-			Database().
+			database.
 			Collection(collection).
 			Indexes().
 			CreateOne(context.Background(), index)
