@@ -2,6 +2,7 @@ package options
 
 import (
 	"github.com/spf13/viper"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"time"
 )
 
@@ -153,4 +154,35 @@ func (database *DatabaseOptions) SetConnectionTimeout(seconds int) *DatabaseOpti
 	database.ConnectionTimeout = time.Duration(seconds) * time.Second
 
 	return database
+}
+
+/*
+DefaultCollections - Returns the default collections that credstack expects to be able to read/write to. This
+is primarily used with Database.Init. This really shouldn't be changed so there is no setter defined for these
+*/
+func (database *DatabaseOptions) DefaultCollections() []string {
+	return []string{
+		"user",
+		"role",
+		"scope",
+		"api",
+		"application",
+		"token",
+	}
+}
+
+/*
+IndexingMap - Returns the map used for creating indexes on the credstack's default collections. All the
+indexes listed here are created as unique indexes. This really shouldn't be changed so there is no setter
+defined for these
+*/
+func (database *DatabaseOptions) IndexingMap() map[string]bson.D {
+	return map[string]bson.D{
+		"user":        bson.D{{Key: "email", Value: 1}, {Key: "header.identifier", Value: 1}},
+		"role":        bson.D{{Key: "header.identifier", Value: 1}},
+		"scope":       bson.D{{Key: "header.identifier", Value: 1}},
+		"application": bson.D{{Key: "client_id", Value: 1}, {Key: "header.identifier", Value: 1}},
+		"api":         bson.D{{Key: "header.identifier", Value: 1}},
+		"token":       bson.D{{Key: "token", Value: 1}, {Key: "header.identifier", Value: 1}},
+	}
 }
