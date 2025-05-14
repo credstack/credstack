@@ -1,8 +1,10 @@
 package options
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"time"
 )
 
@@ -63,6 +65,43 @@ func (opts *DatabaseOptions) FromConfig() *DatabaseOptions {
 		Password:               viper.GetString("mongo.password"),
 		ConnectionTimeout:      viper.GetDuration("mongo.connection_timeout"),
 	}
+}
+
+/*
+ToMongoOptions - Converts any pre-defined options declared in DatabaseOptions to an
+options.ClientOptions struct so that this can be used cleanly with the Database
+structure
+*/
+func (opts *DatabaseOptions) ToMongoOptions() *options.ClientOptions {
+	/*
+		So realistically, SetDirect should probably be set to false here and
+		the DatabaseOptions structure should be modified so that multiple hosts
+		in a cluster can be used. I really don't think many people are going to
+		use this functionality to begin with so we will cross that bridge when
+		we come to it.
+	*/
+	clientOptions := options.Client().
+		SetHosts([]string{fmt.Sprintf("%s:%d", opts.Hostname, opts.Port)}).
+		SetDirect(true).
+		SetTimeout(opts.ConnectionTimeout)
+
+	/*
+		Only SCRAM-SHA-256 is going to be set here as it provides a nice balance between
+		performance and security. This value isn't externalized either to the broader
+		DatabaseOptions structure so this shouldn't need to change
+	*/
+	const AuthMechanism = "SCRAM-SHA-256"
+
+	if opts.UseAuthentication {
+		clientOptions.SetAuth(options.Credential{
+			AuthMechanism: AuthMechanism,
+			AuthSource:    opts.DefaultDatabase,
+			Username:      opts.Username,
+			Password:      opts.Password,
+		})
+	}
+
+	return clientOptions
 }
 
 /*
