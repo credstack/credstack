@@ -178,11 +178,11 @@ defined for these
 */
 func (opts *DatabaseOptions) IndexingMap() map[string]bson.D {
 	return map[string]bson.D{
-		"user":        bson.D{{Key: "email", Value: 1}, {Key: "header.identifier", Value: 1}},
-		"role":        bson.D{{Key: "header.identifier", Value: 1}},
-		"scope":       bson.D{{Key: "header.identifier", Value: 1}},
-		"application": bson.D{{Key: "client_id", Value: 1}, {Key: "header.identifier", Value: 1}},
-		"api":         bson.D{{Key: "header.identifier", Value: 1}},
-		"token":       bson.D{{Key: "token", Value: 1}, {Key: "header.identifier", Value: 1}},
+		"user":        {{Key: "email", Value: 1}, {Key: "header.identifier", Value: 1}},
+		"role":        {{Key: "header.identifier", Value: 1}},
+		"scope":       {{Key: "header.identifier", Value: 1}},
+		"application": {{Key: "client_id", Value: 1}, {Key: "header.identifier", Value: 1}},
+		"api":         {{Key: "header.identifier", Value: 1}},
+		"token":       {{Key: "token", Value: 1}, {Key: "header.identifier", Value: 1}},
 	}
 }
