@@ -2,13 +2,10 @@ package server
 
 import (
 	"context"
-	"fmt"
-	"github.com/spf13/viper"
-	"go.mongodb.org/mongo-driver/v2/bson"
+	"github.com/stevezaluk/credstack-lib/options"
 	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
-	"time"
 )
 
 /*
@@ -26,7 +23,7 @@ it wants to use in the parameter.
 */
 type Database struct {
 	// options - A structure storing client related options relating to authentication
-	options *options.ClientOptions
+	options *options.DatabaseOptions
 
 	// defaultDatabase - The default database that Mongo should use
 	defaultDatabase string
@@ -46,37 +43,12 @@ func (database *Database) Collection(collection string) *mongo.Collection {
 }
 
 /*
-SetSCRAMAuthentication - Instructs the mongo.Client to use SCRAM authentication when establishing
-a connection to the MongoDB database. SCRAM-SHA-256 is used as the default authentication mechanism
-here as it balances security with performance while establishing connections.
-
-The default authentication source is set to the value passed in Database.defaultDatabase. Generally
-using 'admin' as the default authentication source is not recommended as users should be isolated
-only to the database that they need access to. This client expects read/write permissions to the default
-database collections that are created with the Database.Init method.
-
-It is worth noting that this will not be evaluated by MongoDB unless authentication is enabled using either
-the `--auth` flag or a mongo config file. See MongoDB for more documentation as this is outside the scope
-of this comment
-*/
-func (database *Database) SetSCRAMAuthentication(username string, password string) {
-	credential := options.Credential{
-		AuthMechanism: "SCRAM-SHA-256",
-		AuthSource:    database.defaultDatabase,
-		Username:      username,
-		Password:      password,
-	}
-
-	database.options.SetAuth(credential)
-}
-
-/*
 Connect - General wrapper around mongo.Connect. Generally, the mongo session created with
 this function should be re-used across multiple calls to ensure that excess resources
 are not wasted initiating additional connections to MongoDB.
 */
 func (database *Database) Connect() error {
-	client, err := mongo.Connect(database.options)
+	client, err := mongo.Connect(database.options.ToMongoOptions())
 	if err != nil {
 		return err
 	}
@@ -136,14 +108,7 @@ func (database *Database) Init() map[string]error {
 		All the ones listed here are getting added as unique indexes, to protect against
 		duplicated data
 	*/
-	indexingMap := map[string]bson.D{
-		"user":         bson.D{{Key: "email", Value: 1}, {Key: "header.identifier", Value: 1}},
-		"role":         bson.D{{Key: "header.identifier", Value: 1}},
-		"scope":        bson.D{{Key: "header.identifier", Value: 1}},
-		"application":  bson.D{{Key: "client_id", Value: 1}, {Key: "header.identifier", Value: 1}},
-		"api":          bson.D{{Key: "header.identifier", Value: 1}},
-		"access_token": bson.D{{Key: "token", Value: 1}, {Key: "header.identifier", Value: 1}},
-	}
+	indexingMap := database.options.IndexingMap()
 
 	// failed - What is returned at the end of this functions execution
 	failed := make(map[string]error, len(indexingMap))
@@ -166,7 +131,7 @@ func (database *Database) Init() map[string]error {
 
 		index := mongo.IndexModel{
 			Keys:    fields,
-			Options: options.Index().SetUnique(true),
+			Options: mongoOpts.Index().SetUnique(true),
 		}
 
 		_, err = database.
@@ -187,47 +152,18 @@ func (database *Database) Init() map[string]error {
 
 /*
 NewDatabase - Constructs a new Database using the values passed in each of its parameters. Calling this function does
-not connect to the database automatically. This needs to be done post-construction with Database.Connect. Additionally,
-this does not use authentication by default, if you need to pass authentication values (username/password) then use the
-Database.SetSCRAMAuthentication function.
+not connect to the database automatically. This needs to be done post-construction with Database.Connect. If an options
+structure is not passed in this functions parameter, then the Database is initialized with default values. Additionally,
+if more than 1 are passed here, only the first is used.
 
-If you need to construct a new database using configuration values from Viper, then see NewDatabaseFromConfig
+If you need to construct a new database from viper configurations, you should use options.DatabaseOptions.FromConfig
 */
-func NewDatabase(hostname string, port int, database string) *Database {
-	opts := options.Client().
-		SetHosts([]string{fmt.Sprintf("%s:%d", hostname, port)}).
-		SetDirect(true).
-		SetTimeout(15 * time.Second)
+func NewDatabase(opts ...*options.DatabaseOptions) *Database {
+	if len(opts) == 0 {
+		opts = append(opts, options.Database())
+	}
 
 	return &Database{
-		options:         opts,
-		defaultDatabase: database,
+		options: opts[0],
 	}
-}
-
-/*
-NewDatabaseFromConfig - Constructs a new database using values provided in viper. Each of the configuration keys
-used here are prefixed with 'mongo'. See documentation for more information on how to use configuration based
-construction. Calling this function does not connect to the Database automatically. This needs to be done with,
-Database.Connect
-*/
-func NewDatabaseFromConfig() *Database {
-	database := NewDatabase(
-		viper.GetString("mongo.hostname"),
-		viper.GetInt("mongo.port"),
-		viper.GetString("mongo.database"),
-	)
-
-	/*
-		I provided a top level config value here: 'mongo.use_auth' to ensure that
-		authentication only gets applied when the user intends it.
-	*/
-	if viper.GetBool("mongo.use_auth") {
-		database.SetSCRAMAuthentication(
-			viper.GetString("mongo.username"),
-			viper.GetString("mongo.password"),
-		)
-	}
-
-	return database
 }
