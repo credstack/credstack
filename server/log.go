@@ -17,6 +17,60 @@ type Log struct {
 }
 
 /*
+LogTokenEvent - Handler for logging any kind of token events. This includes generation, revocation, introspection,
+and validation.
+*/
+func (log *Log) LogTokenEvent(eventType string, email string, tokenType string, appId string, apiId string) {
+	log.log.Info(
+		"TokenEvent",
+		zap.String("eventType", eventType),
+		zap.String("email", email),
+		zap.String("tokenType", tokenType),
+		zap.String("appId", appId),
+		zap.String("apiId", apiId),
+	)
+}
+
+/*
+LogAuthEvent - Handler for logging any kind of authentication events. This includes login's, logouts, and registration
+primarily. Token events are logged using the Log.LogTokenEvent Handler.
+*/
+func (log *Log) LogAuthEvent(eventType string, email string, username string, method string, appId string) {
+	log.log.Info(
+		"AuthenticationEvent",
+		zap.String("type", eventType),
+		zap.String("email", email),
+		zap.String("username", username),
+		zap.String("auth_method", method),
+		zap.String("application_id", appId),
+	)
+}
+
+/*
+LogDatabaseEvent - Logs database specific events, mostly connection and disconnections. Additionally, authentication
+errors get logged here as well.
+*/
+func (log *Log) LogDatabaseEvent(eventType string, hostname string, port int) {
+	log.log.Info(
+		"DatabaseEvent",
+		zap.String("eventType", eventType),
+		zap.String("hostname", hostname),
+		zap.Int("port", port),
+	)
+}
+
+/*
+LogErrorEvent - Handler for logging any kind of error events.
+*/
+func (log *Log) LogErrorEvent(message string, err error) {
+	log.log.Error(
+		"ErrorEvent",
+		zap.String("message", message),
+		zap.NamedError("error", err),
+	)
+}
+
+/*
 NewLog - Constructs a new Log using the values passed in its parameters. If an options structure is not passed in this
 functions parameter, then the Log is initialized with default values. Additionally, if more than 1 are passed here,
 only the first is used.
