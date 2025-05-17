@@ -62,10 +62,10 @@ func (log *Log) LogDatabaseEvent(eventType string, hostname string, port int) {
 /*
 LogErrorEvent - Handler for logging any kind of error events.
 */
-func (log *Log) LogErrorEvent(message string, err error) {
+func (log *Log) LogErrorEvent(description string, err error) {
 	log.log.Error(
 		"ErrorEvent",
-		zap.String("message", message),
+		zap.String("description", description),
 		zap.NamedError("error", err),
 	)
 }
