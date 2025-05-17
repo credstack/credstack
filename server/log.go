@@ -6,7 +6,7 @@ import "github.com/stevezaluk/credstack-lib/options"
 Log - An abstraction for the Logger. Handles any logic for creating and writing log files here
 */
 type Log struct {
-	// options -
+	// options - Defines the options that should be used with the logger
 	options *options.LogOptions
 }
 
