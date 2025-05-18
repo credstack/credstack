@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"github.com/stevezaluk/credstack-lib/options"
+	"github.com/stevezaluk/credstack-models/proto/user"
 	"golang.org/x/crypto/argon2"
 	"io"
 )
@@ -50,4 +51,25 @@ func hashSecret(secret []byte, opts *options.CredentialOptions) (string, string,
 	encodedSalt := base64.URLEncoding.EncodeToString(salt)
 
 	return encodedHash, encodedSalt, nil
+}
+
+/*
+NewCredential - Creates and generates a new UserCredential using the secret provided in the parameter. Any errors
+that occur are propagated using the second return value
+*/
+func NewCredential(secret string, opts *options.CredentialOptions) (*user.UserCredential, error) {
+	hash, salt, err := hashSecret([]byte(secret), opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user.UserCredential{
+		Key:        hash,
+		Salt:       salt,
+		Time:       opts.Time,
+		Memory:     opts.Memory,
+		Threads:    uint32(opts.Threads),
+		KeyLength:  opts.KeyLength,
+		SaltLength: opts.SaltLength,
+	}, nil
 }
