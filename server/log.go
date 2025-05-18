@@ -110,7 +110,7 @@ NewLog - Constructs a new Log using the values passed in its parameters. If an o
 functions parameter, then the Log is initialized with default values. Additionally, if more than 1 are passed here,
 only the first is used.
 */
-func NewLog(opts ...*options.LogOptions) (*Log, error) {
+func NewLog(opts ...*options.LogOptions) *Log {
 	if len(opts) == 0 {
 		opts = append(opts, new(options.LogOptions))
 	}
@@ -184,5 +184,5 @@ func NewLog(opts ...*options.LogOptions) (*Log, error) {
 		log.LogErrorEvent("Failed to open log file. Only STDOUT logging is enabled", fileError)
 	}
 
-	return log, nil
+	return log
 }
