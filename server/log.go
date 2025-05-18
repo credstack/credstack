@@ -72,7 +72,7 @@ func (log *Log) LogErrorEvent(description string, err error) {
 	log.log.Error(
 		"ErrorEvent",
 		zap.String("description", description),
-		zap.NamedError("error", err),
+		zap.Error(err),
 	)
 }
 
@@ -138,6 +138,10 @@ func NewLog(opts ...*options.LogOptions) (*Log, error) {
 	*/
 	core := zapcore.NewTee(consoleCore)
 
+	// fileError - Used for storing any errors that arise from os.OpenFile
+	// this is used here to ensure that we don't have to return any errors from this function call
+	var fileError error
+
 	if log.options.UseFileLogging {
 		// filename - Provides dead simple log rotation. The timestamp provided here is arbitrary and go uses this
 		// as a reference for how to build the format for time.Now
@@ -148,35 +152,37 @@ func NewLog(opts ...*options.LogOptions) (*Log, error) {
 		*/
 		fp, err := os.OpenFile(log.options.LogPath+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			/*
-				This should really change here. If the file logger cannot be initialized a warning log entry
-				can be created informing the user that only stdout logging is enabled.
-			*/
-			return nil, err
+			fileError = err
 		}
 
-		// The pointer to the open file is stored here so that it can be safely closed when Log.Close is called
-		log.fp = fp
+		if fileError == nil {
+			// The pointer to the open file is stored here so that it can be safely closed when Log.Close is called
+			log.fp = fp
 
-		/*
-			We are utilizing the same EncoderConfig that is provided in the consoleCore, as we really want to keep
-			logs consistent across stdout and through files. Additionally, I am trying to avoid overcomplicating
-			the logging system for cred-stack as I really just want performant, production ready logging
-		*/
-		fileCore := zapcore.NewCore(
-			zapcore.NewJSONEncoder(log.options.EncoderConfig),
-			zapcore.AddSync(log.fp),
-			log.options.LogLevel,
-		)
+			/*
+				We are utilizing the same EncoderConfig that is provided in the consoleCore, as we really want to keep
+				logs consistent across stdout and through files. Additionally, I am trying to avoid overcomplicating
+				the logging system for cred-stack as I really just want performant, production ready logging
+			*/
+			fileCore := zapcore.NewCore(
+				zapcore.NewJSONEncoder(log.options.EncoderConfig),
+				zapcore.AddSync(log.fp),
+				log.options.LogLevel,
+			)
 
-		// If we are using file based logging then we need to overwrite our existing core
-		core = zapcore.NewTee(consoleCore, fileCore)
+			// If we are using file based logging then we need to overwrite our existing core
+			core = zapcore.NewTee(consoleCore, fileCore)
+		}
 	}
 
 	/*
 		Finally, we pass all of our created cores into Zap.New for zap to initialize the logger
 	*/
 	log.log = zap.New(core, zap.AddCaller())
+
+	if fileError != nil {
+		log.LogErrorEvent("Failed to open log file. Only STDOUT logging is enabled", fileError)
+	}
 
 	return log, nil
 }
