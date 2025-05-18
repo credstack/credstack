@@ -34,7 +34,7 @@ that were set
 */
 func (opts *CredentialOptions) FromConfig() *CredentialOptions {
 	return &CredentialOptions{
-		Time:    viper.GetInt("argon.time"),
+		Time:    viper.GetUint32("argon.time"),
 		Memory:  viper.GetUint32("argon.memory"),
 		Threads: viper.GetUint8("argon.threads"),
 		Length:  viper.GetUint32("argon.length"),
