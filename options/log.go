@@ -34,7 +34,7 @@ to avoid adding un-needed complexity.
 func Log() *LogOptions {
 	return &LogOptions{
 		UseFileLogging: false,
-		LogPath:        "/.credstack/logs",
+		LogPath:        os.Getenv("HOME") + "/.credstack/logs",
 		LogLevel:       zapcore.InfoLevel,
 		EncoderConfig:  zap.NewProductionEncoderConfig(),
 	}
