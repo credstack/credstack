@@ -30,6 +30,13 @@ func (log *Log) Options() *options.LogOptions {
 }
 
 /*
+Logger - Returns a pointer to the underlying zap logger structure
+*/
+func (log *Log) Logger() *zap.Logger {
+	return log.log
+}
+
+/*
 LogShutdownEvent - Log handler for logging misc shutdown events
 */
 func (log *Log) LogShutdownEvent(eventType string, description string) {
