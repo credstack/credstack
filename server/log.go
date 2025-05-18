@@ -23,6 +23,13 @@ type Log struct {
 }
 
 /*
+Options - Returns a pointer to the options used for the Log
+*/
+func (log *Log) Options() *options.LogOptions {
+	return log.options
+}
+
+/*
 LogTokenEvent - Handler for logging any kind of token events. This includes generation, revocation, introspection,
 and validation.
 */
