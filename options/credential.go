@@ -12,8 +12,11 @@ type CredentialOptions struct {
 	// Threads - The number of threads to use when hashing secrets
 	Threads uint8
 
-	// Length - The length of the hash that Argon will produce
-	Length uint32
+	// KeyLength - The KeyLength of the hash that Argon will produce
+	KeyLength uint32
+
+	// SaltLength - The length of the hash that Argon will use when hashing passwords
+	SaltLength uint32
 }
 
 /*
@@ -21,10 +24,11 @@ Credential - Initializes a new CredentialOptions struct with sane defaults that 
 */
 func Credential() *CredentialOptions {
 	return &CredentialOptions{
-		Time:    1,
-		Memory:  16 * 1024,
-		Threads: 1,
-		Length:  16,
+		Time:       1,
+		Memory:     16 * 1024,
+		Threads:    1,
+		KeyLength:  16,
+		SaltLength: 32,
 	}
 }
 
@@ -34,10 +38,11 @@ that were set
 */
 func (opts *CredentialOptions) FromConfig() *CredentialOptions {
 	return &CredentialOptions{
-		Time:    viper.GetUint32("argon.time"),
-		Memory:  viper.GetUint32("argon.memory"),
-		Threads: viper.GetUint8("argon.threads"),
-		Length:  viper.GetUint32("argon.length"),
+		Time:       viper.GetUint32("argon.time"),
+		Memory:     viper.GetUint32("argon.memory"),
+		Threads:    viper.GetUint8("argon.threads"),
+		KeyLength:  viper.GetUint32("argon.key_length"),
+		SaltLength: viper.GetUint32("argon.salt_length"),
 	}
 }
 
@@ -61,7 +66,7 @@ func (opts *CredentialOptions) SetMemory(memory uint32) *CredentialOptions {
 
 /*
 SetThreads - Sets the number of go-routines that will actively be used in hashing. This is set to 1 by default, however
-if higher performance is requried this can be increased.
+if higher performance is required this can be increased.
 */
 func (opts *CredentialOptions) SetThreads(threads uint8) *CredentialOptions {
 	opts.Threads = threads
@@ -69,9 +74,17 @@ func (opts *CredentialOptions) SetThreads(threads uint8) *CredentialOptions {
 }
 
 /*
-SetLength - Sets the length in bytes that the generated hash should be. This is set to 16 by default
+SetKeyLength - Sets the length in bytes that the generated hash should be. This is set to 16 by default
 */
-func (opts *CredentialOptions) SetLength(length uint32) *CredentialOptions {
-	opts.Length = length
+func (opts *CredentialOptions) SetKeyLength(length uint32) *CredentialOptions {
+	opts.KeyLength = length
+	return opts
+}
+
+/*
+SetSaltLength - Sets the length in bytes that the generated salt should be. This is set to 32 by default
+*/
+func (opts *CredentialOptions) SetSaltLength(length uint32) *CredentialOptions {
+	opts.SaltLength = length
 	return opts
 }
