@@ -77,6 +77,35 @@ func (log *Log) LogErrorEvent(description string, err error) {
 }
 
 /*
+CloseLog - Sync's buffered log entries to log's core and if the user is using file logging, its associating
+file is gracefully closed. This should really be called in the event that a panic happens in underlying code
+so if you are utilizing this, then call this using `defer`
+*/
+func (log *Log) CloseLog() error {
+	/*
+		Zap always recommends that Sync is called before the application exits. Given that Zap is a buffered
+		logging solution, this is required.
+	*/
+	err := log.log.Sync()
+	if err != nil {
+		return err
+	}
+
+	/*
+		Adding a conditional here as we don't want a nil pointer dereference in the event
+		that the caller is not using file logging
+	*/
+	if log.fp != nil {
+		err = log.fp.Close()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+/*
 NewLog - Constructs a new Log using the values passed in its parameters. If an options structure is not passed in this
 functions parameter, then the Log is initialized with default values. Additionally, if more than 1 are passed here,
 only the first is used.
