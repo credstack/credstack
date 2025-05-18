@@ -23,6 +23,42 @@ type Log struct {
 }
 
 /*
+Options - Returns a pointer to the options used for the Log
+*/
+func (log *Log) Options() *options.LogOptions {
+	return log.options
+}
+
+/*
+Logger - Returns a pointer to the underlying zap logger structure
+*/
+func (log *Log) Logger() *zap.Logger {
+	return log.log
+}
+
+/*
+LogShutdownEvent - Log handler for logging misc shutdown events
+*/
+func (log *Log) LogShutdownEvent(eventType string, description string) {
+	log.log.Info(
+		"ShutdownEvent",
+		zap.String("eventType", eventType),
+		zap.String("description", description),
+	)
+}
+
+/*
+LogStartupEvent - Log handler for logging misc startup events
+*/
+func (log *Log) LogStartupEvent(eventType string, description string) {
+	log.log.Info(
+		"StartupEvent",
+		zap.String("eventType", eventType),
+		zap.String("description", description),
+	)
+}
+
+/*
 LogTokenEvent - Handler for logging any kind of token events. This includes generation, revocation, introspection,
 and validation.
 */

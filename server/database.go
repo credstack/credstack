@@ -36,6 +36,13 @@ type Database struct {
 }
 
 /*
+Options - Returns a pointer to the options struct used with the Database
+*/
+func (database *Database) Options() *options.DatabaseOptions {
+	return database.options
+}
+
+/*
 Collection - A getter for returning the underlying mongo.Collection pointer
 */
 func (database *Database) Collection(collection string) *mongo.Collection {
