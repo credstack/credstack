@@ -139,9 +139,13 @@ func NewLog(opts ...*options.LogOptions) (*Log, error) {
 	core := zapcore.NewTee(consoleCore)
 
 	if log.options.UseFileLogging {
-		// filename - Provides dead simple log rotation
-		filename := "/credstack-" + time.Now().String() + ".json"
+		// filename - Provides dead simple log rotation. The timestamp provided here is arbitrary and go uses this
+		// as a reference for how to build the format for time.Now
+		filename := "/credstack-" + time.Now().Format("20060102T150405") + ".log"
 
+		/*
+			os.OpenFile expects this directory to exist, and should be created before utilizing file logging
+		*/
 		fp, err := os.OpenFile(log.options.LogPath+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			/*
@@ -161,7 +165,7 @@ func NewLog(opts ...*options.LogOptions) (*Log, error) {
 		*/
 		fileCore := zapcore.NewCore(
 			zapcore.NewJSONEncoder(log.options.EncoderConfig),
-			zapcore.AddSync(fp),
+			zapcore.AddSync(log.fp),
 			log.options.LogLevel,
 		)
 
