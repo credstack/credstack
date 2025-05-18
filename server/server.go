@@ -29,3 +29,10 @@ will get flushed
 func (server *Server) Log() *Log {
 	return server.log
 }
+
+/*
+Default - Initializes the server and its components with default configurations
+*/
+func Default() *Server {
+	return &Server{}
+}
