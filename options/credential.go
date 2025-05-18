@@ -40,3 +40,38 @@ func (opts *CredentialOptions) FromConfig() *CredentialOptions {
 		Length:  viper.GetUint32("argon.length"),
 	}
 }
+
+/*
+SetTime - Sets the number of iterations that the argon algorithm will apply to the secret. Generally,
+this should be set to one but can be increased in more sensitive environments
+*/
+func (opts *CredentialOptions) SetTime(time int) *CredentialOptions {
+	opts.Time = time
+	return opts
+}
+
+/*
+SetMemory - Sets the amount of memory that the Argon algorithm will consume during hashing operations. The `memory`
+parameter should represent the number of megabytes you wish to set this to
+*/
+func (opts *CredentialOptions) SetMemory(memory uint32) *CredentialOptions {
+	opts.Memory = memory * 1024
+	return opts
+}
+
+/*
+SetThreads - Sets the number of go-routines that will actively be used in hashing. This is set to 1 by default, however
+if higher performance is requried this can be increased.
+*/
+func (opts *CredentialOptions) SetThreads(threads uint8) *CredentialOptions {
+	opts.Threads = threads
+	return opts
+}
+
+/*
+SetLength - Sets the length in bytes that the generated hash should be. This is set to 16 by default
+*/
+func (opts *CredentialOptions) SetLength(length uint32) *CredentialOptions {
+	opts.Length = length
+	return opts
+}
