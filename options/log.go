@@ -2,6 +2,7 @@ package options
 
 import (
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
 	"strings"
@@ -21,6 +22,9 @@ type LogOptions struct {
 
 	// LogLevel - A string determining how verbose logs should be. Can be: Info (default), Debug, All
 	LogLevel zapcore.Level
+
+	// EncoderConfig - Provides universal configuration options for both stdout logggin and file logging
+	EncoderConfig zapcore.EncoderConfig
 }
 
 /*
@@ -32,6 +36,7 @@ func Log() *LogOptions {
 		UseFileLogging: false,
 		LogPath:        "/.credstack/logs",
 		LogLevel:       zapcore.InfoLevel,
+		EncoderConfig:  zap.NewProductionEncoderConfig(),
 	}
 }
 
@@ -50,6 +55,7 @@ func (opts *LogOptions) FromConfig() *LogOptions {
 		UseFileLogging: viper.GetBool("log.use_file_logging"),
 		LogPath:        viper.GetString("log.path"),
 		LogLevel:       logLevel,
+		EncoderConfig:  zap.NewProductionEncoderConfig(),
 	}
 }
 
@@ -89,4 +95,14 @@ func (opts *LogOptions) SetLogLevel(level zapcore.Level) *LogOptions {
 	opts.LogLevel = level
 
 	return opts
+}
+
+/*
+SetEncoderConfig - Sets the specified Zap Encoder Configuration for the logger. This is used primarily
+for file logging as it is a requirement for tree-ing together multiple loggers (like stdout and file)
+*/
+func (opts *LogOptions) SetEncoderConfig(config zapcore.EncoderConfig) *LogOptions {
+	opts.EncoderConfig = config
+	return opts
+
 }
