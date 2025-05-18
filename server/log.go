@@ -3,6 +3,9 @@ package server
 import (
 	"github.com/stevezaluk/credstack-lib/options"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"os"
+	"time"
 )
 
 /*
@@ -14,6 +17,9 @@ type Log struct {
 
 	// log - A production ready zap.Logger that is initialized when calling NewLog
 	log *zap.Logger
+
+	// fp - A pointer to the open file that Zap is using for logging. Stored here so that it can be closed safely
+	fp *os.File
 }
 
 /*
@@ -80,20 +86,64 @@ func NewLog(opts ...*options.LogOptions) (*Log, error) {
 		opts = append(opts, new(options.LogOptions))
 	}
 
-	/*
-		We always initialize a new production ready logger, to ensure that we can log messages in the most
-		performant way. Subsequently, no getter for the Log.log variable is provided as the caller should
-		never have to interact with this. Use the pre-defined methods for logging messages instead
-	*/
-	log, err := zap.NewProduction()
-	if err != nil {
-		return nil, err
+	log := &Log{
+		options: opts[0],
 	}
 
-	// initialize file logging if it is set in options
+	/*
+		By default, the consoleCore is always initialized, this ensures that we can always provide console
+		logging for the application. When options.Log is called, this gets initialized with the default
+		production encoder that Zap provides
+	*/
+	consoleCore := zapcore.NewCore(
+		zapcore.NewConsoleEncoder(log.options.EncoderConfig),
+		zapcore.AddSync(os.Stdout),
+		log.options.LogLevel,
+	)
 
-	return &Log{
-		options: opts[0],
-		log:     log,
-	}, nil
+	/*
+		In zap, by using NewTee we can duplicate logs across multiple cores. In our case we are going to use
+		this for both console logging (STDOUT) and through file logging in the form of JSON files. Ideally,
+		the user wouldn't even use logging files, and they would just aggregate logs through Loki or a similar
+		tool, however I wanted to write the feature anyway to support less complex use cases
+	*/
+	core := zapcore.NewTee(consoleCore)
+
+	if log.options.UseFileLogging {
+		// filename - Provides dead simple log rotation
+		filename := "/credstack-" + time.Now().String() + ".json"
+
+		fp, err := os.OpenFile(log.options.LogPath+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			/*
+				This should really change here. If the file logger cannot be initialized a warning log entry
+				can be created informing the user that only stdout logging is enabled.
+			*/
+			return nil, err
+		}
+
+		// The pointer to the open file is stored here so that it can be safely closed when Log.Close is called
+		log.fp = fp
+
+		/*
+			We are utilizing the same EncoderConfig that is provided in the consoleCore, as we really want to keep
+			logs consistent across stdout and through files. Additionally, I am trying to avoid overcomplicating
+			the logging system for cred-stack as I really just want performant, production ready logging
+		*/
+		fileCore := zapcore.NewCore(
+			zapcore.NewJSONEncoder(log.options.EncoderConfig),
+			zapcore.AddSync(fp),
+			log.options.LogLevel,
+		)
+
+		// If we are using file based logging then we need to overwrite our existing core
+		core = zapcore.NewTee(consoleCore, fileCore)
+	}
+
+	/*
+		Finally, we pass all of our created cores into Zap.New for zap to initialize the logger
+	*/
+	log.log = zap.New(core, zap.AddCaller())
+
+	return log, nil
 }
