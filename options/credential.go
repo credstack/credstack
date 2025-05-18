@@ -4,7 +4,7 @@ import "github.com/spf13/viper"
 
 type CredentialOptions struct {
 	// Time - The number of iterations that the argon algorithm will run
-	Time int
+	Time uint32
 
 	// Memory - The maximum amount of memory (in Megabytes) that Argon can use to hash secrets
 	Memory uint32
@@ -45,7 +45,7 @@ func (opts *CredentialOptions) FromConfig() *CredentialOptions {
 SetTime - Sets the number of iterations that the argon algorithm will apply to the secret. Generally,
 this should be set to one but can be increased in more sensitive environments
 */
-func (opts *CredentialOptions) SetTime(time int) *CredentialOptions {
+func (opts *CredentialOptions) SetTime(time uint32) *CredentialOptions {
 	opts.Time = time
 	return opts
 }
