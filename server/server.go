@@ -1,5 +1,7 @@
 package server
 
+import "github.com/stevezaluk/credstack-lib/options"
+
 /*
 Server - Provides an abstraction of any commonly used resources that services would need
 to interact with. Also provides lifecycle control for these objects
@@ -31,8 +33,35 @@ func (server *Server) Log() *Log {
 }
 
 /*
+New - Constructs a new server using configurations passed in the arguments of this function
+*/
+func New(dbOpts *options.DatabaseOptions, logOpts *options.LogOptions) *Server {
+	return &Server{
+		database: NewDatabase(dbOpts),
+		log:      NewLog(logOpts),
+	}
+}
+
+/*
 Default - Initializes the server and its components with default configurations
 */
 func Default() *Server {
-	return &Server{}
+	/*
+		We don't need to pass any options here, as these constructors will
+		automatically fill them with defaults
+	*/
+	return &Server{
+		database: NewDatabase(),
+		log:      NewLog(),
+	}
+}
+
+/*
+FromConfig - Initializes the server and its components with configurations created from viper values
+*/
+func FromConfig() *Server {
+	return &Server{
+		database: NewDatabase(options.Database().FromConfig()),
+		log:      NewLog(options.Log().FromConfig()),
+	}
 }
