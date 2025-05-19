@@ -12,7 +12,7 @@ type CredentialOptions struct {
 	// Threads - The number of threads to use when hashing secrets
 	Threads uint8
 
-	// KeyLength - The KeyLength of the hash that Argon will produce
+	// KeyLength - The length of the hash that Argon will produce
 	KeyLength uint32
 
 	// SaltLength - The length of the hash that Argon will use when hashing passwords
