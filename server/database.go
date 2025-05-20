@@ -2,11 +2,15 @@ package server
 
 import (
 	"context"
+	"errors"
 	"github.com/stevezaluk/credstack-lib/options"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 )
+
+// ErrInternalDatabase - Provides a simple wrapper around an internal database error
+var ErrInternalDatabase = errors.New("database: ")
 
 /*
 Database - Defines the core abstraction around a MongoDB database. This structure provides construction from
