@@ -29,9 +29,6 @@ type Database struct {
 	// options - A structure storing client related options relating to authentication
 	options *options.DatabaseOptions
 
-	// defaultDatabase - The default database that Mongo should use
-	defaultDatabase string
-
 	// client - A reference to the Mongo client that is used to perform operations
 	client *mongo.Client
 
@@ -78,7 +75,7 @@ func (database *Database) Connect() error {
 	}
 
 	database.client = client
-	database.database = client.Database(database.defaultDatabase)
+	database.database = client.Database(database.options.DefaultDatabase)
 
 	return nil
 }

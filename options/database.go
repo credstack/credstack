@@ -95,7 +95,7 @@ func (opts *DatabaseOptions) ToMongoOptions() *options.ClientOptions {
 	if opts.UseAuthentication {
 		clientOptions.SetAuth(options.Credential{
 			AuthMechanism: AuthMechanism,
-			AuthSource:    opts.DefaultDatabase,
+			AuthSource:    opts.AuthenticationDatabase,
 			Username:      opts.Username,
 			Password:      opts.Password,
 		})
