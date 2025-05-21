@@ -17,6 +17,12 @@ type CredentialOptions struct {
 
 	// SaltLength - The length of the hash that Argon will use when hashing passwords
 	SaltLength uint32
+
+	// MinSecretLength - Sets the minimum password length that a new user must provide. Defaults to 12
+	MinSecretLength uint32
+
+	// MaxSecretLength - Sets the maximum password length that a new user must provide. Defaults to 48
+	MaxSecretLength uint32
 }
 
 /*
@@ -24,11 +30,13 @@ Credential - Initializes a new CredentialOptions struct with sane defaults that 
 */
 func Credential() *CredentialOptions {
 	return &CredentialOptions{
-		Time:       1,
-		Memory:     16 * 1024,
-		Threads:    1,
-		KeyLength:  16,
-		SaltLength: 32,
+		Time:            1,
+		Memory:          16 * 1024,
+		Threads:         1,
+		KeyLength:       16,
+		SaltLength:      32,
+		MinSecretLength: 12,
+		MaxSecretLength: 48,
 	}
 }
 
@@ -38,11 +46,13 @@ that were set
 */
 func (opts *CredentialOptions) FromConfig() *CredentialOptions {
 	return &CredentialOptions{
-		Time:       viper.GetUint32("argon.time"),
-		Memory:     viper.GetUint32("argon.memory"),
-		Threads:    viper.GetUint8("argon.threads"),
-		KeyLength:  viper.GetUint32("argon.key_length"),
-		SaltLength: viper.GetUint32("argon.salt_length"),
+		Time:            viper.GetUint32("argon.time"),
+		Memory:          viper.GetUint32("argon.memory"),
+		Threads:         viper.GetUint8("argon.threads"),
+		KeyLength:       viper.GetUint32("argon.key_length"),
+		SaltLength:      viper.GetUint32("argon.salt_length"),
+		MinSecretLength: viper.GetUint32("argon.min_secret_length"),
+		MaxSecretLength: viper.GetUint32("argon.max_secret_length"),
 	}
 }
 
@@ -86,5 +96,23 @@ SetSaltLength - Sets the length in bytes that the generated salt should be. This
 */
 func (opts *CredentialOptions) SetSaltLength(length uint32) *CredentialOptions {
 	opts.SaltLength = length
+	return opts
+}
+
+/*
+SetMinPasswordLength - Sets the minimum plain text password length that a user must provide during registration
+or password reset operations
+*/
+func (opts *CredentialOptions) SetMinPasswordLength(length uint32) *CredentialOptions {
+	opts.MinSecretLength = length
+	return opts
+}
+
+/*
+SetMaxPasswordLength - Sets the maximum plain text password length that a user must provide during registration
+or password reset operations
+*/
+func (opts *CredentialOptions) SetMaxPasswordLength(length uint32) *CredentialOptions {
+	opts.MaxSecretLength = length
 	return opts
 }
