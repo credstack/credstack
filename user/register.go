@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/stevezaluk/credstack-lib/header"
 	"github.com/stevezaluk/credstack-lib/options"
 	"github.com/stevezaluk/credstack-lib/server"
 	userModel "github.com/stevezaluk/credstack-models/proto/user"
@@ -94,6 +95,7 @@ func RegisterUser(ctx *server.Server, opts *options.CredentialOptions, email str
 		is also nil in Go-Lang and this is what will get stored in our Database.
 	*/
 	newUser := &userModel.User{
+		Header:     header.NewHeader(email),
 		Username:   username,
 		Email:      email,
 		Credential: credential,
