@@ -30,7 +30,7 @@ RegisterUser - Core logic for registering new users with credstack. Performs ful
 provided here. New users must have a unique email address and this will be validated here. Any errors propagated through
 this function call is returned. This is generally only named errors defined in this package.
 */
-func RegisterUser(ctx *server.Server, opts *options.CredentialOptions, email string, username string, password string) error {
+func RegisterUser(serv *server.Server, opts *options.CredentialOptions, email string, username string, password string) error {
 	/*
 		Originally, I was going to place this logic in NewCredential, however we don't want to consume a DB call
 		if the information provided here is invalid (Bad Request)
@@ -61,7 +61,7 @@ func RegisterUser(ctx *server.Server, opts *options.CredentialOptions, email str
 		pulling down the entire model, and use result.Err to avoid having to decode the model as well, as we don't
 		care about its results, we only care that we don't get mongo.ErrNoDocuments returned to us
 	*/
-	result := ctx.Database().Collection("user").FindOne(
+	result := serv.Database().Collection("user").FindOne(
 		context.Background(),
 		bson.M{"email": email},
 		mongoOpts.FindOne().SetProjection(bson.M{"email": 1}))
@@ -107,7 +107,7 @@ func RegisterUser(ctx *server.Server, opts *options.CredentialOptions, email str
 		We finally get to insert our model into MongoDB. Regardless of our previous FindOne call to validate
 		user existence, we still want to check for a write exception and wrap any un-expected errors here
 	*/
-	_, err = ctx.Database().Collection("user").InsertOne(context.Background(), newUser)
+	_, err = serv.Database().Collection("user").InsertOne(context.Background(), newUser)
 	if err != nil {
 		var writeError mongo.WriteException
 		if errors.As(err, &writeError) {
