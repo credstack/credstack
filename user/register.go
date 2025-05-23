@@ -94,8 +94,11 @@ func RegisterUser(serv *server.Server, opts *options.CredentialOptions, email st
 		and scopes to ensure that these don't get inserted into MongoDB as null fields. By default, an empty slice
 		is also nil in Go-Lang and this is what will get stored in our Database.
 	*/
+	userHeader := header.NewHeader(email)
+
 	newUser := &userModel.User{
-		Header:     header.NewHeader(email),
+		Header:     userHeader,
+		Sub:        userHeader.Identifier,
 		Username:   username,
 		Email:      email,
 		Credential: credential,
