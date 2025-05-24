@@ -62,3 +62,30 @@ func GetUser(serv *server.Server, email string, withCredentials bool) (*userMode
 
 	return &ret, nil
 }
+
+/*
+DeleteUser - Completely removes a user account from CredStack. A valid email address must be passed
+in this parameter, or it will return ErrUserMissingIdentifier. If the deleted count returned is equal to
+zero, then the function considers the user to not exist. A successful call to this function will return
+nil
+*/
+func DeleteUser(serv *server.Server, email string) error {
+	if email == "" {
+		return ErrUserMissingIdentifier
+	}
+
+	result, err := serv.Database().Collection("user").DeleteOne(
+		context.Background(),
+		bson.M{"email": email},
+	)
+
+	if err != nil {
+		return fmt.Errorf("%w %v", server.ErrInternalDatabase, err)
+	}
+
+	if result.DeletedCount == 0 {
+		return ErrUserDoesNotExist
+	}
+
+	return nil
+}
