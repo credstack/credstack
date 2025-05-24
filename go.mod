@@ -5,7 +5,7 @@ go 1.24.2
 require (
 	github.com/google/uuid v1.6.0
 	github.com/spf13/viper v1.20.1
-	github.com/stevezaluk/credstack-models v1.0.5
+	github.com/stevezaluk/credstack-models v1.0.6
 	go.mongodb.org/mongo-driver/v2 v2.2.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.33.0
