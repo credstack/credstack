@@ -23,7 +23,7 @@ mongo.Collection pointer vastly simplifies maintenance as I don't need to re-abs
 MongoDB is providing to me
 
 If a service wishes to make Database calls, it can call the Database.Collection method and pass the collection that
-it wants to use in the parameter.
+it wants to use in the argument of that function call.
 */
 type Database struct {
 	// options - A structure storing client related options relating to authentication
