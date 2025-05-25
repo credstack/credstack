@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/stevezaluk/credstack-lib/header"
+	"github.com/stevezaluk/credstack-lib/internal"
 	"github.com/stevezaluk/credstack-lib/options"
 	"github.com/stevezaluk/credstack-lib/server"
 	userModel "github.com/stevezaluk/credstack-models/proto/user"
@@ -14,16 +15,16 @@ import (
 )
 
 // ErrPasswordTooShort - Provides a named error to be returned when a user-provided password is too short
-var ErrPasswordTooShort = errors.New("credential: password too short")
+var ErrPasswordTooShort = internal.NewError(400, "CRED_PASS_TOO_SHORT", "credential: password too short")
 
 // ErrPasswordTooLong - Provides a named error to be returned when a user-provided password is too long
-var ErrPasswordTooLong = errors.New("credential: password too long")
+var ErrPasswordTooLong = internal.NewError(400, "CRED_PASS_TOO_LONG", "credential: password too long")
 
 // ErrUserMissingIdentifier - Provides a named error that gets thrown when you try and create a new user without an Email
-var ErrUserMissingIdentifier = errors.New("user: User is either missing a username or an email address")
+var ErrUserMissingIdentifier = internal.NewError(400, "USER_MISSING_ID", "user: User is either missing a username or an email address")
 
 // ErrUserAlreadyExists - Provides a named error that occurs when you try and duplicate a user
-var ErrUserAlreadyExists = errors.New("user: User already exists under the specified email address")
+var ErrUserAlreadyExists = internal.NewError(409, "USER_ALREADY_EXISTS", "user: User already exists under the specified email address")
 
 /*
 RegisterUser - Core logic for registering new users with credstack. Performs full validation on any of the user data
