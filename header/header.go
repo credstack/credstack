@@ -18,7 +18,7 @@ func NewHeader(basis string) *header.Header {
 	timestamp := internal.UnixTimestamp()
 
 	return &header.Header{
-		Identifier: internal.GenerateUUID(basis),
+		Identifier: internal.GenerateUUID5(basis),
 		CreatedAt:  timestamp,
 		UpdatedAt:  timestamp,
 		AccessedAt: timestamp,
