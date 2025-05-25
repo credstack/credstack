@@ -1,11 +1,11 @@
 package server
 
 import (
+	"github.com/stevezaluk/credstack-lib/internal"
 	"github.com/stevezaluk/credstack-lib/options"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"
-	"time"
 )
 
 /*
@@ -181,7 +181,7 @@ func NewLog(opts ...*options.LogOptions) *Log {
 	if log.options.UseFileLogging {
 		// filename - Provides dead simple log rotation. The timestamp provided here is arbitrary and go uses this
 		// as a reference for how to build the format for time.Now
-		filename := "/credstack-" + time.Now().Format("20060102T150405") + ".log"
+		filename := "/credstack-" + internal.StringTimestamp()
 
 		/*
 			os.OpenFile expects this directory to exist, and should be created before utilizing file logging
