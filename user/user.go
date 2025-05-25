@@ -11,7 +11,7 @@ import (
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-// ErrUserDoesNotExist -
+// ErrUserDoesNotExist - Provides a named error for when operations fail due to the user account not existing
 var ErrUserDoesNotExist = errors.New("user: user does not exist under the specified email address")
 
 /*
@@ -61,6 +61,69 @@ func GetUser(serv *server.Server, email string, withCredentials bool) (*userMode
 	}
 
 	return &ret, nil
+}
+
+/*
+UpdateUser - Provides functionality for updating a select number of fields of the user model. A valid email address
+must be provided as an argument for this function call. Fields to update can be passed in the patch parameter. The
+following fields can be updated: Username, GivenName, FamilyName, Gender, BirthDate, and Address. If you need to
+update a different field (like email), then use the dedicated functions for this
+*/
+func UpdateUser(serv *server.Server, email string, patch *userModel.User) error {
+	if email == "" {
+		return ErrUserMissingIdentifier
+	}
+
+	/*
+		buildUserPatch - Provides a sub-function to convert the given userModel into a bson.M struct that can be
+		provided to mongo.UpdateOne. Only specified fields are supported in this function, so not all are included
+		here
+	*/
+	buildUserPatch := func(patch *userModel.User) bson.M {
+		update := make(bson.M)
+
+		if patch.Username != "" {
+			update["username"] = patch.Username
+		}
+
+		if patch.GivenName != "" {
+			update["given_name"] = patch.GivenName
+		}
+
+		if patch.FamilyName != "" {
+			update["family_name"] = patch.FamilyName
+		}
+
+		if patch.Gender != "" {
+			update["gender"] = patch.Gender
+		}
+
+		if patch.BirthDate != "" {
+			update["birth_date"] = patch.BirthDate
+		}
+
+		if patch.Address != "" {
+			update["address"] = patch.Address
+		}
+
+		return update
+	}
+
+	result, err := serv.Database().Collection("user").UpdateOne(
+		context.Background(),
+		bson.M{"email": email},
+		bson.M{"$set": buildUserPatch(patch)},
+	)
+
+	if err != nil {
+		return fmt.Errorf("%w %v", server.ErrInternalDatabase, err)
+	}
+
+	if result.MatchedCount == 0 {
+		return ErrUserDoesNotExist
+	}
+
+	return nil
 }
 
 /*
