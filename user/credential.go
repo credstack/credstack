@@ -4,7 +4,8 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
-	"errors"
+	"fmt"
+	"github.com/stevezaluk/credstack-lib/internal"
 	"github.com/stevezaluk/credstack-lib/options"
 	"github.com/stevezaluk/credstack-models/proto/user"
 	"golang.org/x/crypto/argon2"
@@ -12,7 +13,13 @@ import (
 )
 
 // ErrUserCredentialInvalid - Provides a named error for when user credential validation fails
-var ErrUserCredentialInvalid = errors.New("user: invalid credentials")
+var ErrUserCredentialInvalid = internal.NewError(401, "INVALID_USER_CREDENTIAL", "user: invalid credentials")
+
+// ErrFailedToHashCredential - Provides a named error for when user credential hashing has failed
+var ErrFailedToHashCredential = internal.NewError(500, "FAILED_TO_HASH_CREDENTIAL", "user: failed to hash user credential")
+
+// ErrFailedToBaseDecode - Provides a named error for when base64 decoding data fails during a user credential validation
+var ErrFailedToBaseDecode = internal.NewError(500, "FAILED_TO_BASE_DECODE", "user: failed to decode base64 data during user credential validation")
 
 /*
 hashSecret - Generates a ArgonV2ID hash for the secret provided in the first parameter. Any options that are provided
@@ -65,7 +72,7 @@ that occur are propagated using the second return value
 func NewCredential(secret string, opts *options.CredentialOptions) (*user.UserCredential, error) {
 	hash, salt, err := hashSecret([]byte(secret), opts)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w (%v)", ErrFailedToHashCredential, err)
 	}
 
 	return &user.UserCredential{
@@ -90,7 +97,7 @@ func ValidateSecret(secret []byte, credential *user.UserCredential) error {
 	decodedSalt := make([]byte, credential.SaltLength)
 	n, err := base64.URLEncoding.Decode(decodedSalt, []byte(credential.Salt))
 	if err != nil {
-		return err
+		return fmt.Errorf("%w (%v)", ErrFailedToBaseDecode, err)
 	}
 
 	/*
@@ -100,7 +107,7 @@ func ValidateSecret(secret []byte, credential *user.UserCredential) error {
 	decodedHash := make([]byte, credential.KeyLength)
 	m, err := base64.URLEncoding.Decode(decodedHash, []byte(credential.Key))
 	if err != nil {
-		return err
+		return fmt.Errorf("%w (%v)", ErrFailedToBaseDecode, err)
 	}
 
 	/*
