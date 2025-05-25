@@ -2,11 +2,15 @@ package server
 
 import (
 	"context"
+	"github.com/stevezaluk/credstack-lib/internal"
 	"github.com/stevezaluk/credstack-lib/options"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 )
+
+// ErrInternalDatabase - Provides a simple wrapper around an internal database error
+var ErrInternalDatabase = internal.NewError(500, "INTERNAL_DATABASE_ERROR", "database: an internal error occurred")
 
 /*
 Database - Defines the core abstraction around a MongoDB database. This structure provides construction from
@@ -19,14 +23,11 @@ mongo.Collection pointer vastly simplifies maintenance as I don't need to re-abs
 MongoDB is providing to me
 
 If a service wishes to make Database calls, it can call the Database.Collection method and pass the collection that
-it wants to use in the parameter.
+it wants to use in the argument of that function call.
 */
 type Database struct {
 	// options - A structure storing client related options relating to authentication
 	options *options.DatabaseOptions
-
-	// defaultDatabase - The default database that Mongo should use
-	defaultDatabase string
 
 	// client - A reference to the Mongo client that is used to perform operations
 	client *mongo.Client
@@ -74,7 +75,7 @@ func (database *Database) Connect() error {
 	}
 
 	database.client = client
-	database.database = client.Database(database.defaultDatabase)
+	database.database = client.Database(database.options.DefaultDatabase)
 
 	return nil
 }
