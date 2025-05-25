@@ -73,7 +73,7 @@ func RegisterUser(serv *server.Server, opts *options.CredentialOptions, email st
 	*/
 	if result.Err() != nil {
 		if !errors.Is(result.Err(), mongo.ErrNoDocuments) && result.Err() != nil {
-			return fmt.Errorf("%w %v", server.ErrInternalDatabase, result)
+			return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, result)
 		}
 
 		if !errors.Is(result.Err(), mongo.ErrNoDocuments) {
@@ -124,7 +124,7 @@ func RegisterUser(serv *server.Server, opts *options.CredentialOptions, email st
 			If we don't get a write exception than some other error occurred, and we can just wrap the
 			InternalDatabaseError and return it
 		*/
-		return fmt.Errorf("%w %v", server.ErrInternalDatabase, err)
+		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 	}
 
 	return nil

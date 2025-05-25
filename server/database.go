@@ -10,7 +10,7 @@ import (
 )
 
 // ErrInternalDatabase - Provides a simple wrapper around an internal database error
-var ErrInternalDatabase = internal.NewError(500, "INTERNAL_DATABASE_ERROR", "database: ")
+var ErrInternalDatabase = internal.NewError(500, "INTERNAL_DATABASE_ERROR", "database: an internal error occurred")
 
 /*
 Database - Defines the core abstraction around a MongoDB database. This structure provides construction from

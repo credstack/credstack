@@ -53,7 +53,7 @@ func GetUser(serv *server.Server, email string, withCredentials bool) (*userMode
 	err := result.Decode(&ret)
 	if err != nil {
 		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
-			return nil, fmt.Errorf("%w %v", server.ErrInternalDatabase, err)
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 		}
 
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -117,7 +117,7 @@ func UpdateUser(serv *server.Server, email string, patch *userModel.User) error 
 	)
 
 	if err != nil {
-		return fmt.Errorf("%w %v", server.ErrInternalDatabase, err)
+		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 	}
 
 	if result.MatchedCount == 0 {
@@ -144,7 +144,7 @@ func DeleteUser(serv *server.Server, email string) error {
 	)
 
 	if err != nil {
-		return fmt.Errorf("%w %v", server.ErrInternalDatabase, err)
+		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 	}
 
 	if result.DeletedCount == 0 {
