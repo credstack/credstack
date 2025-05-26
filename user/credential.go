@@ -2,7 +2,6 @@ package user
 
 import (
 	"crypto/subtle"
-	"encoding/base64"
 	"fmt"
 	"github.com/stevezaluk/credstack-lib/internal"
 	"github.com/stevezaluk/credstack-lib/options"
@@ -17,9 +16,6 @@ var ErrUserCredentialInvalid = internal.NewError(401, "INVALID_USER_CREDENTIAL",
 // ErrFailedToHashCredential - Provides a named error for when user credential hashing has failed
 var ErrFailedToHashCredential = internal.NewError(500, "FAILED_TO_HASH_CREDENTIAL", "user: failed to hash user credential")
 
-// ErrFailedToBaseDecode - Provides a named error for when base64 decoding data fails during a user credential validation
-var ErrFailedToBaseDecode = internal.NewError(500, "FAILED_TO_BASE_DECODE", "user: failed to decode base64 data during user credential validation")
-
 /*
 NewCredential - Creates and generates a new UserCredential using the secret provided in the parameter. Any errors
 that occur are propagated using the second return value
@@ -31,8 +27,8 @@ func NewCredential(credential string, opts *options.CredentialOptions) (*user.Us
 	}
 
 	return &user.UserCredential{
-		Key:        base64.URLEncoding.EncodeToString(hash),
-		Salt:       base64.URLEncoding.EncodeToString(salt),
+		Key:        internal.EncodeBase64(hash),
+		Salt:       internal.EncodeBase64(salt),
 		Time:       opts.Time,
 		Memory:     opts.Memory,
 		Threads:    uint32(opts.Threads),
@@ -49,20 +45,18 @@ func ValidateSecret(secret []byte, credential *user.UserCredential) error {
 		To start the validation process we first need to base64 decode the salt that was
 		stored in MongoDB. We use make to allocate us a byte array of the requested salt length
 	*/
-	decodedSalt := make([]byte, credential.SaltLength)
-	n, err := base64.URLEncoding.Decode(decodedSalt, []byte(credential.Salt))
+	decodedSalt, err := internal.DecodeBase64([]byte(credential.Salt), credential.SaltLength)
 	if err != nil {
-		return fmt.Errorf("%w (%v)", ErrFailedToBaseDecode, err)
+		return err // these are named already so we don't need to wrap again
 	}
 
 	/*
 		We always want to decode our values first to ensure that we can catch any basic errors
 		before we start Argon hash generation
 	*/
-	decodedHash := make([]byte, credential.KeyLength)
-	m, err := base64.URLEncoding.Decode(decodedHash, []byte(credential.Key))
+	decodedHash, err := internal.DecodeBase64([]byte(credential.Key), credential.KeyLength)
 	if err != nil {
-		return fmt.Errorf("%w (%v)", ErrFailedToBaseDecode, err)
+		return err // these are named already so we don't need to wrap again
 	}
 
 	/*
@@ -71,7 +65,7 @@ func ValidateSecret(secret []byte, credential *user.UserCredential) error {
 	*/
 	key := argon2.IDKey(
 		secret,
-		decodedSalt[:n],
+		decodedSalt,
 		credential.Time,
 		credential.Memory,
 		uint8(credential.Threads),
@@ -82,7 +76,7 @@ func ValidateSecret(secret []byte, credential *user.UserCredential) error {
 		subtle.ConstantTimeCompare provides a time-safe way of comparing password hashes. This protects
 		us against time-based attacks during comparison
 	*/
-	result := subtle.ConstantTimeCompare(key, decodedHash[:m])
+	result := subtle.ConstantTimeCompare(key, decodedHash)
 	if result != 1 {
 		return ErrUserCredentialInvalid
 	}
