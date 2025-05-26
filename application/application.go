@@ -151,6 +151,56 @@ func GetApplication(serv *server.Server, clientId string, withCredentials bool) 
 }
 
 /*
+UpdateApplication - Provides functionality for updating a select number of fields of the app model. A valid client id
+must be provided as an argument for this function call. Fields to update can be passed in the patch parameter. The
+following fields can be updated: RedirectURI, TokenLifetime, GrantType.
+*/
+func UpdateApplication(serv *server.Server, clientId string, patch *applicationModel.Application) error {
+	if clientId == "" {
+		return ErrAppMissingIdentifier
+	}
+
+	/*
+		buildAppPatch - Provides a sub-function to convert the given appModel into a bson.M struct that can be
+		provided to mongo.UpdateOne. Only specified fields are supported in this function, so not all are included
+		here
+	*/
+	buildAppPatch := func(patch *applicationModel.Application) bson.M {
+		update := make(bson.M)
+
+		if patch.RedirectUri != "" {
+			update["redirect_uri"] = patch.RedirectUri
+		}
+
+		if patch.TokenLifetime != 0 {
+			update["token_lifetime"] = patch.TokenLifetime
+		}
+
+		if len(patch.GrantType) != 0 {
+			update["grant_type"] = patch.GrantType
+		}
+
+		return update
+	}
+
+	result, err := serv.Database().Collection("application").UpdateOne(
+		context.Background(),
+		bson.M{"client_id": clientId},
+		bson.M{"$set": buildAppPatch(patch)},
+	)
+
+	if err != nil {
+		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+	}
+
+	if result.MatchedCount == 0 {
+		return ErrAppDoesNotExist
+	}
+
+	return nil
+}
+
+/*
 DeleteApplication - Completely removes an application from CredStack. A valid client ID must be passed
 in this parameter, or it will return ErrAppMissingIdentifier. If the deleted count returned is equal to
 zero, then the function considers the user to not exist. A successful call to this function will return
