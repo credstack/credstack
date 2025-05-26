@@ -10,6 +10,10 @@ from this function can be safely ignored as it is passed directly from rand.Read
 func RandBytes(length uint32) ([]byte, error) {
 	ret := make([]byte, length)
 
+	/*
+		Fill the created byte array with cryptographically secured data. n is used as an offset
+		for the byte array
+	*/
 	n, err := rand.Read(ret)
 	if err != nil {
 		return nil, err
