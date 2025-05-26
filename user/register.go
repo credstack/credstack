@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
+	"regexp"
 )
 
 // ErrPasswordTooShort - Provides a named error to be returned when a user-provided password is too short
@@ -25,6 +26,12 @@ var ErrUserMissingIdentifier = internal.NewError(400, "USER_MISSING_ID", "user: 
 
 // ErrUserAlreadyExists - Provides a named error that occurs when you try and duplicate a user
 var ErrUserAlreadyExists = internal.NewError(409, "USER_ALREADY_EXISTS", "user: User already exists under the specified email address")
+
+// ErrEmailAddressInvalid - Provides a named error that occurs when the caller attempts to register a user with an improperly formatted email address
+var ErrEmailAddressInvalid = internal.NewError(400, "EMAIL_ADDRESS_INVALID", "email: Invalid email address")
+
+// emailRegex - A regular expression for validating that an email address is formatted properly
+var emailRegex = regexp.MustCompile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
 
 /*
 RegisterUser - Core logic for registering new users with credstack. Performs full validation on any of the user data
@@ -46,6 +53,14 @@ func RegisterUser(serv *server.Server, opts *options.CredentialOptions, email st
 
 	if len(password) > int(opts.MaxSecretLength) {
 		return ErrPasswordTooLong
+	}
+
+	/*
+		Here we want to validate that the email address being used is valid. Eventually, we want to send the user a
+		validation email on account creation, so this must be valid
+	*/
+	if !emailRegex.MatchString(email) {
+		return ErrEmailAddressInvalid
 	}
 
 	/*
