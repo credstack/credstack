@@ -8,12 +8,20 @@ import (
 	"github.com/stevezaluk/credstack-lib/internal"
 	"github.com/stevezaluk/credstack-lib/secret"
 	"github.com/stevezaluk/credstack-lib/server"
-	"github.com/stevezaluk/credstack-models/proto/application"
+	applicationModel "github.com/stevezaluk/credstack-models/proto/application"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // ErrClientIDCollision - Provides a named error for when a new application is created with the same client ID
 var ErrClientIDCollision = internal.NewError(500, "APP_CLIENT_ID_COLLISION", "application: A collision was detected while creating a new application")
+
+// ErrAppMissingIdentifier - Provides a named error for when you try and fetch an application with no client id
+var ErrAppMissingIdentifier = internal.NewError(400, "APP_MISSING_ID", "application: Application is missing a Client ID")
+
+// ErrAppDoesNotExist - Provides a named error for when you try and fetch an application that does not exist
+var ErrAppDoesNotExist = internal.NewError(404, "APP_DOES_NOT_EXIST", "application: Application does not exist under the specified client ID")
 
 /*
 NewApplication - Creates a new application with the provided grant types in the parameter. If an empty slice is provided
@@ -25,13 +33,13 @@ A single database call is consumed here to be able to insert the data into Mongo
 an existing application, then the error: ErrClientIDCollision is returned. Additionally, we wrap any errors that are
 encountered here and returned.
 */
-func NewApplication(serv *server.Server, grantTypes []application.GrantTypes) error {
+func NewApplication(serv *server.Server, grantTypes []applicationModel.GrantTypes) error {
 	/*
 		If we get a grant types slice that has a length of zero, we always want to append the Authorization Code grant
 		type to it. This ensures that we always have a form of authentication available
 	*/
 	if len(grantTypes) == 0 {
-		grantTypes = append(grantTypes, application.GrantTypes_authorization_code)
+		grantTypes = append(grantTypes, applicationModel.GrantTypes_authorization_code)
 	}
 
 	/*
@@ -60,7 +68,7 @@ func NewApplication(serv *server.Server, grantTypes []application.GrantTypes) er
 
 		TODO: URL Validation for redirect URI
 	*/
-	newApplication := &application.Application{
+	newApplication := &applicationModel.Application{
 		Header:        header.NewHeader(clientId),
 		GrantType:     grantTypes,
 		RedirectUri:   "",
@@ -91,4 +99,53 @@ func NewApplication(serv *server.Server, grantTypes []application.GrantTypes) er
 	}
 
 	return nil
+}
+
+/*
+GetApplication - Fetches an application from the database and returns is protobuf model. If you are fetching an app without
+its credentials, then set withCredentials to false. Projection is used on this to prevent the credentials from even leaving
+the database. If the app does not exist under the client_id, then ErrAppDoesNotExist is returned. If you try and fetch
+an application with an empty client_id, then ErrAppMissingIdentifier is returned.
+*/
+func GetApplication(serv *server.Server, clientId string, withCredentials bool) (*applicationModel.Application, error) {
+	if clientId == "" {
+		return nil, ErrAppMissingIdentifier
+	}
+	/*
+		We always use projection here to ensure that the credential field does not even
+		leave the database. If it is not needed, then we don't want to even touch it
+	*/
+	findOpts := mongoOpts.FindOne()
+	if !withCredentials {
+		findOpts = findOpts.SetProjection(bson.M{"client_secret": 0})
+	}
+
+	/*
+		We always pass **some** find options here, but defaults are used if the caller
+		does not set withCredentials to false
+	*/
+	result := serv.Database().Collection("application").FindOne(
+		context.Background(),
+		bson.M{"client_id": clientId},
+		findOpts,
+	)
+
+	var ret applicationModel.Application
+
+	/*
+		Finally, we decode our results into our model. We also validate any errors we get here
+		as we want to ensure that, if we get no documents, we returned a named error for this
+	*/
+	err := result.Decode(&ret)
+	if err != nil {
+		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrAppDoesNotExist
+		}
+	}
+
+	return &ret, nil
 }
