@@ -1,15 +1,14 @@
 package user
 
 import (
-	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
 	"fmt"
 	"github.com/stevezaluk/credstack-lib/internal"
 	"github.com/stevezaluk/credstack-lib/options"
+	"github.com/stevezaluk/credstack-lib/secret"
 	"github.com/stevezaluk/credstack-models/proto/user"
 	"golang.org/x/crypto/argon2"
-	"io"
 )
 
 // ErrUserCredentialInvalid - Provides a named error for when user credential validation fails
@@ -22,62 +21,18 @@ var ErrFailedToHashCredential = internal.NewError(500, "FAILED_TO_HASH_CREDENTIA
 var ErrFailedToBaseDecode = internal.NewError(500, "FAILED_TO_BASE_DECODE", "user: failed to decode base64 data during user credential validation")
 
 /*
-hashSecret - Generates a ArgonV2ID hash for the secret provided in the first parameter. Any options that are provided
-here for hashing should be persisted using the user.UserCredential model as this ensures the same ones can be used
-when you need to validate the hash
-
-Unlike other functions implemented in this library, the opts parameter is forced. This is done to ensure that the
-caller is fully aware of the parameters that they are passing to this function.
-*/
-func hashSecret(secret []byte, opts *options.CredentialOptions) (string, string, error) {
-	/*
-		First we generate some random bytes to serve as our salt for our password hash
-	*/
-	salt := make([]byte, opts.SaltLength)
-
-	/*
-		Then we inject randomness into the bytes to increase entropy
-	*/
-	_, err := io.ReadFull(rand.Reader, salt)
-	if err != nil {
-		return "", "", err
-	}
-
-	/*
-		Then we generate our ArgonV2ID hash so that we can persist it for the user
-	*/
-	key := argon2.IDKey(
-		secret,
-		salt,
-		opts.Time,
-		opts.Memory,
-		opts.Threads,
-		opts.KeyLength,
-	)
-
-	/*
-		Finally we want to store our hash and salt as a base64 encoded string, as when we inject randomness,
-		non-printable characters can be included. This provides a safer way of persisting our salts
-	*/
-	encodedHash := base64.URLEncoding.EncodeToString(key)
-	encodedSalt := base64.URLEncoding.EncodeToString(salt)
-
-	return encodedHash, encodedSalt, nil
-}
-
-/*
 NewCredential - Creates and generates a new UserCredential using the secret provided in the parameter. Any errors
 that occur are propagated using the second return value
 */
-func NewCredential(secret string, opts *options.CredentialOptions) (*user.UserCredential, error) {
-	hash, salt, err := hashSecret([]byte(secret), opts)
+func NewCredential(credential string, opts *options.CredentialOptions) (*user.UserCredential, error) {
+	hash, salt, err := secret.NewArgon2Hash([]byte(credential), opts)
 	if err != nil {
 		return nil, fmt.Errorf("%w (%v)", ErrFailedToHashCredential, err)
 	}
 
 	return &user.UserCredential{
-		Key:        hash,
-		Salt:       salt,
+		Key:        base64.URLEncoding.EncodeToString(hash),
+		Salt:       base64.URLEncoding.EncodeToString(salt),
 		Time:       opts.Time,
 		Memory:     opts.Memory,
 		Threads:    uint32(opts.Threads),
