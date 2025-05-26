@@ -1,6 +1,7 @@
 package secret
 
 import (
+	"crypto/subtle"
 	"github.com/stevezaluk/credstack-lib/options"
 	"golang.org/x/crypto/argon2"
 )
@@ -35,4 +36,38 @@ func NewArgon2Hash(secret []byte, opts *options.CredentialOptions) ([]byte, []by
 	)
 
 	return key, salt, nil
+}
+
+/*
+ValidateArgon2Hash - Validates that the hashed result of 'secret' matches the hash provided in 'target'. The secret
+parameter should be a raw, non-encoded secret provided by the user. The salt parameter should be the salt that both
+hashes share, and the target parameter should be an Argon2 hashed secret. The salt is required here as it ensures that
+we can adequately hash the result. Any options provided with opts, should reflect what is stored in the
+user.UserCredential structure.
+
+A returned value of true indicates that the hashes match, any other result indicates that they do not
+*/
+func ValidateArgon2Hash(secret []byte, salt []byte, target []byte, opts *options.CredentialOptions) bool {
+	/*
+		This function call is generally expensive as we always need to re-hash the secret that is passed here.
+	*/
+	key := argon2.IDKey(
+		secret,
+		salt,
+		opts.Time,
+		opts.Memory,
+		opts.Threads,
+		opts.KeyLength,
+	)
+
+	/*
+		subtle.ConstantTimeCompare provides a time-safe way of comparing password hashes. This protects
+		us against time-based attacks during comparison
+	*/
+	result := subtle.ConstantTimeCompare(target, key)
+	if result != 1 {
+		return false
+	}
+
+	return true
 }
