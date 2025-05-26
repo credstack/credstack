@@ -14,10 +14,10 @@ func RandBytes(length uint32) ([]byte, error) {
 		Fill the created byte array with cryptographically secured data. n is used as an offset
 		for the byte array
 	*/
-	n, err := rand.Read(ret)
+	_, err := rand.Read(ret)
 	if err != nil {
 		return nil, err
 	}
 
-	return ret[:n], nil
+	return ret, nil
 }
