@@ -149,3 +149,30 @@ func GetApplication(serv *server.Server, clientId string, withCredentials bool) 
 
 	return &ret, nil
 }
+
+/*
+DeleteApplication - Completely removes an application from CredStack. A valid client ID must be passed
+in this parameter, or it will return ErrAppMissingIdentifier. If the deleted count returned is equal to
+zero, then the function considers the user to not exist. A successful call to this function will return
+nil
+*/
+func DeleteApplication(serv *server.Server, clientId string) error {
+	if clientId == "" {
+		return ErrAppMissingIdentifier
+	}
+
+	result, err := serv.Database().Collection("application").DeleteOne(
+		context.Background(),
+		bson.M{"client_id": clientId},
+	)
+
+	if err != nil {
+		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+	}
+
+	if result.DeletedCount == 0 {
+		return ErrAppDoesNotExist
+	}
+
+	return nil
+}
