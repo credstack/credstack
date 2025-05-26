@@ -2,6 +2,7 @@ package header
 
 import (
 	"github.com/stevezaluk/credstack-lib/internal"
+	"github.com/stevezaluk/credstack-lib/secret"
 	"github.com/stevezaluk/credstack-models/proto/header"
 )
 
@@ -18,7 +19,7 @@ func NewHeader(basis string) *header.Header {
 	timestamp := internal.UnixTimestamp()
 
 	return &header.Header{
-		Identifier: internal.GenerateUUID5(basis),
+		Identifier: secret.GenerateUUID(basis),
 		CreatedAt:  timestamp,
 		UpdatedAt:  timestamp,
 		AccessedAt: timestamp,
