@@ -17,8 +17,9 @@ var ErrUserCredentialInvalid = internal.NewError(401, "INVALID_USER_CREDENTIAL",
 var ErrFailedToHashCredential = internal.NewError(500, "FAILED_TO_HASH_CREDENTIAL", "user: failed to hash user credential")
 
 /*
-NewCredential - Creates and generates a new UserCredential using the secret provided in the parameter. Any errors
-that occur are propagated using the second return value
+NewCredential - Creates and generates a new UserCredential using the secret provided in the parameter. Both the secret
+and the salt are stored as URL-Safe, base64 encoded strings to ensure that they can be safely stored in Mongo. Any
+errors that occur here are returned in the wrapped error: ErrFailedToHashCredential.
 */
 func NewCredential(credential string, opts *options.CredentialOptions) (*user.UserCredential, error) {
 	hash, salt, err := secret.NewArgon2Hash([]byte(credential), opts)
