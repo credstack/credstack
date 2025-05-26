@@ -1,6 +1,9 @@
 package secret
 
-import "crypto/rand"
+import (
+	"crypto/rand"
+	"github.com/stevezaluk/credstack-lib/internal"
+)
 
 /*
 RandBytes - A function for generating cryptographically secure, random byte arrays of a fixed
@@ -20,4 +23,17 @@ func RandBytes(length uint32) ([]byte, error) {
 	}
 
 	return ret, nil
+}
+
+/*
+RandString - Generates a base64 encoded string that was generated with a cryptographically secure byte array. This is
+primarily used for client ID generation for the application struct, but can be used in other situations
+*/
+func RandString(length uint32) (string, error) {
+	data, err := RandBytes(length)
+	if err != nil {
+		return "", err
+	}
+
+	return internal.EncodeBase64(data), nil
 }
