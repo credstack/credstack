@@ -94,6 +94,8 @@ func RegisterUser(serv *server.Server, opts *options.CredentialOptions, email st
 		Here we are constructing the user model that will get inserted into MongoDB. We need to use make on roles
 		and scopes to ensure that these don't get inserted into MongoDB as null fields. By default, an empty slice
 		is also nil in Go-Lang and this is what will get stored in our Database.
+
+		TODO: Validation for email address
 	*/
 	userHeader := header.NewHeader(email)
 
