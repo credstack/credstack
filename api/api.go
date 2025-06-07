@@ -116,6 +116,56 @@ func GetAPI(serv *server.Server, domain string) (*api.API, error) {
 }
 
 /*
+UpdateAPI - Provides functionality for updating the API connected to the given domain. Only the
+following fields can be updated here: Name, TokenType, EnforceRBAC, and Applications. To update
+any other fields, you must delete the existing API and then re-create it. The domain field is
+never mutable as this is used as the basis for header.Identifier
+*/
+func UpdateAPI(serv *server.Server, domain string, patch *api.API) error {
+	if domain == "" {
+		return ErrApiMissingIdentifier
+	}
+
+	/*
+		buildApiPatch - Provides a sub-function to convert the given api model into a bson.M struct that can be
+		provided to mongo.UpdateOne. Only specified fields are supported in this function, so not all are included
+		here
+	*/
+	buildApiPatch := func(patch *api.API) bson.M {
+		update := make(bson.M)
+
+		update["enforce_rbac"] = patch.EnforceRbac
+		update["token_type"] = patch.TokenType
+
+		if patch.Name != "" {
+			update["name"] = patch.Name
+		}
+
+		if len(patch.Applications) != 0 {
+			update["applications"] = patch.Applications
+		}
+
+		return update
+	}
+
+	result, err := serv.Database().Collection("api").UpdateOne(
+		context.Background(),
+		bson.M{"domain": domain},
+		bson.M{"$set": buildApiPatch(patch)},
+	)
+
+	if err != nil {
+		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+	}
+
+	if result.MatchedCount == 0 {
+		return ErrApiDoesNotExist
+	}
+
+	return nil
+}
+
+/*
 DeleteAPI - Completely removes the API from Credstack. A valid, non-empty domain must be provided here
 to serve as the lookup key. If DeletedCount == 0 here, then the API is considered not to exist. Any other errors here
 are propagated through the error return type
