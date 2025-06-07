@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/stevezaluk/credstack-lib/internal"
 	"github.com/stevezaluk/credstack-lib/options"
+	"github.com/stevezaluk/credstack-lib/proto/user"
 	"github.com/stevezaluk/credstack-lib/secret"
-	"github.com/stevezaluk/credstack-models/proto/user"
 )
 
 // ErrUserCredentialInvalid - Provides a named error for when user credential validation fails
