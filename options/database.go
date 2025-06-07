@@ -63,7 +63,7 @@ func (opts *DatabaseOptions) FromConfig() *DatabaseOptions {
 		AuthenticationDatabase: viper.GetString("mongo.authentication_database"),
 		Username:               viper.GetString("mongo.username"),
 		Password:               viper.GetString("mongo.password"),
-		ConnectionTimeout:      viper.GetDuration("mongo.connection_timeout"),
+		ConnectionTimeout:      viper.GetDuration("mongo.connection_timeout") * time.Second,
 	}
 }
 
