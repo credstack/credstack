@@ -8,11 +8,15 @@ import (
 	"github.com/stevezaluk/credstack-lib/internal"
 	"github.com/stevezaluk/credstack-lib/proto/api"
 	"github.com/stevezaluk/credstack-lib/server"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // ErrApiAlreadyExists - Provides a named error for when you try to insert an API with a domain that already exists
 var ErrApiAlreadyExists = internal.NewError(409, "API_ALREADY_EXIST", "api: API already exists under the specified domain")
+
+// ErrApiDoesNotExist - Provides a named error for when you try and fetch an API with a domain that does not exist
+var ErrApiDoesNotExist = internal.NewError(404, "API_DOES_NOT_EXIST", "api: API does not exist under the specified domain")
 
 // ErrApiMissingIdentifier - Provides a named error for when you try and insert or fetch an API with no domain or name
 var ErrApiMissingIdentifier = internal.NewError(400, "API_MISSING_ID", "api: API is missing a domain identifier or a name")
@@ -70,4 +74,43 @@ func NewAPI(serv *server.Server, name string, domain string, tokenType api.Token
 	}
 
 	return nil
+}
+
+/*
+GetAPI - Fetches an API document from the database and marshals it into a API protobuf. The domain parameter
+cannot be an empty string, but does not need to be a valid domain as this is used merely as an identifier. Named
+errors are propagated here and returned. If an error occurs, API is returned as nil
+*/
+func GetAPI(serv *server.Server, domain string) (*api.API, error) {
+	/*
+		We must have a valid domain here. You are unable to insert an API with an empty domain, so this
+		must be filled
+	*/
+	if domain == "" {
+		return nil, ErrApiMissingIdentifier
+	}
+
+	result := serv.Database().Collection("api").FindOne(
+		context.Background(),
+		bson.M{"domain": domain},
+	)
+
+	var ret api.API
+
+	/*
+		We want to check for any errors in the decode process as we want to ensure that we catch
+		any database errors, or any errors if there are no documents in the return value
+	*/
+	err := result.Decode(&ret)
+	if err != nil {
+		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrApiDoesNotExist
+		}
+	}
+
+	return &ret, nil
 }
