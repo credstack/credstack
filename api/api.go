@@ -14,6 +14,9 @@ import (
 // ErrApiAlreadyExists - Provides a named error for when you try to insert an API with a domain that already exists
 var ErrApiAlreadyExists = internal.NewError(409, "API_ALREADY_EXIST", "api: API already exists under the specified domain")
 
+// ErrApiMissingIdentifier - Provides a named error for when you try and insert or fetch an API with no domain or name
+var ErrApiMissingIdentifier = internal.NewError(400, "API_MISSING_ID", "api: API is missing a domain identifier or a name")
+
 /*
 NewAPI - Creates a new API for use with credstack. While the application determines your use case for authentication,
 the API controls both what claims get inserted into generated tokens, but also what token types you utilize. Additionally,
@@ -24,6 +27,14 @@ Any errors propagated here are returned. Little validation needs to happen on th
 do not try and insert an API with the same domain as an existing one
 */
 func NewAPI(serv *server.Server, name string, domain string, tokenType api.TokenType) error {
+	/*
+		We always want to check to make sure both of these are filled in as we need a domain to use in the audience
+		of our token
+	*/
+	if name == "" || domain == "" {
+		return ErrApiMissingIdentifier
+	}
+
 	/*
 		Not too much validation really needs to happen on the parameters for this function as both name
 		and domain are arbitrary. The domain is really just used as the 'audience' claim in the generated
