@@ -114,3 +114,29 @@ func GetAPI(serv *server.Server, domain string) (*api.API, error) {
 
 	return &ret, nil
 }
+
+/*
+DeleteAPI - Completely removes the API from Credstack. A valid, non-empty domain must be provided here
+to serve as the lookup key. If DeletedCount == 0 here, then the API is considered not to exist. Any other errors here
+are propagated through the error return type
+*/
+func DeleteAPI(serv *server.Server, domain string) error {
+	if domain == "" {
+		return ErrApiMissingIdentifier
+	}
+
+	result, err := serv.Database().Collection("api").DeleteOne(
+		context.Background(),
+		bson.M{"domain": domain},
+	)
+
+	if err != nil {
+		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+	}
+
+	if result.DeletedCount == 0 {
+		return ErrApiDoesNotExist
+	}
+
+	return nil
+}
