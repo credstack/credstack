@@ -26,13 +26,13 @@ const (
 type Role struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// header - Shared data values used across all objects
-	Header *header.Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"` // @gotags: bson:"header"
+	Header *header.Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty" bson:"header"` // @gotags: bson:"header"
 	// name - The name of the role as defined by the user
-	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"` // @gotags: bson:"name"
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty" bson:"name"` // @gotags: bson:"name"
 	// description - The description of the role as defined by the user
-	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"` // @gotags: bson:"description"
+	Description string `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty" bson:"description"` // @gotags: bson:"description"
 	// scopes - A map representing the scopes assigned to this role. Key is the API id, and value is the ID of the scope
-	Scopes        map[string]string `protobuf:"bytes,4,rep,name=scopes,proto3" json:"scopes,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // @gotags: bson:"scopes"
+	Scopes        map[string]string `protobuf:"bytes,4,rep,name=scopes,proto3" json:"scopes,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value" bson:"scopes"` // @gotags: bson:"scopes"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

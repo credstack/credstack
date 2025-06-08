@@ -29,13 +29,13 @@ const (
 type PermissionScope struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// header - Shared data values used across all objects
-	Header *header.Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"` // @gotags: bson:"header"
+	Header *header.Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty" bson:"header"` // @gotags: bson:"header"
 	// associated_api - The API this permission scope is assigned to
-	AssociatedApi string `protobuf:"bytes,2,opt,name=associated_api,json=associatedApi,proto3" json:"associated_api,omitempty"` // @gotags: bson:"associated_api"
+	AssociatedApi string `protobuf:"bytes,2,opt,name=associated_api,json=associatedApi,proto3" json:"associated_api,omitempty" bson:"associated_api"` // @gotags: bson:"associated_api"
 	// key - A key for the permission scope
-	Key string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"` // @gotags: bson:"key"
+	Key string `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty" bson:"key"` // @gotags: bson:"key"
 	// value - A value for the permission scope
-	Value         string `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty"` // @gotags: bson:"value"
+	Value         string `protobuf:"bytes,4,opt,name=value,proto3" json:"value,omitempty" bson:"value"` // @gotags: bson:"value"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

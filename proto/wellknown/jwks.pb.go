@@ -26,7 +26,7 @@ const (
 type JSONWebKeySet struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// keys - All keys offered by the JWKS
-	Keys          []*token.JSONWebKey `protobuf:"bytes,1,rep,name=keys,proto3" json:"keys,omitempty"` // @gotags: bson:"keys"
+	Keys          []*token.JSONWebKey `protobuf:"bytes,1,rep,name=keys,proto3" json:"keys,omitempty" bson:"keys"` // @gotags: bson:"keys"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

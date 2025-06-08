@@ -26,19 +26,19 @@ const (
 type UserCredential struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// key - The user's hashed password represented as a string
-	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"` // @gotags: bson:"key"
+	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty" bson:"key"` // @gotags: bson:"key"
 	// salt - The randomly generated salt used for hashing the users password
-	Salt string `protobuf:"bytes,2,opt,name=salt,proto3" json:"salt,omitempty"` // @gotags: bson:"salt"
+	Salt string `protobuf:"bytes,2,opt,name=salt,proto3" json:"salt,omitempty" bson:"salt"` // @gotags: bson:"salt"
 	// time - The time used as a cost parameter when hashing user passwords. Usually is 1
-	Time uint32 `protobuf:"varint,3,opt,name=time,proto3" json:"time,omitempty"` // @gotags: bson:"time"
+	Time uint32 `protobuf:"varint,3,opt,name=time,proto3" json:"time,omitempty" bson:"time"` // @gotags: bson:"time"
 	// memory - The amount of memory to be used when hashing passwords. Usually 64MB's but can be modified for slower systems
-	Memory uint32 `protobuf:"varint,4,opt,name=memory,proto3" json:"memory,omitempty"` // @gotags: bson:"memory"
+	Memory uint32 `protobuf:"varint,4,opt,name=memory,proto3" json:"memory,omitempty" bson:"memory"` // @gotags: bson:"memory"
 	// threads - The number of threads (or go-routines in our case) that should be used when hashing passwords
-	Threads uint32 `protobuf:"varint,5,opt,name=threads,proto3" json:"threads,omitempty"` // @gotags: bson:"threads"
+	Threads uint32 `protobuf:"varint,5,opt,name=threads,proto3" json:"threads,omitempty" bson:"threads"` // @gotags: bson:"threads"
 	// key_length - The length of the generated password hash. Usually 32 or 64
-	KeyLength uint32 `protobuf:"varint,6,opt,name=key_length,json=keyLength,proto3" json:"key_length,omitempty"` // @gotags: bson:"key_length"
+	KeyLength uint32 `protobuf:"varint,6,opt,name=key_length,json=keyLength,proto3" json:"key_length,omitempty" bson:"key_length"` // @gotags: bson:"key_length"
 	// salt_length - The length of the generated password salt. Usually 32
-	SaltLength    uint32 `protobuf:"varint,7,opt,name=salt_length,json=saltLength,proto3" json:"salt_length,omitempty"` // @gotags: bson:"salt_length"
+	SaltLength    uint32 `protobuf:"varint,7,opt,name=salt_length,json=saltLength,proto3" json:"salt_length,omitempty" bson:"salt_length"` // @gotags: bson:"salt_length"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
