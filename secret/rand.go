@@ -2,7 +2,6 @@ package secret
 
 import (
 	"crypto/rand"
-	"github.com/stevezaluk/credstack-lib/internal"
 )
 
 /*
@@ -35,5 +34,5 @@ func RandString(length uint32) (string, error) {
 		return "", err
 	}
 
-	return internal.EncodeBase64(data), nil
+	return EncodeBase64(data), nil
 }

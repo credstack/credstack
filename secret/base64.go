@@ -1,12 +1,13 @@
-package internal
+package secret
 
 import (
 	"encoding/base64"
 	"fmt"
+	credstackError "github.com/stevezaluk/credstack-lib/errors"
 )
 
 // ErrFailedToBaseDecode - Provides a named error for when base64 decoding data fails during a user credential validation
-var ErrFailedToBaseDecode = NewError(500, "FAILED_TO_BASE_DECODE", "user: failed to decode base64 data during user credential validation")
+var ErrFailedToBaseDecode = credstackError.NewError(500, "FAILED_TO_BASE_DECODE", "user: failed to decode base64 data during user credential validation")
 
 /*
 EncodeBase64 - Encodes any data passed into the data parameter to a URL-Safe Base64 Encoded byte array

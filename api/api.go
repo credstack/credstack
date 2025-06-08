@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/header"
-	"github.com/stevezaluk/credstack-lib/internal"
 	"github.com/stevezaluk/credstack-lib/proto/api"
 	"github.com/stevezaluk/credstack-lib/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -13,13 +13,13 @@ import (
 )
 
 // ErrApiAlreadyExists - Provides a named error for when you try to insert an API with a domain that already exists
-var ErrApiAlreadyExists = internal.NewError(409, "API_ALREADY_EXIST", "api: API already exists under the specified domain")
+var ErrApiAlreadyExists = credstackError.NewError(409, "API_ALREADY_EXIST", "api: API already exists under the specified domain")
 
 // ErrApiDoesNotExist - Provides a named error for when you try and fetch an API with a domain that does not exist
-var ErrApiDoesNotExist = internal.NewError(404, "API_DOES_NOT_EXIST", "api: API does not exist under the specified domain")
+var ErrApiDoesNotExist = credstackError.NewError(404, "API_DOES_NOT_EXIST", "api: API does not exist under the specified domain")
 
 // ErrApiMissingIdentifier - Provides a named error for when you try and insert or fetch an API with no domain or name
-var ErrApiMissingIdentifier = internal.NewError(400, "API_MISSING_ID", "api: API is missing a domain identifier or a name")
+var ErrApiMissingIdentifier = credstackError.NewError(400, "API_MISSING_ID", "api: API is missing a domain identifier or a name")
 
 /*
 NewAPI - Creates a new API for use with credstack. While the application determines your use case for authentication,

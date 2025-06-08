@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/stevezaluk/credstack-lib/internal"
+	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	userModel "github.com/stevezaluk/credstack-lib/proto/user"
 	"github.com/stevezaluk/credstack-lib/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -13,7 +13,7 @@ import (
 )
 
 // ErrUserDoesNotExist - Provides a named error for when operations fail due to the user account not existing
-var ErrUserDoesNotExist = internal.NewError(404, "USER_DOES_NOT_EXIST", "user: user does not exist under the specified email address")
+var ErrUserDoesNotExist = credstackError.NewError(404, "USER_DOES_NOT_EXIST", "user: user does not exist under the specified email address")
 
 /*
 GetUser - Fetches a user from the database and returns it's protobuf model for it. If you are fetching a user
