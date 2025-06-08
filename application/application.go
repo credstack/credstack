@@ -33,7 +33,7 @@ A single database call is consumed here to be able to insert the data into Mongo
 an existing application, then the error: ErrClientIDCollision is returned. Additionally, we wrap any errors that are
 encountered here and returned.
 */
-func NewApplication(serv *server.Server, grantTypes []applicationModel.GrantTypes) error {
+func NewApplication(serv *server.Server, name string, grantTypes []applicationModel.GrantTypes) error {
 	/*
 		If we get a grant types slice that has a length of zero, we always want to append the Authorization Code grant
 		type to it. This ensures that we always have a form of authentication available
@@ -70,6 +70,7 @@ func NewApplication(serv *server.Server, grantTypes []applicationModel.GrantType
 	*/
 	newApplication := &applicationModel.Application{
 		Header:        header.NewHeader(clientId),
+		Name:          name,
 		GrantType:     grantTypes,
 		RedirectUri:   "",
 		TokenLifetime: 86400,
