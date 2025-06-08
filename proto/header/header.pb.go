@@ -25,15 +25,15 @@ const (
 type Header struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// identifier - A UUID v5 based on an immutable property of the object this header is attached to.
-	Identifier string `protobuf:"bytes,1,opt,name=identifier,proto3" json:"identifier,omitempty"` // @gotags: bson:"identifier"
+	Identifier string `protobuf:"bytes,1,opt,name=identifier,proto3" json:"identifier,omitempty" bson:"identifier"` // @gotags: bson:"identifier"
 	// created_at - A unix timestamp representing when the object was created
-	CreatedAt int64 `protobuf:"varint,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"` // @gotags: bson:"created_at"
+	CreatedAt int64 `protobuf:"varint,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty" bson:"created_at"` // @gotags: bson:"created_at"
 	// updated_at - A unix timestamp representing when the object was last updated
-	UpdatedAt int64 `protobuf:"varint,3,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"` // @gotags: bson:"updated_at"
+	UpdatedAt int64 `protobuf:"varint,3,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty" bson:"updated_at"` // @gotags: bson:"updated_at"
 	// accessed_at - A unix timestamp representing when the object was last accessed
-	AccessedAt int64 `protobuf:"varint,4,opt,name=accessed_at,json=accessedAt,proto3" json:"accessed_at,omitempty"` // @gotags: bson:"accessed_at"
+	AccessedAt int64 `protobuf:"varint,4,opt,name=accessed_at,json=accessedAt,proto3" json:"accessed_at,omitempty" bson:"accessed_at"` // @gotags: bson:"accessed_at"
 	// tags - Arbitrary tags that can be applied to any object
-	Tags          map[string]string `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // @gotags: bson:"tags"
+	Tags          map[string]string `protobuf:"bytes,5,rep,name=tags,proto3" json:"tags,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value" bson:"tags"` // @gotags: bson:"tags"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

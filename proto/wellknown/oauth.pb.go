@@ -25,17 +25,17 @@ const (
 type OAuthConfiguration struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// issuer - The issuer defined by the API structure
-	Issuer string `protobuf:"bytes,1,opt,name=issuer,proto3" json:"issuer,omitempty"` // @gotags: bson:"issuer"
+	Issuer string `protobuf:"bytes,1,opt,name=issuer,proto3" json:"issuer,omitempty" bson:"issuer"` // @gotags: bson:"issuer"
 	// authorization_endpoint - The authorization endpoint that can be used with Authorization Code Flow
-	AuthorizationEndpoint string `protobuf:"bytes,2,opt,name=authorization_endpoint,json=authorizationEndpoint,proto3" json:"authorization_endpoint,omitempty"` // @gotags: bson:"authorization_endpoint"
+	AuthorizationEndpoint string `protobuf:"bytes,2,opt,name=authorization_endpoint,json=authorizationEndpoint,proto3" json:"authorization_endpoint,omitempty" bson:"authorization_endpoint"` // @gotags: bson:"authorization_endpoint"
 	// token_endpoint - Defines the endpoint that allows tokens to be retrieved at
-	TokenEndpoint string `protobuf:"bytes,3,opt,name=token_endpoint,json=tokenEndpoint,proto3" json:"token_endpoint,omitempty"` // @gotags: bson:"token_endpoint"
+	TokenEndpoint string `protobuf:"bytes,3,opt,name=token_endpoint,json=tokenEndpoint,proto3" json:"token_endpoint,omitempty" bson:"token_endpoint"` // @gotags: bson:"token_endpoint"
 	// revocation_endpoint - Defines the endpoint that allows tokens to be revoked at
-	RevocationEndpoint string `protobuf:"bytes,4,opt,name=revocation_endpoint,json=revocationEndpoint,proto3" json:"revocation_endpoint,omitempty"` // @gotags: bson:"revocation_endpoint"
+	RevocationEndpoint string `protobuf:"bytes,4,opt,name=revocation_endpoint,json=revocationEndpoint,proto3" json:"revocation_endpoint,omitempty" bson:"revocation_endpoint"` // @gotags: bson:"revocation_endpoint"
 	// introspection_endpoint - Defines the endpoint that tokens can be inspected/validated at
-	IntrospectionEndpoint string `protobuf:"bytes,5,opt,name=introspection_endpoint,json=introspectionEndpoint,proto3" json:"introspection_endpoint,omitempty"` // @gotags: bson:"introspection_endpoint"
+	IntrospectionEndpoint string `protobuf:"bytes,5,opt,name=introspection_endpoint,json=introspectionEndpoint,proto3" json:"introspection_endpoint,omitempty" bson:"introspection_endpoint"` // @gotags: bson:"introspection_endpoint"
 	// jwks_uri - The URI that OIDC exposes JWKS information for signing RS256 (id) tokens
-	JwksUri       string `protobuf:"bytes,6,opt,name=jwks_uri,json=jwksUri,proto3" json:"jwks_uri,omitempty"` // @gotags: bson:"jwks_uri"
+	JwksUri       string `protobuf:"bytes,6,opt,name=jwks_uri,json=jwksUri,proto3" json:"jwks_uri,omitempty" bson:"jwks_uri"` // @gotags: bson:"jwks_uri"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

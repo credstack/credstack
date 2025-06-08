@@ -79,17 +79,17 @@ func (GrantTypes) EnumDescriptor() ([]byte, []int) {
 type Application struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// header - Shared data values used across all objects
-	Header *header.Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"` // @gotags: bson:"header"
+	Header *header.Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty" bson:"header"` // @gotags: bson:"header"
 	// client_id - The client ID used in the authorization process
-	ClientId string `protobuf:"bytes,2,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty"` // @gotags: bson:"client_id"
+	ClientId string `protobuf:"bytes,2,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" bson:"client_id"` // @gotags: bson:"client_id"
 	// client_secret - The client secret used in the authorization process
-	ClientSecret string `protobuf:"bytes,3,opt,name=client_secret,json=clientSecret,proto3" json:"client_secret,omitempty"` // @gotags: bson:"client_secret"
+	ClientSecret string `protobuf:"bytes,3,opt,name=client_secret,json=clientSecret,proto3" json:"client_secret,omitempty" bson:"client_secret"` // @gotags: bson:"client_secret"
 	// redirect_uri - A redirect URI for the application to redirect to after authorization
-	RedirectUri string `protobuf:"bytes,4,opt,name=redirect_uri,json=redirectUri,proto3" json:"redirect_uri,omitempty"` // @gotags: bson:"redirect_uri"
+	RedirectUri string `protobuf:"bytes,4,opt,name=redirect_uri,json=redirectUri,proto3" json:"redirect_uri,omitempty" bson:"redirect_uri"` // @gotags: bson:"redirect_uri"
 	// token_lifetime - The amount of time in seconds, before the token expires
-	TokenLifetime uint64 `protobuf:"varint,5,opt,name=token_lifetime,json=tokenLifetime,proto3" json:"token_lifetime,omitempty"` // @gotags: bson:"token_lifetime"
+	TokenLifetime uint64 `protobuf:"varint,5,opt,name=token_lifetime,json=tokenLifetime,proto3" json:"token_lifetime,omitempty" bson:"token_lifetime"` // @gotags: bson:"token_lifetime"
 	// grant_type - The grant types this Application is authorized to issue on
-	GrantType     []GrantTypes `protobuf:"varint,6,rep,packed,name=grant_type,json=grantType,proto3,enum=application.GrantTypes" json:"grant_type,omitempty"` // @gotags: bson:"grant_type"
+	GrantType     []GrantTypes `protobuf:"varint,6,rep,packed,name=grant_type,json=grantType,proto3,enum=application.GrantTypes" json:"grant_type,omitempty" bson:"grant_type"` // @gotags: bson:"grant_type"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }

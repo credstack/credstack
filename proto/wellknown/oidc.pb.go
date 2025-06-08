@@ -25,19 +25,19 @@ const (
 type OIDCConfiguration struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// issuer - The issuer defined by the API structure
-	Issuer string `protobuf:"bytes,1,opt,name=issuer,proto3" json:"issuer,omitempty"` // @gotags: bson:"issuer"
+	Issuer string `protobuf:"bytes,1,opt,name=issuer,proto3" json:"issuer,omitempty" bson:"issuer"` // @gotags: bson:"issuer"
 	// authorization_endpoint - The authorization endpoint that can be used with Authorization Code Flow
-	AuthorizationEndpoint string `protobuf:"bytes,2,opt,name=authorization_endpoint,json=authorizationEndpoint,proto3" json:"authorization_endpoint,omitempty"` // @gotags: bson:"authorization_endpoint"
+	AuthorizationEndpoint string `protobuf:"bytes,2,opt,name=authorization_endpoint,json=authorizationEndpoint,proto3" json:"authorization_endpoint,omitempty" bson:"authorization_endpoint"` // @gotags: bson:"authorization_endpoint"
 	// token_endpoint - Defines the endpoint that allows tokens to be retrieved at
-	TokenEndpoint string `protobuf:"bytes,3,opt,name=token_endpoint,json=tokenEndpoint,proto3" json:"token_endpoint,omitempty"` // @gotags: bson:"token_endpoint"
+	TokenEndpoint string `protobuf:"bytes,3,opt,name=token_endpoint,json=tokenEndpoint,proto3" json:"token_endpoint,omitempty" bson:"token_endpoint"` // @gotags: bson:"token_endpoint"
 	// userinfo_endpoint - Defines the endpoint where ID Tokens can be exchanged for user information
-	UserinfoEndpoint string `protobuf:"bytes,4,opt,name=userinfo_endpoint,json=userinfoEndpoint,proto3" json:"userinfo_endpoint,omitempty"` // @gotags: bson:"userinfo_endpoint"
+	UserinfoEndpoint string `protobuf:"bytes,4,opt,name=userinfo_endpoint,json=userinfoEndpoint,proto3" json:"userinfo_endpoint,omitempty" bson:"userinfo_endpoint"` // @gotags: bson:"userinfo_endpoint"
 	// jwks_uri - The URI that OIDC exposes JWKS information for signing RS256 (id) tokens
-	JwksUri string `protobuf:"bytes,5,opt,name=jwks_uri,json=jwksUri,proto3" json:"jwks_uri,omitempty"` // @gotags: bson:"jwks_uri"
+	JwksUri string `protobuf:"bytes,5,opt,name=jwks_uri,json=jwksUri,proto3" json:"jwks_uri,omitempty" bson:"jwks_uri"` // @gotags: bson:"jwks_uri"
 	// end_session_endpoint - Defines the endpoint where users can logout of there existing session
-	EndSessionEndpoint string `protobuf:"bytes,6,opt,name=end_session_endpoint,json=endSessionEndpoint,proto3" json:"end_session_endpoint,omitempty"` // @gotags: bson:"end_session_endpoint"
+	EndSessionEndpoint string `protobuf:"bytes,6,opt,name=end_session_endpoint,json=endSessionEndpoint,proto3" json:"end_session_endpoint,omitempty" bson:"end_session_endpoint"` // @gotags: bson:"end_session_endpoint"
 	// registration_endpoint - Defines the endpoint where new users can register an account
-	RegistrationEndpoint string `protobuf:"bytes,7,opt,name=registration_endpoint,json=registrationEndpoint,proto3" json:"registration_endpoint,omitempty"` // @gotags: bson:"registration_endpoint"
+	RegistrationEndpoint string `protobuf:"bytes,7,opt,name=registration_endpoint,json=registrationEndpoint,proto3" json:"registration_endpoint,omitempty" bson:"registration_endpoint"` // @gotags: bson:"registration_endpoint"
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }

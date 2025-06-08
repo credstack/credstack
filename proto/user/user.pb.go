@@ -26,39 +26,39 @@ const (
 type User struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// header - Shared data values used across all objects
-	Header *header.Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"` // @gotags: bson:"header"
+	Header *header.Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty" bson:"header"` // @gotags: bson:"header"
 	// sub - A UUID v5 based on the users email address, used for identifying the user. This is the same as the identifier in the header
-	Sub string `protobuf:"bytes,2,opt,name=sub,proto3" json:"sub,omitempty"` // @gotags: bson:"sub"
+	Sub string `protobuf:"bytes,2,opt,name=sub,proto3" json:"sub,omitempty" bson:"sub"` // @gotags: bson:"sub"
 	// username - The username of the user. Does not need to be unique as primary lookup for the user is done via userId
-	Username string `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"` // @gotags: bson:"username"
+	Username string `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty" bson:"username"` // @gotags: bson:"username"
 	// email - The primary email address for the user. Must be unique
-	Email string `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty"` // @gotags: bson:"email"
+	Email string `protobuf:"bytes,4,opt,name=email,proto3" json:"email,omitempty" bson:"email"` // @gotags: bson:"email"
 	// email_verified - A boolean value describing if the user has validated there email address
-	EmailVerified bool `protobuf:"varint,5,opt,name=email_verified,json=emailVerified,proto3" json:"email_verified,omitempty"` // @gotags: bson:"email_verified"
+	EmailVerified bool `protobuf:"varint,5,opt,name=email_verified,json=emailVerified,proto3" json:"email_verified,omitempty" bson:"email_verified"` // @gotags: bson:"email_verified"
 	// given_name - The users first name. Can be null, and does not need to be unique
-	GivenName string `protobuf:"bytes,6,opt,name=given_name,json=givenName,proto3" json:"given_name,omitempty"` // @gotags: bson:"given_name"
+	GivenName string `protobuf:"bytes,6,opt,name=given_name,json=givenName,proto3" json:"given_name,omitempty" bson:"given_name"` // @gotags: bson:"given_name"
 	// middle_name - The users middle name. Can be null, and does not need to be unique
-	MiddleName string `protobuf:"bytes,7,opt,name=middle_name,json=middleName,proto3" json:"middle_name,omitempty"` // @gotags: bson:"middle_name"
+	MiddleName string `protobuf:"bytes,7,opt,name=middle_name,json=middleName,proto3" json:"middle_name,omitempty" bson:"middle_name"` // @gotags: bson:"middle_name"
 	// family_name - The users last name. Can be null, and does not need to be unique
-	FamilyName string `protobuf:"bytes,8,opt,name=family_name,json=familyName,proto3" json:"family_name,omitempty"` // @gotags: bson:"family_name"
+	FamilyName string `protobuf:"bytes,8,opt,name=family_name,json=familyName,proto3" json:"family_name,omitempty" bson:"family_name"` // @gotags: bson:"family_name"
 	// gender - The users gender. Can be null
-	Gender string `protobuf:"bytes,9,opt,name=gender,proto3" json:"gender,omitempty"` // @gotags: bson:"gender"
+	Gender string `protobuf:"bytes,9,opt,name=gender,proto3" json:"gender,omitempty" bson:"gender"` // @gotags: bson:"gender"
 	// birth_date - The users birthdate represented as YYYY-MM-DD
-	BirthDate string `protobuf:"bytes,10,opt,name=birth_date,json=birthDate,proto3" json:"birth_date,omitempty"` // @gotags: bson:"birth_date"
+	BirthDate string `protobuf:"bytes,10,opt,name=birth_date,json=birthDate,proto3" json:"birth_date,omitempty" bson:"birth_date"` // @gotags: bson:"birth_date"
 	// zone_info - The timezone for the user that should be respected by timestamps. Defaults to America/New_York
-	ZoneInfo string `protobuf:"bytes,11,opt,name=zone_info,json=zoneInfo,proto3" json:"zone_info,omitempty"` // @gotags: bson:"zone_info"
+	ZoneInfo string `protobuf:"bytes,11,opt,name=zone_info,json=zoneInfo,proto3" json:"zone_info,omitempty" bson:"zone_info"` // @gotags: bson:"zone_info"
 	// phone_number - The users phone number in the following format +1800-555-555
-	PhoneNumber string `protobuf:"bytes,12,opt,name=phone_number,json=phoneNumber,proto3" json:"phone_number,omitempty"` // @gotags: bson:"phone_number"
+	PhoneNumber string `protobuf:"bytes,12,opt,name=phone_number,json=phoneNumber,proto3" json:"phone_number,omitempty" bson:"phone_number"` // @gotags: bson:"phone_number"
 	// phone_number_verified - A boolean value describing if the user has validated there email address
-	PhoneNumberVerified bool `protobuf:"varint,13,opt,name=phone_number_verified,json=phoneNumberVerified,proto3" json:"phone_number_verified,omitempty"` // @gotags: bson:"phone_number_verified"
+	PhoneNumberVerified bool `protobuf:"varint,13,opt,name=phone_number_verified,json=phoneNumberVerified,proto3" json:"phone_number_verified,omitempty" bson:"phone_number_verified"` // @gotags: bson:"phone_number_verified"
 	// address - The users physical mailing address. Can be null
-	Address string `protobuf:"bytes,14,opt,name=address,proto3" json:"address,omitempty"` // @gotags: bson:"address"
+	Address string `protobuf:"bytes,14,opt,name=address,proto3" json:"address,omitempty" bson:"address"` // @gotags: bson:"address"
 	// credential - A message representing the users hashed password. Will be left null when exporting unless explicitly declared
-	Credential *UserCredential `protobuf:"bytes,15,opt,name=credential,proto3" json:"credential,omitempty"` // @gotags: bson:"credential"
+	Credential *UserCredential `protobuf:"bytes,15,opt,name=credential,proto3" json:"credential,omitempty" bson:"credential"` // @gotags: bson:"credential"
 	// scopes - A list of scope ID's that were directly assigned to the user
-	Scopes []string `protobuf:"bytes,16,rep,name=scopes,proto3" json:"scopes,omitempty"` // @gotags: bson:"scopes"
+	Scopes []string `protobuf:"bytes,16,rep,name=scopes,proto3" json:"scopes,omitempty" bson:"scopes"` // @gotags: bson:"scopes"
 	// roles - A list of role ID's that were directly assigned to the user
-	Roles         []string `protobuf:"bytes,17,rep,name=roles,proto3" json:"roles,omitempty"` // @gotags: bson:"roles"
+	Roles         []string `protobuf:"bytes,17,rep,name=roles,proto3" json:"roles,omitempty" bson:"roles"` // @gotags: bson:"roles"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
