@@ -80,16 +80,18 @@ type Application struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// header - Shared data values used across all objects
 	Header *header.Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty" bson:"header"` // @gotags: bson:"header"
+	// name - A user provided, arbitrary name for the application
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty" bson:"name"` // @gotags: bson:"name"
 	// client_id - The client ID used in the authorization process
-	ClientId string `protobuf:"bytes,2,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" bson:"client_id"` // @gotags: bson:"client_id"
+	ClientId string `protobuf:"bytes,3,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" bson:"client_id"` // @gotags: bson:"client_id"
 	// client_secret - The client secret used in the authorization process
-	ClientSecret string `protobuf:"bytes,3,opt,name=client_secret,json=clientSecret,proto3" json:"client_secret,omitempty" bson:"client_secret"` // @gotags: bson:"client_secret"
+	ClientSecret string `protobuf:"bytes,4,opt,name=client_secret,json=clientSecret,proto3" json:"client_secret,omitempty" bson:"client_secret"` // @gotags: bson:"client_secret"
 	// redirect_uri - A redirect URI for the application to redirect to after authorization
-	RedirectUri string `protobuf:"bytes,4,opt,name=redirect_uri,json=redirectUri,proto3" json:"redirect_uri,omitempty" bson:"redirect_uri"` // @gotags: bson:"redirect_uri"
+	RedirectUri string `protobuf:"bytes,5,opt,name=redirect_uri,json=redirectUri,proto3" json:"redirect_uri,omitempty" bson:"redirect_uri"` // @gotags: bson:"redirect_uri"
 	// token_lifetime - The amount of time in seconds, before the token expires
-	TokenLifetime uint64 `protobuf:"varint,5,opt,name=token_lifetime,json=tokenLifetime,proto3" json:"token_lifetime,omitempty" bson:"token_lifetime"` // @gotags: bson:"token_lifetime"
+	TokenLifetime uint64 `protobuf:"varint,6,opt,name=token_lifetime,json=tokenLifetime,proto3" json:"token_lifetime,omitempty" bson:"token_lifetime"` // @gotags: bson:"token_lifetime"
 	// grant_type - The grant types this Application is authorized to issue on
-	GrantType     []GrantTypes `protobuf:"varint,6,rep,packed,name=grant_type,json=grantType,proto3,enum=application.GrantTypes" json:"grant_type,omitempty" bson:"grant_type"` // @gotags: bson:"grant_type"
+	GrantType     []GrantTypes `protobuf:"varint,7,rep,packed,name=grant_type,json=grantType,proto3,enum=application.GrantTypes" json:"grant_type,omitempty" bson:"grant_type"` // @gotags: bson:"grant_type"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -131,6 +133,13 @@ func (x *Application) GetHeader() *header.Header {
 	return nil
 }
 
+func (x *Application) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
 func (x *Application) GetClientId() string {
 	if x != nil {
 		return x.ClientId
@@ -170,15 +179,16 @@ var File_proto_application_application_proto protoreflect.FileDescriptor
 
 const file_proto_application_application_proto_rawDesc = "" +
 	"\n" +
-	"#proto/application/application.proto\x12\vapplication\x1a\x19proto/header/header.proto\"\xf9\x01\n" +
+	"#proto/application/application.proto\x12\vapplication\x1a\x19proto/header/header.proto\"\x8d\x02\n" +
 	"\vApplication\x12&\n" +
-	"\x06header\x18\x01 \x01(\v2\x0e.header.HeaderR\x06header\x12\x1b\n" +
-	"\tclient_id\x18\x02 \x01(\tR\bclientId\x12#\n" +
-	"\rclient_secret\x18\x03 \x01(\tR\fclientSecret\x12!\n" +
-	"\fredirect_uri\x18\x04 \x01(\tR\vredirectUri\x12%\n" +
-	"\x0etoken_lifetime\x18\x05 \x01(\x04R\rtokenLifetime\x126\n" +
+	"\x06header\x18\x01 \x01(\v2\x0e.header.HeaderR\x06header\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1b\n" +
+	"\tclient_id\x18\x03 \x01(\tR\bclientId\x12#\n" +
+	"\rclient_secret\x18\x04 \x01(\tR\fclientSecret\x12!\n" +
+	"\fredirect_uri\x18\x05 \x01(\tR\vredirectUri\x12%\n" +
+	"\x0etoken_lifetime\x18\x06 \x01(\x04R\rtokenLifetime\x126\n" +
 	"\n" +
-	"grant_type\x18\x06 \x03(\x0e2\x17.application.GrantTypesR\tgrantType*J\n" +
+	"grant_type\x18\a \x03(\x0e2\x17.application.GrantTypesR\tgrantType*J\n" +
 	"\n" +
 	"GrantTypes\x12\x16\n" +
 	"\x12client_credentials\x10\x00\x12\x16\n" +
