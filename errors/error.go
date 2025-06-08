@@ -1,4 +1,4 @@
-package internal
+package error
 
 /*
 CredstackError - Provides a custom error structure that provides more information regarding errors than the standard

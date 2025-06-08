@@ -2,17 +2,17 @@ package user
 
 import (
 	"fmt"
-	"github.com/stevezaluk/credstack-lib/internal"
+	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/options"
 	"github.com/stevezaluk/credstack-lib/proto/user"
 	"github.com/stevezaluk/credstack-lib/secret"
 )
 
 // ErrUserCredentialInvalid - Provides a named error for when user credential validation fails
-var ErrUserCredentialInvalid = internal.NewError(401, "INVALID_USER_CREDENTIAL", "user: invalid credentials")
+var ErrUserCredentialInvalid = credstackError.NewError(401, "INVALID_USER_CREDENTIAL", "user: invalid credentials")
 
 // ErrFailedToHashCredential - Provides a named error for when user credential hashing has failed
-var ErrFailedToHashCredential = internal.NewError(500, "FAILED_TO_HASH_CREDENTIAL", "user: failed to hash user credential")
+var ErrFailedToHashCredential = credstackError.NewError(500, "FAILED_TO_HASH_CREDENTIAL", "user: failed to hash user credential")
 
 /*
 NewCredential - Creates and generates a new UserCredential using the secret provided in the parameter. Both the secret
@@ -35,8 +35,8 @@ func NewCredential(credential string, opts *options.CredentialOptions) (*user.Us
 		the caller. Any secrets generated are base64 encoded here (URL Safe)
 	*/
 	return &user.UserCredential{
-		Key:        internal.EncodeBase64(hash),
-		Salt:       internal.EncodeBase64(salt),
+		Key:        secret.EncodeBase64(hash),
+		Salt:       secret.EncodeBase64(salt),
 		Time:       opts.Time,
 		Memory:     opts.Memory,
 		Threads:    uint32(opts.Threads),
@@ -55,7 +55,7 @@ func CheckCredential(validate string, credential *user.UserCredential) error {
 		To start the validation process we first need to base64 decode the salt that was
 		stored in MongoDB. We use make to allocate us a byte array of the requested salt length
 	*/
-	decodedSalt, err := internal.DecodeBase64([]byte(credential.Salt), credential.SaltLength)
+	decodedSalt, err := secret.DecodeBase64([]byte(credential.Salt), credential.SaltLength)
 	if err != nil {
 		return err // these are named already so we don't need to wrap again
 	}
@@ -64,7 +64,7 @@ func CheckCredential(validate string, credential *user.UserCredential) error {
 		We always want to decode our values first to ensure that we can catch any basic errors
 		before we start Argon hash generation
 	*/
-	decodedHash, err := internal.DecodeBase64([]byte(credential.Key), credential.KeyLength)
+	decodedHash, err := secret.DecodeBase64([]byte(credential.Key), credential.KeyLength)
 	if err != nil {
 		return err // these are named already so we don't need to wrap again
 	}

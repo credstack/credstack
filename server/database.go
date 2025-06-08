@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"github.com/stevezaluk/credstack-lib/internal"
+	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/options"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -10,7 +10,7 @@ import (
 )
 
 // ErrInternalDatabase - Provides a simple wrapper around an internal database error
-var ErrInternalDatabase = internal.NewError(500, "INTERNAL_DATABASE_ERROR", "database: an internal error occurred")
+var ErrInternalDatabase = credstackError.NewError(500, "INTERNAL_DATABASE_ERROR", "database: an internal error occurred")
 
 /*
 Database - Defines the core abstraction around a MongoDB database. This structure provides construction from

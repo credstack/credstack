@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/header"
-	"github.com/stevezaluk/credstack-lib/internal"
 	"github.com/stevezaluk/credstack-lib/options"
 	userModel "github.com/stevezaluk/credstack-lib/proto/user"
 	"github.com/stevezaluk/credstack-lib/server"
@@ -16,19 +16,19 @@ import (
 )
 
 // ErrPasswordTooShort - Provides a named error to be returned when a user-provided password is too short
-var ErrPasswordTooShort = internal.NewError(400, "CRED_PASS_TOO_SHORT", "credential: password too short")
+var ErrPasswordTooShort = credstackError.NewError(400, "CRED_PASS_TOO_SHORT", "credential: password too short")
 
 // ErrPasswordTooLong - Provides a named error to be returned when a user-provided password is too long
-var ErrPasswordTooLong = internal.NewError(400, "CRED_PASS_TOO_LONG", "credential: password too long")
+var ErrPasswordTooLong = credstackError.NewError(400, "CRED_PASS_TOO_LONG", "credential: password too long")
 
 // ErrUserMissingIdentifier - Provides a named error that gets thrown when you try and create a new user without an Email
-var ErrUserMissingIdentifier = internal.NewError(400, "USER_MISSING_ID", "user: User is either missing a username or an email address")
+var ErrUserMissingIdentifier = credstackError.NewError(400, "USER_MISSING_ID", "user: User is either missing a username or an email address")
 
 // ErrUserAlreadyExists - Provides a named error that occurs when you try and duplicate a user
-var ErrUserAlreadyExists = internal.NewError(409, "USER_ALREADY_EXISTS", "user: User already exists under the specified email address")
+var ErrUserAlreadyExists = credstackError.NewError(409, "USER_ALREADY_EXISTS", "user: User already exists under the specified email address")
 
 // ErrEmailAddressInvalid - Provides a named error that occurs when the caller attempts to register a user with an improperly formatted email address
-var ErrEmailAddressInvalid = internal.NewError(400, "EMAIL_ADDRESS_INVALID", "email: Invalid email address")
+var ErrEmailAddressInvalid = credstackError.NewError(400, "EMAIL_ADDRESS_INVALID", "email: Invalid email address")
 
 // emailRegex - A regular expression for validating that an email address is formatted properly
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")

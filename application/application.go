@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/header"
-	"github.com/stevezaluk/credstack-lib/internal"
 	applicationModel "github.com/stevezaluk/credstack-lib/proto/application"
 	"github.com/stevezaluk/credstack-lib/secret"
 	"github.com/stevezaluk/credstack-lib/server"
@@ -15,13 +15,13 @@ import (
 )
 
 // ErrClientIDCollision - Provides a named error for when a new application is created with the same client ID
-var ErrClientIDCollision = internal.NewError(500, "APP_CLIENT_ID_COLLISION", "application: A collision was detected while creating a new application")
+var ErrClientIDCollision = credstackError.NewError(500, "APP_CLIENT_ID_COLLISION", "application: A collision was detected while creating a new application")
 
 // ErrAppMissingIdentifier - Provides a named error for when you try and fetch an application with no client id
-var ErrAppMissingIdentifier = internal.NewError(400, "APP_MISSING_ID", "application: Application is missing a Client ID")
+var ErrAppMissingIdentifier = credstackError.NewError(400, "APP_MISSING_ID", "application: Application is missing a Client ID")
 
 // ErrAppDoesNotExist - Provides a named error for when you try and fetch an application that does not exist
-var ErrAppDoesNotExist = internal.NewError(404, "APP_DOES_NOT_EXIST", "application: Application does not exist under the specified client ID")
+var ErrAppDoesNotExist = credstackError.NewError(404, "APP_DOES_NOT_EXIST", "application: Application does not exist under the specified client ID")
 
 /*
 NewApplication - Creates a new application with the provided grant types in the parameter. If an empty slice is provided
