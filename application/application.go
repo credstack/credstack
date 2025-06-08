@@ -169,6 +169,10 @@ func UpdateApplication(serv *server.Server, clientId string, patch *applicationM
 	buildAppPatch := func(patch *applicationModel.Application) bson.M {
 		update := make(bson.M)
 
+		if patch.Name != "" {
+			update["name"] = patch.Name
+		}
+
 		if patch.RedirectUri != "" {
 			update["redirect_uri"] = patch.RedirectUri
 		}
