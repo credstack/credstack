@@ -74,7 +74,7 @@ type API struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
 	Header *header.Header         `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty" bson:"header"` // @gotags: bson:"header"
 	// domain - A arbitrary domain used in the audience of issues tokens. Does not need to resolve to anything
-	Domain string `protobuf:"bytes,2,opt,name=domain,proto3" json:"domain,omitempty" bson:"domains"` // @gotags: bson:"domains"
+	Domain string `protobuf:"bytes,2,opt,name=domain,proto3" json:"domain,omitempty" bson:"domain"` // @gotags: bson:"domain"
 	// name - The name of the API as defined by the user
 	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty" bson:"name"` // @gotags: bson:"name"
 	// token_type - The type of tokens the API should issue
