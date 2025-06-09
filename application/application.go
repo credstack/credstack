@@ -33,7 +33,7 @@ A single database call is consumed here to be able to insert the data into Mongo
 an existing application, then the error: ErrClientIDCollision is returned. Additionally, we wrap any errors that are
 encountered here and returned.
 */
-func NewApplication(serv *server.Server, name string, redirectUri string, grantTypes ...applicationModel.GrantTypes) error {
+func NewApplication(serv *server.Server, name string, redirectUri string, grantTypes ...applicationModel.GrantTypes) (string, error) {
 	/*
 		If we get a grant types slice that has a length of zero, we always want to append the Authorization Code grant
 		type to it. This ensures that we always have a form of authentication available
@@ -49,7 +49,7 @@ func NewApplication(serv *server.Server, name string, redirectUri string, grantT
 	*/
 	clientId, err := secret.RandString(16)
 	if err != nil {
-		return err // named error here
+		return "", err // named error here
 	}
 
 	/*
@@ -59,7 +59,7 @@ func NewApplication(serv *server.Server, name string, redirectUri string, grantT
 	*/
 	clientSecret, err := secret.RandString(96)
 	if err != nil {
-		return err // named error here
+		return "", err // named error here
 	}
 
 	/*
@@ -88,7 +88,7 @@ func NewApplication(serv *server.Server, name string, redirectUri string, grantT
 		var writeError mongo.WriteException
 		if errors.As(err, &writeError) {
 			if writeError.HasErrorCode(11000) { // this code should probably be passed as a const from Database
-				return ErrClientIDCollision
+				return "", ErrClientIDCollision
 			}
 		}
 
@@ -96,10 +96,10 @@ func NewApplication(serv *server.Server, name string, redirectUri string, grantT
 			If we don't get a write exception than some other error occurred, and we can just wrap the
 			InternalDatabaseError and return it
 		*/
-		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		return "", fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 	}
 
-	return nil
+	return clientId, nil
 }
 
 /*
