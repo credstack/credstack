@@ -34,10 +34,3 @@ func DecodeBase64(data []byte, length uint32) ([]byte, error) {
 
 	return decoded[:n], nil
 }
-
-/*
-EncodeBigInt - Helper function for base64 encoding big.Int pointers
-*/
-func EncodeBigInt(x *big.Int) string {
-	return EncodeBase64(x.Bytes())
-}
