@@ -3,16 +3,26 @@ package key
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"github.com/stevezaluk/credstack-lib/proto/token"
+	"crypto/sha256"
+	"crypto/x509"
+	"encoding/hex"
+	"github.com/stevezaluk/credstack-lib/header"
+	"github.com/stevezaluk/credstack-lib/proto/key"
 	"github.com/stevezaluk/credstack-lib/secret"
 )
+
+const RSAKeySize int = 4096
 
 /*
 GenerateKey - Generates a 4096-bit RSA Key Pair. The size on this is not adjustable as we want to maximize our entropy
 with 4096-bit keys. After the key is generated, it is validated to ensure that it can be used for signing tokens. Any
 errors here are propagated with the second return type
+
+Generally, this function is very slow as not only do we have to generate a 4096-bit private key, but we also need to get
+the checksum of its public exponent. This **should** be ok, as this really only needs to get called on first startup, or
+whenever the user requests key rotation
 */
-func GenerateKey() (*token.KeyPair, error) {
+func GenerateKey() (*key.RSAPrivateKey, error) {
 	/*
 		First we want to generate our key here. Since we don't need to conform to user provided size, we can always
 		use the 4096 as the size in bits.
@@ -24,29 +34,34 @@ func GenerateKey() (*token.KeyPair, error) {
 		Notice that we are not calling key.Validate after this function. This is because when rsa.GenerateKey is called,
 		it will automatically check the correctness of the Key
 	*/
-	key, err := rsa.GenerateKey(rand.Reader, 4096)
+	generatedKey, err := rsa.GenerateKey(rand.Reader, RSAKeySize)
 	if err != nil {
 		return nil, err
 	}
 
 	/*
-		Once we have our key generated, we want to marshal it to our model so that we can store it within Mongo
-		safely. We are encoding any big.Int values here as protobuf does not have a way of natively storing these
-		without losing precision. By converting them to bytes first, and then encoding them with base64, we can
-		guarantee that we won't lose any precision
+		We also want to take the checksum of our public exponent so that we can use it as the basis for our header. This
+		creates a nice, re-producible way of getting this value again.
 	*/
-	ret := &token.KeyPair{
-		Kty: "RSA",
-		Alg: "RS256",
-		Use: "sig",
-		N:   secret.EncodeBigInt(key.N),
-		E:   int64(key.E),
-		D:   secret.EncodeBigInt(key.D),
-		P:   secret.EncodeBigInt(key.Primes[0]),
-		Q:   secret.EncodeBigInt(key.Primes[1]),
-		Dp:  secret.EncodeBigInt(key.Precomputed.Dp),
-		Dq:  secret.EncodeBigInt(key.Precomputed.Dq),
-		Qi:  secret.EncodeBigInt(key.Precomputed.Qinv),
+	checksum := sha256.Sum256(generatedKey.PublicKey.N.Bytes())
+
+	/*
+		Once we have our key, we want to marshal it to PKCS#8 to make it a bit easier to work with. Originally, I was
+		going to store each of the keys components as base64 encoded strings however this was creating challenges when
+		marshalling vs unmarshalling them
+
+		We want to use PKCS#8 over PKCS#1 as the latter is legacy and only works for RSA private keys. By storing them
+		as PKCS#8 we can at least create a standard across how we are marshaling our private keys
+	*/
+	encoded, err := x509.MarshalPKCS8PrivateKey(generatedKey)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := &key.RSAPrivateKey{
+		Header:      header.NewHeader(hex.EncodeToString(checksum[:])),
+		KeyMaterial: secret.EncodeBase64(encoded),
+		Size:        int64(RSAKeySize),
 	}
 
 	return ret, nil
