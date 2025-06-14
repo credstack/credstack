@@ -7,6 +7,7 @@
 package token
 
 import (
+	header "github.com/stevezaluk/credstack-lib/proto/header"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -21,7 +22,7 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// JSONWebKey - A simple structure representing a JSON Web Key
+// JSONWebKey - A simple structure representing a public JSON Web Key
 type JSONWebKey struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// kty - Defines the type of key this JWK represents
@@ -112,11 +113,165 @@ func (x *JSONWebKey) GetE() string {
 	return ""
 }
 
+// KeyPair - Represents a private RSA key that is stored within MongoDB
+type KeyPair struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// header - The generated header for the key pair
+	Header *header.Header `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty" bson:"header"` // @gotags: bson:"header"
+	// kty - Defines the type of key this JWK represents
+	Kty string `protobuf:"bytes,2,opt,name=kty,proto3" json:"kty,omitempty" bson:"kty"` // @gotags: bson:"kty"
+	// use - Defines the use for this JWK, usually sig
+	Use string `protobuf:"bytes,3,opt,name=use,proto3" json:"use,omitempty" bson:"use"` // @gotags: bson:"use"
+	// kid - A unique identifier for the key
+	Kid string `protobuf:"bytes,4,opt,name=kid,proto3" json:"kid,omitempty" bson:"kid"` // @gotags: bson:"kid"
+	// alg - Defines the algorithm that this JWK was generated using
+	Alg string `protobuf:"bytes,5,opt,name=alg,proto3" json:"alg,omitempty" bson:"alg"` // @gotags: bson:"alg"
+	// n - Public modulos for the key
+	N string `protobuf:"bytes,6,opt,name=n,proto3" json:"n,omitempty" bson:"n"` // @gotags: bson:"n"
+	// e - Public exponent for the key
+	E string `protobuf:"bytes,7,opt,name=e,proto3" json:"e,omitempty" bson:"e"` // @gotags: bson:"e"
+	// d - The private exponent stored as a base64 encoded string
+	D string `protobuf:"bytes,8,opt,name=d,proto3" json:"d,omitempty" bson:"d"` // @gotags: bson:"d"
+	// p - The first prime factor stored as base64 encoded string
+	P string `protobuf:"bytes,9,opt,name=p,proto3" json:"p,omitempty" bson:"p"` // @gotags: bson:"p"
+	// q - The second prime factor stored as base64 encoded string
+	Q string `protobuf:"bytes,10,opt,name=q,proto3" json:"q,omitempty" bson:"q"` // @gotags: bson:"q"
+	// dp - The first CRT exponent stored as a base64 encoded string
+	Dp string `protobuf:"bytes,11,opt,name=dp,proto3" json:"dp,omitempty" bson:"dp"` // @gotags: bson:"dp"
+	// dq - The second CRT Exponent stored as a base64 encoded string
+	Dq string `protobuf:"bytes,12,opt,name=dq,proto3" json:"dq,omitempty" bson:"dq"` // @gotags: bson:"dq"
+	// qi - The first CRT Co-efficient stored as a base64 encoded string
+	Qi            string `protobuf:"bytes,13,opt,name=qi,proto3" json:"qi,omitempty" bson:"qi"` // @gotags: bson:"qi"
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *KeyPair) Reset() {
+	*x = KeyPair{}
+	mi := &file_proto_token_jwk_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KeyPair) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KeyPair) ProtoMessage() {}
+
+func (x *KeyPair) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_token_jwk_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KeyPair.ProtoReflect.Descriptor instead.
+func (*KeyPair) Descriptor() ([]byte, []int) {
+	return file_proto_token_jwk_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *KeyPair) GetHeader() *header.Header {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *KeyPair) GetKty() string {
+	if x != nil {
+		return x.Kty
+	}
+	return ""
+}
+
+func (x *KeyPair) GetUse() string {
+	if x != nil {
+		return x.Use
+	}
+	return ""
+}
+
+func (x *KeyPair) GetKid() string {
+	if x != nil {
+		return x.Kid
+	}
+	return ""
+}
+
+func (x *KeyPair) GetAlg() string {
+	if x != nil {
+		return x.Alg
+	}
+	return ""
+}
+
+func (x *KeyPair) GetN() string {
+	if x != nil {
+		return x.N
+	}
+	return ""
+}
+
+func (x *KeyPair) GetE() string {
+	if x != nil {
+		return x.E
+	}
+	return ""
+}
+
+func (x *KeyPair) GetD() string {
+	if x != nil {
+		return x.D
+	}
+	return ""
+}
+
+func (x *KeyPair) GetP() string {
+	if x != nil {
+		return x.P
+	}
+	return ""
+}
+
+func (x *KeyPair) GetQ() string {
+	if x != nil {
+		return x.Q
+	}
+	return ""
+}
+
+func (x *KeyPair) GetDp() string {
+	if x != nil {
+		return x.Dp
+	}
+	return ""
+}
+
+func (x *KeyPair) GetDq() string {
+	if x != nil {
+		return x.Dq
+	}
+	return ""
+}
+
+func (x *KeyPair) GetQi() string {
+	if x != nil {
+		return x.Qi
+	}
+	return ""
+}
+
 var File_proto_token_jwk_proto protoreflect.FileDescriptor
 
 const file_proto_token_jwk_proto_rawDesc = "" +
 	"\n" +
-	"\x15proto/token/jwk.proto\x12\x05token\"p\n" +
+	"\x15proto/token/jwk.proto\x12\x05token\x1a\x19proto/header/header.proto\"p\n" +
 	"\n" +
 	"JSONWebKey\x12\x10\n" +
 	"\x03kty\x18\x01 \x01(\tR\x03kty\x12\x10\n" +
@@ -124,7 +279,22 @@ const file_proto_token_jwk_proto_rawDesc = "" +
 	"\x03kid\x18\x03 \x01(\tR\x03kid\x12\x10\n" +
 	"\x03alg\x18\x04 \x01(\tR\x03alg\x12\f\n" +
 	"\x01n\x18\x05 \x01(\tR\x01n\x12\f\n" +
-	"\x01e\x18\x06 \x01(\tR\x01eB1Z/github.com/stevezaluk/credstack-lib/proto/tokenb\x06proto3"
+	"\x01e\x18\x06 \x01(\tR\x01e\"\xef\x01\n" +
+	"\aKeyPair\x12&\n" +
+	"\x06header\x18\x01 \x01(\v2\x0e.header.HeaderR\x06header\x12\x10\n" +
+	"\x03kty\x18\x02 \x01(\tR\x03kty\x12\x10\n" +
+	"\x03use\x18\x03 \x01(\tR\x03use\x12\x10\n" +
+	"\x03kid\x18\x04 \x01(\tR\x03kid\x12\x10\n" +
+	"\x03alg\x18\x05 \x01(\tR\x03alg\x12\f\n" +
+	"\x01n\x18\x06 \x01(\tR\x01n\x12\f\n" +
+	"\x01e\x18\a \x01(\tR\x01e\x12\f\n" +
+	"\x01d\x18\b \x01(\tR\x01d\x12\f\n" +
+	"\x01p\x18\t \x01(\tR\x01p\x12\f\n" +
+	"\x01q\x18\n" +
+	" \x01(\tR\x01q\x12\x0e\n" +
+	"\x02dp\x18\v \x01(\tR\x02dp\x12\x0e\n" +
+	"\x02dq\x18\f \x01(\tR\x02dq\x12\x0e\n" +
+	"\x02qi\x18\r \x01(\tR\x02qiB1Z/github.com/stevezaluk/credstack-lib/proto/tokenb\x06proto3"
 
 var (
 	file_proto_token_jwk_proto_rawDescOnce sync.Once
@@ -138,16 +308,19 @@ func file_proto_token_jwk_proto_rawDescGZIP() []byte {
 	return file_proto_token_jwk_proto_rawDescData
 }
 
-var file_proto_token_jwk_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_proto_token_jwk_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_proto_token_jwk_proto_goTypes = []any{
-	(*JSONWebKey)(nil), // 0: token.JSONWebKey
+	(*JSONWebKey)(nil),    // 0: token.JSONWebKey
+	(*KeyPair)(nil),       // 1: token.KeyPair
+	(*header.Header)(nil), // 2: header.Header
 }
 var file_proto_token_jwk_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	2, // 0: token.KeyPair.header:type_name -> header.Header
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_proto_token_jwk_proto_init() }
@@ -161,7 +334,7 @@ func file_proto_token_jwk_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_token_jwk_proto_rawDesc), len(file_proto_token_jwk_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
