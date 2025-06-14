@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
+	"math/big"
 )
 
 // ErrFailedToBaseDecode - Provides a named error for when base64 decoding data fails during a user credential validation
@@ -32,4 +33,11 @@ func DecodeBase64(data []byte, length uint32) ([]byte, error) {
 	}
 
 	return decoded[:n], nil
+}
+
+/*
+EncodeBigInt - Helper function for base64 encoding big.Int pointers
+*/
+func EncodeBigInt(x *big.Int) string {
+	return EncodeBase64(x.Bytes())
 }
