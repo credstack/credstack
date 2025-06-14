@@ -126,10 +126,10 @@ type KeyPair struct {
 	Kid string `protobuf:"bytes,4,opt,name=kid,proto3" json:"kid,omitempty" bson:"kid"` // @gotags: bson:"kid"
 	// alg - Defines the algorithm that this JWK was generated using
 	Alg string `protobuf:"bytes,5,opt,name=alg,proto3" json:"alg,omitempty" bson:"alg"` // @gotags: bson:"alg"
-	// n - Public modulos for the key
+	// n - Public modulos for the key stored as a base64 encoded string
 	N string `protobuf:"bytes,6,opt,name=n,proto3" json:"n,omitempty" bson:"n"` // @gotags: bson:"n"
 	// e - Public exponent for the key
-	E string `protobuf:"bytes,7,opt,name=e,proto3" json:"e,omitempty" bson:"e"` // @gotags: bson:"e"
+	E int64 `protobuf:"varint,7,opt,name=e,proto3" json:"e,omitempty" bson:"e"` // @gotags: bson:"e"
 	// d - The private exponent stored as a base64 encoded string
 	D string `protobuf:"bytes,8,opt,name=d,proto3" json:"d,omitempty" bson:"d"` // @gotags: bson:"d"
 	// p - The first prime factor stored as base64 encoded string
@@ -218,11 +218,11 @@ func (x *KeyPair) GetN() string {
 	return ""
 }
 
-func (x *KeyPair) GetE() string {
+func (x *KeyPair) GetE() int64 {
 	if x != nil {
 		return x.E
 	}
-	return ""
+	return 0
 }
 
 func (x *KeyPair) GetD() string {
@@ -287,7 +287,7 @@ const file_proto_token_jwk_proto_rawDesc = "" +
 	"\x03kid\x18\x04 \x01(\tR\x03kid\x12\x10\n" +
 	"\x03alg\x18\x05 \x01(\tR\x03alg\x12\f\n" +
 	"\x01n\x18\x06 \x01(\tR\x01n\x12\f\n" +
-	"\x01e\x18\a \x01(\tR\x01e\x12\f\n" +
+	"\x01e\x18\a \x01(\x03R\x01e\x12\f\n" +
 	"\x01d\x18\b \x01(\tR\x01d\x12\f\n" +
 	"\x01p\x18\t \x01(\tR\x01p\x12\f\n" +
 	"\x01q\x18\n" +
