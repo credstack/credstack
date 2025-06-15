@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
-	"math/big"
 )
 
 // ErrFailedToBaseDecode - Provides a named error for when base64 decoding data fails during a user credential validation
