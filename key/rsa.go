@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/hex"
+	"fmt"
 	"github.com/stevezaluk/credstack-lib/header"
 	"github.com/stevezaluk/credstack-lib/proto/key"
 	"github.com/stevezaluk/credstack-lib/secret"
@@ -85,4 +86,54 @@ func GenerateKey() (*key.PrivateJSONWebKey, *key.JSONWebKey, error) {
 	}
 
 	return ret, jwk, nil
+}
+
+/*
+RSAtoJWK - Extracts the public key from an RSA Private Key and converts it to the JWK model
+
+TODO: This may not be needed, validate as the rest of this package gets fleshed out
+*/
+func RSAtoJWK(keyPair *key.PrivateJSONWebKey) (*key.JSONWebKey, error) {
+	keyBytes := []byte(keyPair.KeyMaterial)
+
+	/*
+		Since we are encoding our marshalled key, we first must decode it. The error returned from DecodeBase64
+		is already a wrapped error, so we don't need to do any additional wrapping here
+	*/
+	decoded, err := secret.DecodeBase64(keyBytes, uint32(len(keyBytes)))
+	if err != nil {
+		return nil, err
+	}
+
+	/*
+		Then, once we have it decoded, we can immediately parse it from PKCS#8
+	*/
+	parsedKey, err := x509.ParsePKCS8PrivateKey(decoded)
+	if err != nil {
+		return nil, fmt.Errorf("%v (%w)", ErrMarshalKey, err)
+	}
+
+	/*
+		We always need to cast the value returned from x509.ParsePKCS8PrivateKey as this returns an interface
+		not a direct pointer
+	*/
+	privateKey := parsedKey.(*rsa.PrivateKey)
+
+	/*
+		Finally, we convert it to key.JSONWebKey. We encode our modulus as these are big.Int values,
+		and we need to preserve precision as protobuf does not provide a way of storing big.Int's
+
+		This is a bit hacky here with the way we are converting our public exponent. This should probably be changed
+		to an integer in the protobuf model
+	*/
+	jwk := &key.JSONWebKey{
+		Use: "sig",
+		Kty: "RSA",
+		Alg: "RS256",
+		Kid: keyPair.Header.Identifier,
+		N:   secret.EncodeBase64(privateKey.PublicKey.N.Bytes()),
+		E:   secret.EncodeBase64(big.NewInt(int64(privateKey.E)).Bytes()),
+	}
+
+	return jwk, nil
 }

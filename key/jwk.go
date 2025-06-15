@@ -4,17 +4,79 @@ import (
 	"context"
 	"crypto/rsa"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/proto/key"
 	"github.com/stevezaluk/credstack-lib/secret"
 	"github.com/stevezaluk/credstack-lib/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
-	"math/big"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 var ErrGenerateKey = credstackError.NewError(500, "ERR_GENERATING_KEY", "jwk: Failed to generate cryptographic key")
 var ErrMarshalKey = credstackError.NewError(500, "ERR_MARSHALING_KEY", "jwk: Failed to marshal/unmarshal key")
+var ErrKeyNotExist = credstackError.NewError(404, "ERR_PRIV_KEY_NOT_EXIST", "jwk: Failed to find private key with the requested key ID")
+var ErrKeyIsNotValid = credstackError.NewError(500, "ERR_KEY_NOT_VALID", "jwk: The requested private or public key is not valid")
+
+/*
+GetPrivateKey - Fetches a private key from the database and un-marshals its PKCS#8 key material. The subsequently parsed
+key is then validated for mathematical correctness before being returns. The private key returned from this function is
+returned as nil if any errors have occured here.
+
+TODO: This does not support HS-256
+TODO: This may not be needed, validate as the rest of this package gets fleshed out
+*/
+func GetPrivateKey(serv *server.Server, kid string) (*rsa.PrivateKey, error) {
+	var jwk key.PrivateJSONWebKey
+
+	/*
+		The header.identifier field always represents our Key Identifiers (kid) so we can always safely lookup our key
+		with this. Additionally, the same KID is used across both the JWK and the Private Key to simplify key access
+	*/
+	result := serv.Database().Collection("key").FindOne(context.Background(), bson.M{"header.identifier": kid})
+	err := result.Decode(&jwk)
+	if err != nil {
+		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrKeyNotExist
+		}
+	}
+
+	/*
+		Since our key is stored in base64 format in the database, we first must decode our resulting key. We always
+		want to return an error here as well if we fail to decode
+	*/
+	keyBytes := []byte(jwk.KeyMaterial)
+	decoded, err := secret.DecodeBase64(keyBytes, uint32(len(keyBytes)))
+	if err != nil {
+		return nil, fmt.Errorf("%w (%v)", secret.ErrFailedToBaseDecode, err)
+	}
+
+	/*
+		Our base64 encoded value is stored as PCKS#8 format, so we then want to parse that. The result from this function
+		call returns us a general PrivateKey interface, which we then need to cast into our RSA Private Key
+	*/
+	parsedKey, err := x509.ParsePKCS8PrivateKey(decoded)
+	if err != nil {
+		return nil, fmt.Errorf("%w (%v)", ErrMarshalKey, err)
+	}
+
+	/*
+		Finally, we want to validate this key as we parsed it from a string and we want to be confident that it can be
+		used for encryption/decryption
+	*/
+	privateKey := parsedKey.(*rsa.PrivateKey)
+	err = privateKey.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("%w (%v)", ErrKeyIsNotValid, err)
+	}
+
+	return privateKey, nil
+}
 
 /*
 RotateJWKS - Rotates the JSON Web Key Set that tokens are being signed with. Any RS256 tokens that were issued previously
@@ -31,6 +93,7 @@ Thankfully, the poor performance on this function should not be incredibly impac
 scenarios: When credstack starts for the first time, and when the user requests a key rotation
 
 TODO: The implementation for this is broken. Start with only one key and then during rotation, add an additional one
+TODO: This does not support HS-256
 */
 func RotateJWKS(serv *server.Server) error {
 	/*
@@ -87,52 +150,4 @@ func RotateJWKS(serv *server.Server) error {
 	}
 
 	return nil
-}
-
-/*
-ToJWK - Extracts the public key from an RSA Private Key and converts it to the JWK model
-*/
-func ToJWK(keyPair *key.PrivateJSONWebKey) (*key.JSONWebKey, error) {
-	keyBytes := []byte(keyPair.KeyMaterial)
-
-	/*
-		Since we are encoding our marshalled key, we first must decode it. The error returned from DecodeBase64
-		is already a wrapped error, so we don't need to do any additional wrapping here
-	*/
-	decoded, err := secret.DecodeBase64(keyBytes, uint32(len(keyBytes)))
-	if err != nil {
-		return nil, err
-	}
-
-	/*
-		Then, once we have it decoded, we can immediately parse it from PKCS#8
-	*/
-	parsedKey, err := x509.ParsePKCS8PrivateKey(decoded)
-	if err != nil {
-		return nil, fmt.Errorf("%v (%w)", ErrMarshalKey, err)
-	}
-
-	/*
-		We always need to cast the value returned from x509.ParsePKCS8PrivateKey as this returns an interface
-		not a direct pointer
-	*/
-	privateKey := parsedKey.(*rsa.PrivateKey)
-
-	/*
-		Finally, we convert it to key.JSONWebKey. We encode our modulus as these are big.Int values,
-		and we need to preserve precision as protobuf does not provide a way of storing big.Int's
-
-		This is a bit hacky here with the way we are converting our public exponent. This should probably be changed
-		to an integer in the protobuf model
-	*/
-	jwk := &key.JSONWebKey{
-		Use: "sig",
-		Kty: "RSA",
-		Alg: "RS256",
-		Kid: keyPair.Header.Identifier,
-		N:   secret.EncodeBase64(privateKey.PublicKey.N.Bytes()),
-		E:   secret.EncodeBase64(big.NewInt(int64(privateKey.E)).Bytes()),
-	}
-
-	return jwk, nil
 }
