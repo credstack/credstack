@@ -35,7 +35,9 @@ type PrivateJSONWebKey struct {
 	// size - The size of the key in bits
 	Size int64 `protobuf:"varint,4,opt,name=size,proto3" json:"size,omitempty" bson:"size"` // @gotags: bson:"size"
 	// is_current - If set to true, then this key is selected for signing tokens
-	IsCurrent     bool `protobuf:"varint,5,opt,name=is_current,json=isCurrent,proto3" json:"is_current,omitempty" bson:"is_current"` // @gotags: bson:"is_current"
+	IsCurrent bool `protobuf:"varint,5,opt,name=is_current,json=isCurrent,proto3" json:"is_current,omitempty" bson:"is_current"` // @gotags: bson:"is_current"
+	// audience - The audience of the API that this key was allocated for
+	Audience      string `protobuf:"bytes,6,opt,name=audience,proto3" json:"audience,omitempty" bson:"audience"` // @gotags: bson:"audience"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -105,18 +107,26 @@ func (x *PrivateJSONWebKey) GetIsCurrent() bool {
 	return false
 }
 
+func (x *PrivateJSONWebKey) GetAudience() string {
+	if x != nil {
+		return x.Audience
+	}
+	return ""
+}
+
 var File_proto_key_private_proto protoreflect.FileDescriptor
 
 const file_proto_key_private_proto_rawDesc = "" +
 	"\n" +
-	"\x17proto/key/private.proto\x12\x03key\x1a\x19proto/header/header.proto\"\xa3\x01\n" +
+	"\x17proto/key/private.proto\x12\x03key\x1a\x19proto/header/header.proto\"\xbf\x01\n" +
 	"\x11PrivateJSONWebKey\x12&\n" +
 	"\x06header\x18\x01 \x01(\v2\x0e.header.HeaderR\x06header\x12\x10\n" +
 	"\x03alg\x18\x02 \x01(\tR\x03alg\x12!\n" +
 	"\fkey_material\x18\x03 \x01(\tR\vkeyMaterial\x12\x12\n" +
 	"\x04size\x18\x04 \x01(\x03R\x04size\x12\x1d\n" +
 	"\n" +
-	"is_current\x18\x05 \x01(\bR\tisCurrentB/Z-github.com/stevezaluk/credstack-lib/proto/keyb\x06proto3"
+	"is_current\x18\x05 \x01(\bR\tisCurrent\x12\x1a\n" +
+	"\baudience\x18\x06 \x01(\tR\baudienceB/Z-github.com/stevezaluk/credstack-lib/proto/keyb\x06proto3"
 
 var (
 	file_proto_key_private_proto_rawDescOnce sync.Once
