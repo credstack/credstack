@@ -31,7 +31,6 @@ Thankfully, the poor performance on this function should not be incredibly impac
 scenarios: When credstack starts for the first time, and when the user requests a key rotation
 
 TODO: The implementation for this is broken. Start with only one key and then during rotation, add an additional one
-TODO: Update bson tag for key_material field + new fields for key metadata + rename key for use with HMAC Secrets + way to mark keys as active
 */
 func RotateJWKS(serv *server.Server) error {
 	/*
