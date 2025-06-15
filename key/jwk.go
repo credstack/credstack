@@ -2,16 +2,13 @@ package key
 
 import (
 	"context"
-	"crypto/rsa"
 	"errors"
 	"fmt"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/proto/key"
-	"github.com/stevezaluk/credstack-lib/secret"
 	"github.com/stevezaluk/credstack-lib/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
-	"math/big"
 )
 
 var ErrGenerateKey = credstackError.NewError(500, "ERR_GENERATING_KEY", "jwk: Failed to generate cryptographic key")
@@ -87,9 +84,10 @@ func GetActiveKey(serv *server.Server, alg string, audience string) (*key.Privat
 }
 
 /*
-GetPublicKey - Looks up a JWK by its Key Identifier and parses it back into a rsa.PublicKey for use in token generation.
+GetJWK - Fetches the public JSON Web Key that matches the key identifier passed in the parameter. This just returns
+the model and other functions provided in this package can be used to convert it back to a valid rsa.PublicKey
 */
-func GetPublicKey(serv *server.Server, kid string) (*rsa.PublicKey, error) {
+func GetJWK(serv *server.Server, kid string) (*key.JSONWebKey, error) {
 	var jwk key.JSONWebKey
 
 	/*
@@ -108,43 +106,5 @@ func GetPublicKey(serv *server.Server, kid string) (*rsa.PublicKey, error) {
 		}
 	}
 
-	/*
-		We always store our public exponent and modulus as base64 encoded strings to preserve there precision so we
-		must decode them before we can use them
-	*/
-	modulusBytes := []byte(jwk.N)
-	decodedModulus, err := secret.DecodeBase64(modulusBytes, uint32(len(modulusBytes)))
-	if err != nil {
-		return nil, fmt.Errorf("%w (%v)", secret.ErrFailedToBaseDecode, err)
-	}
-
-	exponentBytes := []byte(jwk.E)
-	decodedExponent, err := secret.DecodeBase64(exponentBytes, uint32(len(exponentBytes)))
-	if err != nil {
-		return nil, fmt.Errorf("%w (%v)", secret.ErrFailedToBaseDecode, err)
-	}
-
-	/*
-		Then, once they are decoded, we have to convert them back to their respective types
-
-		Since the decoded exponent here is a big-endian byte array, we need to perform some bit shifting magic to be
-		able to convert this properly. Using strconv on a string representation of this won't work directly, and you
-		would get a parse error. Instead, we can shift each byte of the array by 8 bits (1-byte) and then add them
-		together to get our public exponent back
-	*/
-	modulus := new(big.Int).SetBytes(decodedModulus)
-	exponent := 0
-	for _, b := range decodedExponent {
-		exponent = (exponent << 8) + int(b)
-	}
-
-	/*
-		Finally, we can add them to the public key model and return them to the caller
-	*/
-	publicKey := rsa.PublicKey{
-		N: modulus,
-		E: exponent,
-	}
-
-	return &publicKey, nil
+	return &jwk, nil
 }
