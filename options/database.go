@@ -207,6 +207,8 @@ func (opts *DatabaseOptions) DefaultCollections() []string {
 		"api",
 		"application",
 		"token",
+		"key",
+		"jwk",
 	}
 }
 
@@ -223,5 +225,7 @@ func (opts *DatabaseOptions) IndexingMap() map[string]bson.D {
 		"application": {{Key: "client_id", Value: 1}, {Key: "header.identifier", Value: 1}},
 		"api":         {{Key: "header.identifier", Value: 1}},
 		"token":       {{Key: "token", Value: 1}, {Key: "header.identifier", Value: 1}},
+		"key":         {{Key: "header.identifier", Value: 1}},
+		"jwk":         {{Key: "kid", Value: 1}},
 	}
 }
