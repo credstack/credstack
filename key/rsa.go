@@ -88,6 +88,10 @@ func GenerateRSAKey() (*key.PrivateJSONWebKey, *key.JSONWebKey, error) {
 	return ret, jwk, nil
 }
 
+/*
+ToRSAPrivateKey - Converts a private JSON Web Key into a rsa.PrivateKey struct so that it can be used with the crypto/rsa
+package. After the key is parsed, it is checked for mathematical correctness using key.Validate
+*/
 func ToRSAPrivateKey(private *key.PrivateJSONWebKey) (*rsa.PrivateKey, error) {
 	/*
 		Since our key is stored in base64 format in the database, we first must decode our resulting key. We always
@@ -121,6 +125,10 @@ func ToRSAPrivateKey(private *key.PrivateJSONWebKey) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
+/*
+ToRSAPublicKey - Converts a public JSON Web Key into a rsa.PublicKey struct so that it can be used with the crypto/rsa
+package. Any errors in this function are returned wrapped
+*/
 func ToRSAPublicKey(public *key.JSONWebKey) (*rsa.PublicKey, error) {
 	/*
 		We always store our public exponent and modulus as base64 encoded strings to preserve there precision so we
