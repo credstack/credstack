@@ -21,8 +21,9 @@ var ErrKeyNotExist = credstackError.NewError(404, "ERR_PRIV_KEY_NOT_EXIST", "jwk
 var ErrKeyIsNotValid = credstackError.NewError(500, "ERR_KEY_NOT_VALID", "jwk: The requested private or public key is not valid")
 
 /*
-GetJWKS - Fetches all JSON Web Keys stored in the database and returns them as a slice. The length of this slice should
-really never exceed 2, as key.RotateKeys will remove old keys
+GetJWKS - Fetches all JSON Web Keys stored in the database and returns them as a slice. Only RSA Keys are returned with
+this function call, as this is intended to be used with the .well-known/jwks.json endpoint, and HSA secrets should not
+be exposed publicly as they are symmetrical
 */
 func GetJWKS(serv *server.Server, audience string) (*key.JSONWebKeySet, error) {
 	jwks := new(key.JSONWebKeySet)
