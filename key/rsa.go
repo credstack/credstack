@@ -21,7 +21,7 @@ errors here are propagated with the second return type
 
 Generally, this function is very slow as not only do we have to generate a 4096-bit private key, but we also need to get
 the checksum of its public exponent. This **should** be ok, as this really only needs to get called on first startup, or
-whenever the user requests key rotation
+whenever the user requests key rotation. Generating a new key with this function will automatically mark it as active
 */
 func GenerateKey() (*key.PrivateJSONWebKey, *key.JSONWebKey, error) {
 	/*
