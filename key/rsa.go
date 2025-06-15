@@ -16,7 +16,7 @@ import (
 const RSAKeySize int = 4096
 
 /*
-GenerateKey - Generates a 4096-bit RSA Key Pair. The size on this is not adjustable as we want to maximize our entropy
+GenerateRSAKey - Generates a 4096-bit RSA Key Pair. The size on this is not adjustable as we want to maximize our entropy
 with 4096-bit keys. After the key is generated, it is validated to ensure that it can be used for signing tokens. Any
 errors here are propagated with the second return type
 
@@ -24,7 +24,7 @@ Generally, this function is very slow as not only do we have to generate a 4096-
 the checksum of its public exponent. This **should** be ok, as this really only needs to get called on first startup, or
 whenever the user requests key rotation. Generating a new key with this function will automatically mark it as active
 */
-func GenerateKey() (*key.PrivateJSONWebKey, *key.JSONWebKey, error) {
+func GenerateRSAKey() (*key.PrivateJSONWebKey, *key.JSONWebKey, error) {
 	/*
 		First we want to generate our key here. Since we don't need to conform to user provided size, we can always
 		use the 4096 as the size in bits.
