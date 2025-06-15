@@ -30,9 +30,8 @@ them. 4 total database calls are consumed in this function.
 Thankfully, the poor performance on this function should not be incredibly impactful, as this only gets called in two
 scenarios: When credstack starts for the first time, and when the user requests a key rotation
 
-TODO: Create better encoding functions for int/big ints
-TODO: Indexes on key and jwk collections
-TODO: Update bson tag for key_material field + new fields for key metadata + rename key for use with HMAC Secrets
+TODO: The implementation for this is broken. Start with only one key and then during rotation, add an additional one
+TODO: Update bson tag for key_material field + new fields for key metadata + rename key for use with HMAC Secrets + way to mark keys as active
 */
 func RotateJWKS(serv *server.Server) error {
 	/*
