@@ -23,8 +23,6 @@ var ErrKeyIsNotValid = credstackError.NewError(500, "ERR_KEY_NOT_VALID", "jwk: T
 /*
 GetJWKS - Fetches all JSON Web Keys stored in the database and returns them as a slice. The length of this slice should
 really never exceed 2, as key.RotateKeys will remove old keys
-
-TODO: Update this to use JWKS model
 */
 func GetJWKS(serv *server.Server) (*key.JSONWebKeySet, error) {
 	jwks := new(key.JSONWebKeySet)
