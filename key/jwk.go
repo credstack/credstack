@@ -39,7 +39,7 @@ func RotateJWKS(serv *server.Server) error {
 		to be generated with this function. This helps us reduce some memory allocations, as every call to append forces
 		us to resize the array to accompany for the additional element
 	*/
-	privateKeys := make([]*key.RSAPrivateKey, 2)
+	privateKeys := make([]*key.PrivateJSONWebKey, 2)
 	jwks := make([]*key.JSONWebKey, 2)
 
 	/*
@@ -93,7 +93,7 @@ func RotateJWKS(serv *server.Server) error {
 /*
 ToJWK - Extracts the public key from an RSA Private Key and converts it to the JWK model
 */
-func ToJWK(keyPair *key.RSAPrivateKey) (*key.JSONWebKey, error) {
+func ToJWK(keyPair *key.PrivateJSONWebKey) (*key.JSONWebKey, error) {
 	keyBytes := []byte(keyPair.KeyMaterial)
 
 	/*
