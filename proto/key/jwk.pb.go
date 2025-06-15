@@ -7,7 +7,6 @@
 package key
 
 import (
-	_ "github.com/stevezaluk/credstack-lib/proto/header"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -117,7 +116,7 @@ var File_proto_key_jwk_proto protoreflect.FileDescriptor
 
 const file_proto_key_jwk_proto_rawDesc = "" +
 	"\n" +
-	"\x13proto/key/jwk.proto\x12\x03key\x1a\x19proto/header/header.proto\"p\n" +
+	"\x13proto/key/jwk.proto\x12\x03key\"p\n" +
 	"\n" +
 	"JSONWebKey\x12\x10\n" +
 	"\x03kty\x18\x01 \x01(\tR\x03kty\x12\x10\n" +
