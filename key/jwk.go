@@ -26,8 +26,8 @@ really never exceed 2, as key.RotateKeys will remove old keys
 
 TODO: Update this to use JWKS model
 */
-func GetJWKS(serv *server.Server) ([]*key.JSONWebKey, error) {
-	var jwks []*key.JSONWebKey
+func GetJWKS(serv *server.Server) (*key.JSONWebKeySet, error) {
+	jwks := new(key.JSONWebKeySet)
 
 	/*
 		This function call is actually fairly simple, as all we really need to do here is list out the entire collection.
@@ -43,7 +43,7 @@ func GetJWKS(serv *server.Server) ([]*key.JSONWebKey, error) {
 	/*
 		Then we simply just decode all the results into our slice and then return it.
 	*/
-	err = cursor.All(context.Background(), &jwks) // check here for proper errors
+	err = cursor.All(context.Background(), &jwks.Keys) // check here for proper errors
 	if err != nil {
 		fmt.Println("error during cursor decode", err)
 		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
