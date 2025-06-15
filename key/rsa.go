@@ -88,52 +88,35 @@ func GenerateRSAKey() (*key.PrivateJSONWebKey, *key.JSONWebKey, error) {
 	return ret, jwk, nil
 }
 
-/*
-RSAtoJWK - Extracts the public key from an RSA Private Key and converts it to the JWK model
-
-TODO: This may not be needed, validate as the rest of this package gets fleshed out
-*/
-func RSAtoJWK(keyPair *key.PrivateJSONWebKey) (*key.JSONWebKey, error) {
-	keyBytes := []byte(keyPair.KeyMaterial)
-
+func ToRSAPrivateKey(private *key.PrivateJSONWebKey) (*rsa.PrivateKey, error) {
 	/*
-		Since we are encoding our marshalled key, we first must decode it. The error returned from DecodeBase64
-		is already a wrapped error, so we don't need to do any additional wrapping here
+		Since our key is stored in base64 format in the database, we first must decode our resulting key. We always
+		want to return an error here as well if we fail to decode
 	*/
+	keyBytes := []byte(private.KeyMaterial)
 	decoded, err := secret.DecodeBase64(keyBytes, uint32(len(keyBytes)))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w (%v)", secret.ErrFailedToBaseDecode, err)
 	}
 
 	/*
-		Then, once we have it decoded, we can immediately parse it from PKCS#8
+		Our base64 encoded value is stored as PKCS#8 format, so we then want to parse that. The result from this function
+		call returns us a general PrivateKey interface, which we then need to cast into our RSA Private Key
 	*/
 	parsedKey, err := x509.ParsePKCS8PrivateKey(decoded)
 	if err != nil {
-		return nil, fmt.Errorf("%v (%w)", ErrMarshalKey, err)
+		return nil, fmt.Errorf("%w (%v)", ErrMarshalKey, err)
 	}
 
 	/*
-		We always need to cast the value returned from x509.ParsePKCS8PrivateKey as this returns an interface
-		not a direct pointer
+		Finally, we want to validate this key as we parsed it from a string, and we want to be confident that it can be
+		used for encryption/decryption
 	*/
 	privateKey := parsedKey.(*rsa.PrivateKey)
-
-	/*
-		Finally, we convert it to key.JSONWebKey. We encode our modulus as these are big.Int values,
-		and we need to preserve precision as protobuf does not provide a way of storing big.Int's
-
-		This is a bit hacky here with the way we are converting our public exponent. This should probably be changed
-		to an integer in the protobuf model
-	*/
-	jwk := &key.JSONWebKey{
-		Use: "sig",
-		Kty: "RSA",
-		Alg: "RS256",
-		Kid: keyPair.Header.Identifier,
-		N:   secret.EncodeBase64(privateKey.PublicKey.N.Bytes()),
-		E:   secret.EncodeBase64(big.NewInt(int64(privateKey.E)).Bytes()),
+	err = privateKey.Validate()
+	if err != nil {
+		return nil, fmt.Errorf("%w (%v)", ErrKeyIsNotValid, err)
 	}
 
-	return jwk, nil
+	return privateKey, nil
 }

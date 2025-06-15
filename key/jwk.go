@@ -3,7 +3,6 @@ package key
 import (
 	"context"
 	"crypto/rsa"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
@@ -58,14 +57,14 @@ func GetJWKS(serv *server.Server, audience string) (*key.JSONWebKeySet, error) {
 }
 
 /*
-GetActiveKey - Fetches the latest active private key from the database according to the algorithm that is provided in the
-parameter of this function. If one cannot be found, then ErrKeyNotExist is returned in the error. This shouldn't happen
-generally as this gets generated when credstack is started for the first time.
+GetActiveKey - Fetches the latest active private key according to the algorithm that is passed in the parameter. The same
+model (key.PrivateJSONWebKey) is used for both RS256 and HS256 keys, so the same function can be used for either. Additional
+functions are provided within the package to convert this model into a valid RSA private key to use
 
 TODO: This does not support HS-256
 TODO: This may not be needed, validate as the rest of this package gets fleshed out
 */
-func GetActiveKey(serv *server.Server, alg string, audience string) (*rsa.PrivateKey, error) {
+func GetActiveKey(serv *server.Server, alg string, audience string) (*key.PrivateJSONWebKey, error) {
 	var jwk key.PrivateJSONWebKey
 
 	/*
@@ -84,36 +83,7 @@ func GetActiveKey(serv *server.Server, alg string, audience string) (*rsa.Privat
 		}
 	}
 
-	/*
-		Since our key is stored in base64 format in the database, we first must decode our resulting key. We always
-		want to return an error here as well if we fail to decode
-	*/
-	keyBytes := []byte(jwk.KeyMaterial)
-	decoded, err := secret.DecodeBase64(keyBytes, uint32(len(keyBytes)))
-	if err != nil {
-		return nil, fmt.Errorf("%w (%v)", secret.ErrFailedToBaseDecode, err)
-	}
-
-	/*
-		Our base64 encoded value is stored as PKCS#8 format, so we then want to parse that. The result from this function
-		call returns us a general PrivateKey interface, which we then need to cast into our RSA Private Key
-	*/
-	parsedKey, err := x509.ParsePKCS8PrivateKey(decoded)
-	if err != nil {
-		return nil, fmt.Errorf("%w (%v)", ErrMarshalKey, err)
-	}
-
-	/*
-		Finally, we want to validate this key as we parsed it from a string, and we want to be confident that it can be
-		used for encryption/decryption
-	*/
-	privateKey := parsedKey.(*rsa.PrivateKey)
-	err = privateKey.Validate()
-	if err != nil {
-		return nil, fmt.Errorf("%w (%v)", ErrKeyIsNotValid, err)
-	}
-
-	return privateKey, nil
+	return &jwk, nil
 }
 
 /*
