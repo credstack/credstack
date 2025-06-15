@@ -24,13 +24,13 @@ var ErrKeyIsNotValid = credstackError.NewError(500, "ERR_KEY_NOT_VALID", "jwk: T
 GetJWKS - Fetches all JSON Web Keys stored in the database and returns them as a slice. The length of this slice should
 really never exceed 2, as key.RotateKeys will remove old keys
 */
-func GetJWKS(serv *server.Server) (*key.JSONWebKeySet, error) {
+func GetJWKS(serv *server.Server, audience string) (*key.JSONWebKeySet, error) {
 	jwks := new(key.JSONWebKeySet)
 
 	/*
 		This function call is actually fairly simple, as all we really need to do here is list out the entire collection.
 	*/
-	cursor, err := serv.Database().Collection("jwk").Find(context.Background(), bson.M{"kty": "RSA"})
+	cursor, err := serv.Database().Collection("jwk").Find(context.Background(), bson.M{"kty": "RSA", "audience": audience})
 	if err != nil {
 		fmt.Println("error during find", err)
 		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
@@ -64,14 +64,14 @@ generally as this gets generated when credstack is started for the first time.
 TODO: This does not support HS-256
 TODO: This may not be needed, validate as the rest of this package gets fleshed out
 */
-func GetActiveKey(serv *server.Server, alg string) (*rsa.PrivateKey, error) {
+func GetActiveKey(serv *server.Server, alg string, audience string) (*rsa.PrivateKey, error) {
 	var jwk key.PrivateJSONWebKey
 
 	/*
 		The header.identifier field always represents our Key Identifiers (kid) so we can always safely lookup our key
 		with this. Additionally, the same KID is used across both the JWK and the Private Key to simplify key access
 	*/
-	result := serv.Database().Collection("key").FindOne(context.Background(), bson.M{"alg": alg, "is_current": true})
+	result := serv.Database().Collection("key").FindOne(context.Background(), bson.M{"alg": alg, "is_current": true, "audience": audience})
 	err := result.Decode(&jwk)
 	if err != nil {
 		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
