@@ -21,6 +21,44 @@ var ErrKeyNotExist = credstackError.NewError(404, "ERR_PRIV_KEY_NOT_EXIST", "jwk
 var ErrKeyIsNotValid = credstackError.NewError(500, "ERR_KEY_NOT_VALID", "jwk: The requested private or public key is not valid")
 
 /*
+GetJWKS - Fetches all JSON Web Keys stored in the database and returns them as a slice. The length of this slice should
+really never exceed 2, as key.RotateKeys will remove old keys
+
+TODO: Remove JWKS model
+*/
+func GetJWKS(serv *server.Server) ([]*key.JSONWebKey, error) {
+	var jwks []*key.JSONWebKey
+
+	/*
+		This function call is actually fairly simple, as all we really need to do here is list out the entire collection.
+	*/
+	cursor, err := serv.Database().Collection("jwk").Find(context.Background(), bson.M{"kty": "RSA"})
+	if err != nil {
+		fmt.Println("error during find", err)
+		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+	}
+
+	/*
+		Then we simply just decode all the results into our slice and then return it.
+	*/
+	err = cursor.All(context.Background(), &jwks) // check here for proper errors
+	if err != nil {
+		fmt.Println("error during cursor decode", err)
+		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrKeyNotExist
+		}
+	}
+
+	return jwks, nil
+}
+
+/*
 GetPrivateKey - Fetches a private key from the database and un-marshals its PKCS#8 key material. The subsequently parsed
 key is then validated for mathematical correctness before being returns. The private key returned from this function is
 returned as nil if any errors have occured here.
