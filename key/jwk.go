@@ -30,14 +30,18 @@ them. 4 total database calls are consumed in this function.
 Thankfully, the poor performance on this function should not be incredibly impactful, as this only gets called in two
 scenarios: When credstack starts for the first time, and when the user requests a key rotation
 
-TODO: Fix this implementation to avoid decoding keys directly after generation
 TODO: Create better encoding functions for int/big ints
 TODO: Indexes on key and jwk collections
 TODO: Update bson tag for key_material field + new fields for key metadata + rename key for use with HMAC Secrets
 */
 func RotateJWKS(serv *server.Server) error {
-	var privateKeys []*key.RSAPrivateKey
-	var jwks []*key.JSONWebKey
+	/*
+		We are using traditional arrays here over slices as we can always guarantee that the same number of keys are going
+		to be generated with this function. This helps us reduce some memory allocations, as every call to append forces
+		us to resize the array to accompany for the additional element
+	*/
+	privateKeys := make([]*key.RSAPrivateKey, 2)
+	jwks := make([]*key.JSONWebKey, 2)
 
 	/*
 		Ideally, this could be exposed to the user to allow them to select how many keys they want to include in a JWKS.
@@ -53,13 +57,9 @@ func RotateJWKS(serv *server.Server) error {
 		/*
 			To account for storing each of them in different collections, we need to different slices here for this as
 			well.
-
-			We can probably reduce memory allocations here by not using append and instead directly accessing our slices
-			with the index provided by this for loop. Additionally, we don't really need slices here for jwks and privateKeys
-			as we can always guarantee that they are going to be a fixed size
 		*/
-		privateKeys = append(privateKeys, privateKey)
-		jwks = append(jwks, jwk)
+		privateKeys[i] = privateKey
+		jwks[i] = jwk
 	}
 
 	/*
