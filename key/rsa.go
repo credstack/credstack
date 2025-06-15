@@ -9,6 +9,7 @@ import (
 	"github.com/stevezaluk/credstack-lib/header"
 	"github.com/stevezaluk/credstack-lib/proto/key"
 	"github.com/stevezaluk/credstack-lib/secret"
+	"math/big"
 )
 
 const RSAKeySize int = 4096
@@ -22,7 +23,7 @@ Generally, this function is very slow as not only do we have to generate a 4096-
 the checksum of its public exponent. This **should** be ok, as this really only needs to get called on first startup, or
 whenever the user requests key rotation
 */
-func GenerateKey() (*key.RSAPrivateKey, error) {
+func GenerateKey() (*key.RSAPrivateKey, *key.JSONWebKey, error) {
 	/*
 		First we want to generate our key here. Since we don't need to conform to user provided size, we can always
 		use the 4096 as the size in bits.
@@ -34,16 +35,34 @@ func GenerateKey() (*key.RSAPrivateKey, error) {
 		Notice that we are not calling key.Validate after this function. This is because when rsa.GenerateKey is called,
 		it will automatically check the correctness of the Key
 	*/
-	generatedKey, err := rsa.GenerateKey(rand.Reader, RSAKeySize)
+	privateKey, err := rsa.GenerateKey(rand.Reader, RSAKeySize)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	/*
 		We also want to take the checksum of our public exponent so that we can use it as the basis for our header. This
 		creates a nice, re-producible way of getting this value again.
 	*/
-	checksum := sha256.Sum256(generatedKey.PublicKey.N.Bytes())
+	checksum := sha256.Sum256(privateKey.PublicKey.N.Bytes())
+
+	/*
+		We always use the same KID as we want to be able to identify both using a single identifier
+	*/
+	keyHeader := header.NewHeader(hex.EncodeToString(checksum[:]))
+
+	/*
+		To ensure that we don't need to re-convert our RSAPrivateKey back to a JWK immediately after
+		generation, we can just have this function build us a JWK in addition to the private key.
+	*/
+	jwk := &key.JSONWebKey{
+		Use: "sig",
+		Kty: "RSA",
+		Alg: "RS256",
+		Kid: keyHeader.Identifier,
+		N:   secret.EncodeBase64(privateKey.PublicKey.N.Bytes()),
+		E:   secret.EncodeBase64(big.NewInt(int64(privateKey.E)).Bytes()),
+	}
 
 	/*
 		Once we have our key, we want to marshal it to PKCS#8 to make it a bit easier to work with. Originally, I was
@@ -53,16 +72,16 @@ func GenerateKey() (*key.RSAPrivateKey, error) {
 		We want to use PKCS#8 over PKCS#1 as the latter is legacy and only works for RSA private keys. By storing them
 		as PKCS#8 we can at least create a standard across how we are marshaling our private keys
 	*/
-	encoded, err := x509.MarshalPKCS8PrivateKey(generatedKey)
+	encoded, err := x509.MarshalPKCS8PrivateKey(privateKey)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	ret := &key.RSAPrivateKey{
-		Header:      header.NewHeader(hex.EncodeToString(checksum[:])),
+		Header:      keyHeader,
 		KeyMaterial: secret.EncodeBase64(encoded),
 		Size:        int64(RSAKeySize),
 	}
 
-	return ret, nil
+	return ret, jwk, nil
 }

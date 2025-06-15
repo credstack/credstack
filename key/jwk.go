@@ -45,19 +45,9 @@ func RotateJWKS(serv *server.Server) error {
 		during token generation
 	*/
 	for i := 0; i < 2; i++ {
-		privateKey, err := GenerateKey()
+		privateKey, jwk, err := GenerateKey()
 		if err != nil {
 			return fmt.Errorf("%w (%v)", ErrGenerateKey, err)
-		}
-
-		/*
-			Here is where the problem with this implementation lies. We first generate a private key pair, encoding and
-			marshaling there values accordingly, and then immediately decoding them and unmarshalling them. We can very
-			easily speed this up, by having GenerateKey return us a JWK with its private key
-		*/
-		jwk, err := ToJWK(privateKey)
-		if err != nil {
-			return fmt.Errorf("%w (%v)", ErrMarshalKey, err)
 		}
 
 		/*
