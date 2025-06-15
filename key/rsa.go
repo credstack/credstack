@@ -38,7 +38,7 @@ func GenerateRSAKey() (*key.PrivateJSONWebKey, *key.JSONWebKey, error) {
 	*/
 	privateKey, err := rsa.GenerateKey(rand.Reader, RSAKeySize)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("%v (%w)", ErrGenerateKey, err)
 	}
 
 	/*
@@ -75,7 +75,7 @@ func GenerateRSAKey() (*key.PrivateJSONWebKey, *key.JSONWebKey, error) {
 	*/
 	encoded, err := x509.MarshalPKCS8PrivateKey(privateKey)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("%v (%w)", ErrMarshalKey, err)
 	}
 
 	ret := &key.PrivateJSONWebKey{
