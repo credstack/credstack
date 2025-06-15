@@ -29,7 +29,6 @@ func GetJWKS(serv *server.Server, audience string) (*key.JSONWebKeySet, error) {
 	*/
 	cursor, err := serv.Database().Collection("jwk").Find(context.Background(), bson.M{"kty": "RSA", "audience": audience})
 	if err != nil {
-		fmt.Println("error during find", err)
 		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
 			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 		}
@@ -40,7 +39,6 @@ func GetJWKS(serv *server.Server, audience string) (*key.JSONWebKeySet, error) {
 	*/
 	err = cursor.All(context.Background(), &jwks.Keys) // check here for proper errors
 	if err != nil {
-		fmt.Println("error during cursor decode", err)
 		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
 			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 		}
@@ -51,6 +49,32 @@ func GetJWKS(serv *server.Server, audience string) (*key.JSONWebKeySet, error) {
 	}
 
 	return jwks, nil
+}
+
+/*
+GetJWK - Fetches the public JSON Web Key that matches the key identifier passed in the parameter. This just returns
+the model and other functions provided in this package can be used to convert it back to a valid rsa.PublicKey
+*/
+func GetJWK(serv *server.Server, kid string) (*key.JSONWebKey, error) {
+	var jwk key.JSONWebKey
+
+	/*
+		The header.identifier field always represents our Key Identifiers (kid) so we can always safely lookup our key
+		with this. Additionally, the same KID is used across both the JWK and the Private Key to simplify key access
+	*/
+	result := serv.Database().Collection("jwk").FindOne(context.Background(), bson.M{"kid": kid})
+	err := result.Decode(&jwk)
+	if err != nil {
+		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrKeyNotExist
+		}
+	}
+
+	return &jwk, nil
 }
 
 /*
@@ -69,32 +93,6 @@ func GetActiveKey(serv *server.Server, alg string, audience string) (*key.Privat
 		with this. Additionally, the same KID is used across both the JWK and the Private Key to simplify key access
 	*/
 	result := serv.Database().Collection("key").FindOne(context.Background(), bson.M{"alg": alg, "is_current": true, "audience": audience})
-	err := result.Decode(&jwk)
-	if err != nil {
-		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
-			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
-		}
-
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrKeyNotExist
-		}
-	}
-
-	return &jwk, nil
-}
-
-/*
-GetJWK - Fetches the public JSON Web Key that matches the key identifier passed in the parameter. This just returns
-the model and other functions provided in this package can be used to convert it back to a valid rsa.PublicKey
-*/
-func GetJWK(serv *server.Server, kid string) (*key.JSONWebKey, error) {
-	var jwk key.JSONWebKey
-
-	/*
-		The header.identifier field always represents our Key Identifiers (kid) so we can always safely lookup our key
-		with this. Additionally, the same KID is used across both the JWK and the Private Key to simplify key access
-	*/
-	result := serv.Database().Collection("jwk").FindOne(context.Background(), bson.M{"kid": kid})
 	err := result.Decode(&jwk)
 	if err != nil {
 		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
