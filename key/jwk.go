@@ -59,21 +59,21 @@ func GetJWKS(serv *server.Server) ([]*key.JSONWebKey, error) {
 }
 
 /*
-GetPrivateKey - Fetches a private key from the database and un-marshals its PKCS#8 key material. The subsequently parsed
-key is then validated for mathematical correctness before being returns. The private key returned from this function is
-returned as nil if any errors have occured here.
+GetActiveKey - Fetches the latest active private key from the database according to the algorithm that is provided in the
+parameter of this function. If one cannot be found, then ErrKeyNotExist is returned in the error. This shouldn't happen
+generally as this gets generated when credstack is started for the first time.
 
 TODO: This does not support HS-256
 TODO: This may not be needed, validate as the rest of this package gets fleshed out
 */
-func GetPrivateKey(serv *server.Server, kid string) (*rsa.PrivateKey, error) {
+func GetActiveKey(serv *server.Server, alg string) (*rsa.PrivateKey, error) {
 	var jwk key.PrivateJSONWebKey
 
 	/*
 		The header.identifier field always represents our Key Identifiers (kid) so we can always safely lookup our key
 		with this. Additionally, the same KID is used across both the JWK and the Private Key to simplify key access
 	*/
-	result := serv.Database().Collection("key").FindOne(context.Background(), bson.M{"header.identifier": kid})
+	result := serv.Database().Collection("key").FindOne(context.Background(), bson.M{"alg": alg, "is_current": true})
 	err := result.Decode(&jwk)
 	if err != nil {
 		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
@@ -96,7 +96,7 @@ func GetPrivateKey(serv *server.Server, kid string) (*rsa.PrivateKey, error) {
 	}
 
 	/*
-		Our base64 encoded value is stored as PCKS#8 format, so we then want to parse that. The result from this function
+		Our base64 encoded value is stored as PKCS#8 format, so we then want to parse that. The result from this function
 		call returns us a general PrivateKey interface, which we then need to cast into our RSA Private Key
 	*/
 	parsedKey, err := x509.ParsePKCS8PrivateKey(decoded)
@@ -105,7 +105,7 @@ func GetPrivateKey(serv *server.Server, kid string) (*rsa.PrivateKey, error) {
 	}
 
 	/*
-		Finally, we want to validate this key as we parsed it from a string and we want to be confident that it can be
+		Finally, we want to validate this key as we parsed it from a string, and we want to be confident that it can be
 		used for encryption/decryption
 	*/
 	privateKey := parsedKey.(*rsa.PrivateKey)
