@@ -24,7 +24,7 @@ Generally, this function is very slow as not only do we have to generate a 2048-
 the checksum of its public exponent. This **should** be ok, as this really only needs to get called on first startup, or
 whenever the user requests key rotation. Generating a new key with this function will automatically mark it as active
 */
-func GenerateRSAKey() (*key.PrivateJSONWebKey, *key.JSONWebKey, error) {
+func GenerateRSAKey(audience string) (*key.PrivateJSONWebKey, *key.JSONWebKey, error) {
 	/*
 		First we want to generate our key here. Since we don't need to conform to user provided size, we can always
 		use the 2048 as the size in bits.
@@ -83,6 +83,7 @@ func GenerateRSAKey() (*key.PrivateJSONWebKey, *key.JSONWebKey, error) {
 		KeyMaterial: secret.EncodeBase64(encoded),
 		Size:        int64(RSAKeySize),
 		IsCurrent:   true,
+		Audience:    audience,
 	}
 
 	return ret, jwk, nil

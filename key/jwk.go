@@ -21,13 +21,13 @@ GetJWKS - Fetches all JSON Web Keys stored in the database and returns them as a
 this function call, as this is intended to be used with the .well-known/jwks.json endpoint, and HSA secrets should not
 be exposed publicly as they are symmetrical
 */
-func GetJWKS(serv *server.Server, audience string) (*key.JSONWebKeySet, error) {
+func GetJWKS(serv *server.Server) (*key.JSONWebKeySet, error) {
 	jwks := new(key.JSONWebKeySet)
 
 	/*
 		This function call is actually fairly simple, as all we really need to do here is list out the entire collection.
 	*/
-	cursor, err := serv.Database().Collection("jwk").Find(context.Background(), bson.M{"kty": "RSA", "audience": audience})
+	cursor, err := serv.Database().Collection("jwk").Find(context.Background(), bson.M{"kty": "RSA"})
 	if err != nil {
 		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
 			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
@@ -105,4 +105,35 @@ func GetActiveKey(serv *server.Server, alg string, audience string) (*key.Privat
 	}
 
 	return &jwk, nil
+}
+
+/*
+NewKey - Generates a new key depending on the algorithm that you specify in the parameter. Calling this function will
+immediately set the key as the current one, however this will not retroactively update previously issued key. If you are
+attempting to rotate/revoke keys, then you should use RotateKeys or RotateRevokeKeys.
+
+Additionally, this function does not validate that its given audience exists, before it issues a key for it.
+*/
+func NewKey(serv *server.Server, alg string, audience string) (*key.PrivateJSONWebKey, error) {
+	ret := new(key.PrivateJSONWebKey)
+	if alg == "RSA" {
+		privateKey, jwk, err := GenerateRSAKey(audience)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = serv.Database().Collection("key").InsertOne(context.Background(), privateKey)
+		if err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+
+		_, err = serv.Database().Collection("jwk").InsertOne(context.Background(), jwk)
+		if err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+
+		ret = privateKey
+	}
+
+	return ret, nil
 }
