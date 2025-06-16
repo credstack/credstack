@@ -20,6 +20,8 @@ var ErrKeyIsNotValid = credstackError.NewError(500, "ERR_KEY_NOT_VALID", "jwk: T
 GetJWKS - Fetches all JSON Web Keys stored in the database and returns them as a slice. Only RSA Keys are returned with
 this function call, as this is intended to be used with the .well-known/jwks.json endpoint, and HSA secrets should not
 be exposed publicly as they are symmetrical
+
+TODO: Maybe rethink this to return only keys by a specific audience
 */
 func GetJWKS(serv *server.Server) (*key.JSONWebKeySet, error) {
 	jwks := new(key.JSONWebKeySet)
