@@ -3,9 +3,7 @@ package key
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
 	"crypto/x509"
-	"encoding/hex"
 	"fmt"
 	"github.com/stevezaluk/credstack-lib/header"
 	"github.com/stevezaluk/credstack-lib/proto/key"
@@ -42,15 +40,9 @@ func GenerateRSAKey(audience string) (*key.PrivateJSONWebKey, *key.JSONWebKey, e
 	}
 
 	/*
-		We also want to take the checksum of our public exponent so that we can use it as the basis for our header. This
-		creates a nice, re-producible way of getting this value again.
-	*/
-	checksum := sha256.Sum256(privateKey.PublicKey.N.Bytes())
-
-	/*
 		We always use the same KID as we want to be able to identify both using a single identifier
 	*/
-	keyHeader := header.NewHeader(hex.EncodeToString(checksum[:]))
+	keyHeader := header.NewHeader(privateKey.PublicKey.N.String())
 
 	/*
 		To ensure that we don't need to re-convert our RSAPrivateKey back to a JWK immediately after
