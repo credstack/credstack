@@ -71,6 +71,7 @@ func GenerateRSAKey(audience string) (*key.PrivateJSONWebKey, *key.JSONWebKey, e
 	}
 
 	ret := &key.PrivateJSONWebKey{
+		Alg:         "RS256",
 		Header:      keyHeader,
 		KeyMaterial: secret.EncodeBase64(encoded),
 		Size:        int64(RSAKeySize),

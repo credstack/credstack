@@ -118,7 +118,7 @@ Additionally, this function does not validate that its given audience exists, be
 */
 func NewKey(serv *server.Server, alg string, audience string) (*key.PrivateJSONWebKey, error) {
 	ret := new(key.PrivateJSONWebKey)
-	if alg == "RSA" {
+	if alg == "RS256" {
 		privateKey, jwk, err := GenerateRSAKey(audience)
 		if err != nil {
 			return nil, err
