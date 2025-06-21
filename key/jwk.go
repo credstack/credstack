@@ -115,6 +115,8 @@ immediately set the key as the current one, however this will not retroactively 
 attempting to rotate/revoke keys, then you should use RotateKeys or RotateRevokeKeys.
 
 Additionally, this function does not validate that its given audience exists, before it issues a key for it.
+
+TODO: Update alg to use protobuf enum
 */
 func NewKey(serv *server.Server, alg string, audience string) (*key.PrivateJSONWebKey, error) {
 	ret := new(key.PrivateJSONWebKey)
