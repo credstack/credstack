@@ -29,6 +29,8 @@ the caller is fully aware of how the API authenticates users.
 
 Any errors propagated here are returned. Little validation needs to happen on this model, so it only ensures that you
 do not try and insert an API with the same domain as an existing one
+
+TODO: Generate private keys here
 */
 func NewAPI(serv *server.Server, name string, domain string, tokenType api.TokenType) error {
 	/*
