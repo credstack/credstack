@@ -74,7 +74,7 @@ type API struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
 	Header *header.Header         `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty" bson:"header"` // @gotags: bson:"header"
 	// domain - A arbitrary domain used in the audience of issues tokens. Does not need to resolve to anything
-	Domain string `protobuf:"bytes,2,opt,name=domain,proto3" json:"domain,omitempty" bson:"domain"` // @gotags: bson:"domain"
+	Audience string `protobuf:"bytes,2,opt,name=audience,proto3" json:"audience,omitempty" bson:"audience"` // @gotags: bson:"audience"
 	// name - The name of the API as defined by the user
 	Name string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty" bson:"name"` // @gotags: bson:"name"
 	// token_type - The type of tokens the API should issue
@@ -124,9 +124,9 @@ func (x *API) GetHeader() *header.Header {
 	return nil
 }
 
-func (x *API) GetDomain() string {
+func (x *API) GetAudience() string {
 	if x != nil {
-		return x.Domain
+		return x.Audience
 	}
 	return ""
 }
@@ -163,10 +163,10 @@ var File_proto_api_api_proto protoreflect.FileDescriptor
 
 const file_proto_api_api_proto_rawDesc = "" +
 	"\n" +
-	"\x13proto/api/api.proto\x12\x03api\x1a\x19proto/header/header.proto\"\xcf\x01\n" +
+	"\x13proto/api/api.proto\x12\x03api\x1a\x19proto/header/header.proto\"\xd3\x01\n" +
 	"\x03API\x12&\n" +
-	"\x06header\x18\x01 \x01(\v2\x0e.header.HeaderR\x06header\x12\x16\n" +
-	"\x06domain\x18\x02 \x01(\tR\x06domain\x12\x12\n" +
+	"\x06header\x18\x01 \x01(\v2\x0e.header.HeaderR\x06header\x12\x1a\n" +
+	"\baudience\x18\x02 \x01(\tR\baudience\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12-\n" +
 	"\n" +
 	"token_type\x18\x04 \x01(\x0e2\x0e.api.TokenTypeR\ttokenType\x12!\n" +

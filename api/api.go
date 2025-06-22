@@ -33,12 +33,12 @@ do not try and insert an API with the same domain as an existing one
 
 TODO: Generate private keys here
 */
-func NewAPI(serv *server.Server, name string, domain string, tokenType api.TokenType) error {
+func NewAPI(serv *server.Server, name string, audience string, tokenType api.TokenType) error {
 	/*
 		We always want to check to make sure both of these are filled in as we need a domain to use in the audience
 		of our token
 	*/
-	if name == "" || domain == "" {
+	if name == "" || audience == "" {
 		return ErrApiMissingIdentifier
 	}
 
@@ -48,9 +48,9 @@ func NewAPI(serv *server.Server, name string, domain string, tokenType api.Token
 		tokens. Additionally, we have an enum defined for our tokenType which enforces validation for it
 	*/
 	newApi := &api.API{
-		Header:       header.NewHeader(domain),
+		Header:       header.NewHeader(audience),
 		Name:         name,
-		Domain:       domain,
+		Audience:     audience,
 		TokenType:    tokenType,
 		EnforceRbac:  false,
 		Applications: []string{},
@@ -59,7 +59,7 @@ func NewAPI(serv *server.Server, name string, domain string, tokenType api.Token
 	/*
 		We always need to generate a new key for the API to be able to use
 	*/
-	_, err := key.NewKey(serv, newApi.TokenType.String(), newApi.Domain)
+	_, err := key.NewKey(serv, newApi.TokenType.String(), newApi.Audience)
 	if err != nil {
 		return err
 	}
@@ -92,18 +92,18 @@ GetAPI - Fetches an API document from the database and marshals it into a API pr
 cannot be an empty string, but does not need to be a valid domain as this is used merely as an identifier. Named
 errors are propagated here and returned. If an error occurs, API is returned as nil
 */
-func GetAPI(serv *server.Server, domain string) (*api.API, error) {
+func GetAPI(serv *server.Server, audience string) (*api.API, error) {
 	/*
 		We must have a valid domain here. You are unable to insert an API with an empty domain, so this
 		must be filled
 	*/
-	if domain == "" {
+	if audience == "" {
 		return nil, ErrApiMissingIdentifier
 	}
 
 	result := serv.Database().Collection("api").FindOne(
 		context.Background(),
-		bson.M{"domain": domain},
+		bson.M{"audience": audience},
 	)
 
 	var ret api.API
@@ -132,8 +132,8 @@ following fields can be updated here: Name, TokenType, EnforceRBAC, and Applicat
 any other fields, you must delete the existing API and then re-create it. The domain field is
 never mutable as this is used as the basis for header.Identifier
 */
-func UpdateAPI(serv *server.Server, domain string, patch *api.API) error {
-	if domain == "" {
+func UpdateAPI(serv *server.Server, audience string, patch *api.API) error {
+	if audience == "" {
 		return ErrApiMissingIdentifier
 	}
 
@@ -161,7 +161,7 @@ func UpdateAPI(serv *server.Server, domain string, patch *api.API) error {
 
 	result, err := serv.Database().Collection("api").UpdateOne(
 		context.Background(),
-		bson.M{"domain": domain},
+		bson.M{"audience": audience},
 		bson.M{"$set": buildApiPatch(patch)},
 	)
 
@@ -181,14 +181,14 @@ DeleteAPI - Completely removes the API from Credstack. A valid, non-empty domain
 to serve as the lookup key. If DeletedCount == 0 here, then the API is considered not to exist. Any other errors here
 are propagated through the error return type
 */
-func DeleteAPI(serv *server.Server, domain string) error {
-	if domain == "" {
+func DeleteAPI(serv *server.Server, audience string) error {
+	if audience == "" {
 		return ErrApiMissingIdentifier
 	}
 
 	result, err := serv.Database().Collection("api").DeleteOne(
 		context.Background(),
-		bson.M{"domain": domain},
+		bson.M{"audience": audience},
 	)
 
 	if err != nil {
