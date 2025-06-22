@@ -6,6 +6,7 @@ import (
 	"fmt"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/header"
+	"github.com/stevezaluk/credstack-lib/key"
 	"github.com/stevezaluk/credstack-lib/proto/api"
 	"github.com/stevezaluk/credstack-lib/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -56,10 +57,18 @@ func NewAPI(serv *server.Server, name string, domain string, tokenType api.Token
 	}
 
 	/*
+		We always need to generate a new key for the API to be able to use
+	*/
+	_, err := key.NewKey(serv, newApi.TokenType.String(), newApi.Domain)
+	if err != nil {
+		return err
+	}
+
+	/*
 		After we build our model, we can consume a single database call to insert our new model. We have unique indexes
 		created on both the domain and header.Identifier fields.
 	*/
-	_, err := serv.Database().Collection("api").InsertOne(context.Background(), newApi)
+	_, err = serv.Database().Collection("api").InsertOne(context.Background(), newApi)
 	if err != nil {
 		var writeError mongo.WriteException
 		if errors.As(err, &writeError) {
