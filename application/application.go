@@ -69,13 +69,14 @@ func NewApplication(serv *server.Server, name string, redirectUri string, grantT
 		TODO: URL Validation for redirect URI
 	*/
 	newApplication := &applicationModel.Application{
-		Header:        header.NewHeader(clientId),
-		Name:          name,
-		GrantType:     grantTypes,
-		RedirectUri:   redirectUri,
-		TokenLifetime: 86400,
-		ClientId:      clientId,
-		ClientSecret:  clientSecret,
+		Header:           header.NewHeader(clientId),
+		Name:             name,
+		GrantType:        grantTypes,
+		RedirectUri:      redirectUri,
+		TokenLifetime:    86400,
+		ClientId:         clientId,
+		ClientSecret:     clientSecret,
+		AllowedAudiences: []string{},
 	}
 
 	/*
@@ -183,6 +184,10 @@ func UpdateApplication(serv *server.Server, clientId string, patch *applicationM
 
 		if len(patch.GrantType) != 0 {
 			update["grant_type"] = patch.GrantType
+		}
+
+		if len(patch.AllowedAudiences) != 0 {
+			update["allowed_audiences"] = patch.AllowedAudiences
 		}
 
 		return update
