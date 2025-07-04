@@ -48,12 +48,11 @@ func NewAPI(serv *server.Server, name string, audience string, tokenType api.Tok
 		tokens. Additionally, we have an enum defined for our tokenType which enforces validation for it
 	*/
 	newApi := &api.API{
-		Header:       header.NewHeader(audience),
-		Name:         name,
-		Audience:     audience,
-		TokenType:    tokenType,
-		EnforceRbac:  false,
-		Applications: []string{},
+		Header:      header.NewHeader(audience),
+		Name:        name,
+		Audience:    audience,
+		TokenType:   tokenType,
+		EnforceRbac: false,
 	}
 
 	/*
@@ -150,10 +149,6 @@ func UpdateAPI(serv *server.Server, audience string, patch *api.API) error {
 
 		if patch.Name != "" {
 			update["name"] = patch.Name
-		}
-
-		if len(patch.Applications) != 0 {
-			update["applications"] = patch.Applications
 		}
 
 		return update
