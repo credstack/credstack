@@ -91,9 +91,11 @@ type Application struct {
 	// token_lifetime - The amount of time in seconds, before the token expires
 	TokenLifetime uint64 `protobuf:"varint,6,opt,name=token_lifetime,json=tokenLifetime,proto3" json:"token_lifetime,omitempty" bson:"token_lifetime"` // @gotags: bson:"token_lifetime"
 	// grant_type - The grant types this Application is authorized to issue on
-	GrantType     []GrantTypes `protobuf:"varint,7,rep,packed,name=grant_type,json=grantType,proto3,enum=application.GrantTypes" json:"grant_type,omitempty" bson:"grant_type"` // @gotags: bson:"grant_type"
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	GrantType []GrantTypes `protobuf:"varint,7,rep,packed,name=grant_type,json=grantType,proto3,enum=application.GrantTypes" json:"grant_type,omitempty" bson:"grant_type"` // @gotags: bson:"grant_type"
+	// allowed_audiences - A list of strings that represents which API's this application can issue tokens for
+	AllowedAudiences []string `protobuf:"bytes,8,rep,name=allowed_audiences,json=allowedAudiences,proto3" json:"allowed_audiences,omitempty" bson:"allowed_audiences"` // @gotags: bson:"allowed_audiences"
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *Application) Reset() {
@@ -175,11 +177,18 @@ func (x *Application) GetGrantType() []GrantTypes {
 	return nil
 }
 
+func (x *Application) GetAllowedAudiences() []string {
+	if x != nil {
+		return x.AllowedAudiences
+	}
+	return nil
+}
+
 var File_proto_application_application_proto protoreflect.FileDescriptor
 
 const file_proto_application_application_proto_rawDesc = "" +
 	"\n" +
-	"#proto/application/application.proto\x12\vapplication\x1a\x19proto/header/header.proto\"\x8d\x02\n" +
+	"#proto/application/application.proto\x12\vapplication\x1a\x19proto/header/header.proto\"\xba\x02\n" +
 	"\vApplication\x12&\n" +
 	"\x06header\x18\x01 \x01(\v2\x0e.header.HeaderR\x06header\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1b\n" +
@@ -188,7 +197,8 @@ const file_proto_application_application_proto_rawDesc = "" +
 	"\fredirect_uri\x18\x05 \x01(\tR\vredirectUri\x12%\n" +
 	"\x0etoken_lifetime\x18\x06 \x01(\x04R\rtokenLifetime\x126\n" +
 	"\n" +
-	"grant_type\x18\a \x03(\x0e2\x17.application.GrantTypesR\tgrantType*J\n" +
+	"grant_type\x18\a \x03(\x0e2\x17.application.GrantTypesR\tgrantType\x12+\n" +
+	"\x11allowed_audiences\x18\b \x03(\tR\x10allowedAudiences*J\n" +
 	"\n" +
 	"GrantTypes\x12\x16\n" +
 	"\x12client_credentials\x10\x00\x12\x16\n" +

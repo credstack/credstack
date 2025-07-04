@@ -80,9 +80,7 @@ type API struct {
 	// token_type - The type of tokens the API should issue
 	TokenType TokenType `protobuf:"varint,4,opt,name=token_type,json=tokenType,proto3,enum=api.TokenType" json:"token_type,omitempty" bson:"token_type"` // @gotags: bson:"token_type"
 	// enforce_rbac - Enforce permissions and roles for this API
-	EnforceRbac bool `protobuf:"varint,5,opt,name=enforce_rbac,json=enforceRbac,proto3" json:"enforce_rbac,omitempty" bson:"enforce_rbac"` // @gotags: bson:"enforce_rbac"
-	// applications - A list of authorized applications for this API
-	Applications  []string `protobuf:"bytes,6,rep,name=applications,proto3" json:"applications,omitempty" bson:"applications"` // @gotags: bson:"applications"
+	EnforceRbac   bool `protobuf:"varint,5,opt,name=enforce_rbac,json=enforceRbac,proto3" json:"enforce_rbac,omitempty" bson:"enforce_rbac"` // @gotags: bson:"enforce_rbac"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -152,26 +150,18 @@ func (x *API) GetEnforceRbac() bool {
 	return false
 }
 
-func (x *API) GetApplications() []string {
-	if x != nil {
-		return x.Applications
-	}
-	return nil
-}
-
 var File_proto_api_api_proto protoreflect.FileDescriptor
 
 const file_proto_api_api_proto_rawDesc = "" +
 	"\n" +
-	"\x13proto/api/api.proto\x12\x03api\x1a\x19proto/header/header.proto\"\xd3\x01\n" +
+	"\x13proto/api/api.proto\x12\x03api\x1a\x19proto/header/header.proto\"\xaf\x01\n" +
 	"\x03API\x12&\n" +
 	"\x06header\x18\x01 \x01(\v2\x0e.header.HeaderR\x06header\x12\x1a\n" +
 	"\baudience\x18\x02 \x01(\tR\baudience\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12-\n" +
 	"\n" +
 	"token_type\x18\x04 \x01(\x0e2\x0e.api.TokenTypeR\ttokenType\x12!\n" +
-	"\fenforce_rbac\x18\x05 \x01(\bR\venforceRbac\x12\"\n" +
-	"\fapplications\x18\x06 \x03(\tR\fapplications*!\n" +
+	"\fenforce_rbac\x18\x05 \x01(\bR\venforceRbac*!\n" +
 	"\tTokenType\x12\t\n" +
 	"\x05HS256\x10\x00\x12\t\n" +
 	"\x05RS256\x10\x01B/Z-github.com/stevezaluk/credstack-lib/proto/apib\x06proto3"
