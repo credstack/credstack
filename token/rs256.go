@@ -1,6 +1,7 @@
 package token
 
 import (
+	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stevezaluk/credstack-lib/key"
 	keyModel "github.com/stevezaluk/credstack-lib/proto/key"
@@ -30,14 +31,14 @@ func GenerateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.MapClaims) (*re
 	*/
 	signedString, err := token.SignedString(privateKey)
 	if err != nil {
-		// this error needs to be wrapped
-		return nil, err
+		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
 	}
 
 	expirationDate, err := token.Claims.GetExpirationTime()
 	if err != nil {
-		// this error needs to be wrapped
-		return nil, err
+		// wrapping this error with ErrFailedToSignToken is not ideal as it can lead to some confusion on
+		// how this function failed but... oh well!
+		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
 	}
 
 	/*
