@@ -32,7 +32,6 @@ calls are wasted. The tokens here are not getting stored either which can be a p
 there tokens
 */
 func NewToken(serv *server.Server, request *request.TokenRequest, issuer string) (string, error) {
-	// need to validate the token request here. BAD!
 	app, err := application.GetApplication(serv, request.ClientId, true)
 	if err != nil {
 		return "", err
