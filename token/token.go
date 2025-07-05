@@ -25,11 +25,8 @@ Additionally, the client_id that is used in the token request is validated to en
 on behalf of the requested audience. If the client_id is no authorized, then ErrInvalidAudience is passed. Finally, the
 application is also validated to ensure that it can issue tokens under the specified OAuth grant type.
 
-There are currently some **major** drawbacks to this function at the moment. For starters the token request that is passed
-as the second argument, is not validated which can cause the function to return early if an empty string is passed as the
-client ID. Similarly, if an invalid grant type is passed, the function returns an empty string and multiple database
-calls are wasted. The tokens here are not getting stored either which can be a problem for when users want to revoke
-there tokens
+TODO: Store tokens in Mongo so that they can be revoked quickly
+TODO: Update this function to allow specifying expiration date
 */
 func NewToken(serv *server.Server, request *request.TokenRequest, issuer string) (string, error) {
 	app, err := application.GetApplication(serv, request.ClientId, true)
