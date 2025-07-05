@@ -5,19 +5,12 @@ import (
 	"github.com/stevezaluk/credstack-lib/application"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/key"
-	applicationModel "github.com/stevezaluk/credstack-lib/proto/application"
 	"github.com/stevezaluk/credstack-lib/proto/request"
 	"github.com/stevezaluk/credstack-lib/server"
 )
 
 // ErrInvalidTokenRequest - An error that gets returned if one or more elements of the token request are missing
 var ErrInvalidTokenRequest = credstackError.NewError(400, "ERR_INVALID_TOKEN_REQ", "token: Failed to issue token. One or more parts of the token request is missing")
-
-// ErrCannotIssueToken - An error that gets returned when an application tries to issue tokens for an audience that it is not authorized too
-var ErrCannotIssueToken = credstackError.NewError(403, "ERR_CANNOT_ISSUE_TOKEN", "token: Unable to issue token for the specified audience. Application is not authorized too")
-
-// ErrInvalidGrantType - An error that gets returned when an application tries to issue tokens for a grant type that it is not authorized too
-var ErrInvalidGrantType = credstackError.NewError(403, "ERR_INVALID_GRANT_TYPE", "token: Invalid grant type for the specified application")
 
 // ErrInvalidClientCredentials - An error that gets returned when the client credentials sent in a token request do not match what was received from the database (during client credentials flow)
 var ErrInvalidClientCredentials = credstackError.NewError(401, "ERR_INVALID_CLIENT_CREDENTIALS", "token: Unable to issue token. Invalid client credentials were supplied")
@@ -43,19 +36,6 @@ func NewToken(serv *server.Server, request *request.TokenRequest, issuer string)
 	app, err := application.GetApplication(serv, request.ClientId, true)
 	if err != nil {
 		return "", err
-	}
-
-	if valid := application.ValidateAudience(app, request.Audience); !valid {
-		return "", ErrCannotIssueToken
-	}
-
-	grantType, ok := applicationModel.GrantTypes_value[request.GrantType]
-	if !ok {
-		return "", ErrInvalidGrantType
-	}
-
-	if valid := application.ValidateGrantType(app, applicationModel.GrantTypes(grantType)); !valid {
-		return "", ErrInvalidGrantType
 	}
 
 	userApi, err := api.GetAPI(serv, request.Audience)

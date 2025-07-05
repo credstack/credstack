@@ -1,6 +1,16 @@
 package token
 
-import applicationModel "github.com/stevezaluk/credstack-lib/proto/application"
+import (
+	credstackError "github.com/stevezaluk/credstack-lib/errors"
+	applicationModel "github.com/stevezaluk/credstack-lib/proto/application"
+	tokenModel "github.com/stevezaluk/credstack-lib/proto/request"
+)
+
+// ErrCannotIssueToken - An error that gets returned when an application tries to issue tokens for an audience that it is not authorized too
+var ErrCannotIssueToken = credstackError.NewError(403, "ERR_CANNOT_ISSUE_TOKEN", "token: Unable to issue token for the specified audience. Application is not authorized too")
+
+// ErrInvalidGrantType - An error that gets returned when an application tries to issue tokens for a grant type that it is not authorized too
+var ErrInvalidGrantType = credstackError.NewError(403, "ERR_INVALID_GRANT_TYPE", "token: Invalid grant type for the specified application")
 
 /*
 validateAudience - Validates that an application is allowed to issue tokens for a specified audience. Returns true if it
@@ -24,16 +34,39 @@ func validateAudience(app *applicationModel.Application, audience string) bool {
 validateGrantType - Validates that an application is allowed to issue tokens for a specific grant type. Returns true if it
 is allowed, returns false otherwise. If a nil application is provided in the first argument, then false is also returned
 */
-func validateGrantType(app *applicationModel.Application, grantType applicationModel.GrantTypes) bool {
+func validateGrantType(app *applicationModel.Application, grant string) bool {
 	if app == nil {
 		return false
 	}
 
-	for _, grant := range app.GrantType {
-		if grant == grantType {
+	grantType, ok := applicationModel.GrantTypes_value[grant]
+	if !ok {
+		return false
+	}
+
+	convertedGrantType := applicationModel.GrantTypes(grantType)
+
+	for _, compare := range app.GrantType {
+		if compare == convertedGrantType {
 			return true
 		}
 	}
 
 	return false
+}
+
+/*
+ValidateTokenRequest - Initiates token request validation to ensure that tokens can be issued according to the request
+that was received.
+*/
+func ValidateTokenRequest(request *tokenModel.TokenRequest, app *applicationModel.Application) error {
+	if valid := validateAudience(app, request.Audience); !valid {
+		return ErrCannotIssueToken
+	}
+
+	if valid := validateGrantType(app, request.GrantType); !valid {
+		return ErrInvalidGrantType
+	}
+
+	return nil
 }
