@@ -49,8 +49,6 @@ func NewToken(serv *server.Server, request *request.TokenRequest, issuer string)
 
 	tokenStr := ""
 	if request.GrantType == "client_credentials" {
-		// validate public/confidential here
-
 		privateKey, err := key.GetActiveKey(serv, userApi.TokenType.String(), userApi.Audience)
 		if err != nil {
 			return "", err

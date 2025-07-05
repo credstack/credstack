@@ -12,6 +12,9 @@ var ErrUnauthorizedAudience = credstackError.NewError(403, "ERR_UNAUTHORIZED_AUD
 // ErrUnauthorizedGrantType - An error that gets returned when an application tries to issue tokens for a grant type that it is not authorized too
 var ErrUnauthorizedGrantType = credstackError.NewError(403, "ERR_UNAUTHORIZED_GRANT_TYPE", "token: Invalid grant type for the specified application")
 
+// ErrVisibilityIssue - An error that gets returned when the caller tries to issue a token for a public application
+var ErrVisibilityIssue = credstackError.NewError(400, "ERR_VISIBILITY_ERROR", "token: Failed to issue token for application. Public clients cannot use client credentials flow")
+
 /*
 validateAudience - Validates that an application is allowed to issue tokens for a specified audience. Returns true if it
 is allowed, returns false otherwise. If a nil application is provided in the first argument, then false is also returned
@@ -73,6 +76,10 @@ func ValidateTokenRequest(request *tokenModel.TokenRequest, app *applicationMode
 	}
 
 	if request.GrantType == "client_credentials" {
+		if !app.IsPublic {
+			return ErrVisibilityIssue
+		}
+
 		if request.ClientId == "" || request.ClientSecret == "" {
 			return ErrInvalidTokenRequest
 		}
