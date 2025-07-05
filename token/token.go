@@ -38,6 +38,11 @@ func NewToken(serv *server.Server, request *request.TokenRequest, issuer string)
 		return "", err
 	}
 
+	err = ValidateTokenRequest(request, app)
+	if err != nil {
+		return "", err
+	}
+
 	userApi, err := api.GetAPI(serv, request.Audience)
 	if err != nil {
 		return "", err
@@ -46,11 +51,6 @@ func NewToken(serv *server.Server, request *request.TokenRequest, issuer string)
 	tokenStr := ""
 	if request.GrantType == "client_credentials" {
 		// validate public/confidential here
-
-		// this really needs to be subtle.ConstantTimeCompare
-		if request.ClientSecret != app.ClientSecret {
-			return "", ErrInvalidClientCredentials
-		}
 
 		privateKey, err := key.GetActiveKey(serv, userApi.TokenType.String(), userApi.Audience)
 		if err != nil {

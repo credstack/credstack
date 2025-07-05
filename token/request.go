@@ -60,6 +60,10 @@ ValidateTokenRequest - Initiates token request validation to ensure that tokens 
 that was received.
 */
 func ValidateTokenRequest(request *tokenModel.TokenRequest, app *applicationModel.Application) error {
+	if request.Audience == "" || request.GrantType == "" {
+		return ErrInvalidTokenRequest
+	}
+
 	if valid := validateAudience(app, request.Audience); !valid {
 		return ErrUnauthorizedAudience
 	}
@@ -67,6 +71,19 @@ func ValidateTokenRequest(request *tokenModel.TokenRequest, app *applicationMode
 	if valid := validateGrantType(app, request.GrantType); !valid {
 		return ErrUnauthorizedGrantType
 	}
+
+	if request.GrantType == "client_credentials" {
+		if request.ClientId == "" || request.ClientSecret == "" {
+			return ErrInvalidTokenRequest
+		}
+
+		// this needs to be subtle compare
+		if request.ClientSecret != app.ClientSecret {
+			return ErrInvalidClientCredentials
+		}
+	}
+
+	// need validation for auth code + PKCE
 
 	return nil
 }
