@@ -3,10 +3,10 @@ package token
 import applicationModel "github.com/stevezaluk/credstack-lib/proto/application"
 
 /*
-ValidateAudience - Validates that an application is allowed to issue tokens for a specified audience. Returns true if it
+validateAudience - Validates that an application is allowed to issue tokens for a specified audience. Returns true if it
 is allowed, returns false otherwise. If a nil application is provided in the first argument, then false is also returned
 */
-func ValidateAudience(app *applicationModel.Application, audience string) bool {
+func validateAudience(app *applicationModel.Application, audience string) bool {
 	if app == nil {
 		return false
 	}
@@ -21,10 +21,10 @@ func ValidateAudience(app *applicationModel.Application, audience string) bool {
 }
 
 /*
-ValidateGrantType - Validates that an application is allowed to issue tokens for a specific grant type. Returns true if it
+validateGrantType - Validates that an application is allowed to issue tokens for a specific grant type. Returns true if it
 is allowed, returns false otherwise. If a nil application is provided in the first argument, then false is also returned
 */
-func ValidateGrantType(app *applicationModel.Application, grantType applicationModel.GrantTypes) bool {
+func validateGrantType(app *applicationModel.Application, grantType applicationModel.GrantTypes) bool {
 	if app == nil {
 		return false
 	}
