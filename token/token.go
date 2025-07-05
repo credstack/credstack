@@ -6,6 +6,7 @@ import (
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/key"
 	"github.com/stevezaluk/credstack-lib/proto/request"
+	"github.com/stevezaluk/credstack-lib/proto/response"
 	"github.com/stevezaluk/credstack-lib/server"
 )
 
@@ -14,6 +15,9 @@ var ErrInvalidTokenRequest = credstackError.NewError(400, "ERR_INVALID_TOKEN_REQ
 
 // ErrInvalidClientCredentials - An error that gets returned when the client credentials sent in a token request do not match what was received from the database (during client credentials flow)
 var ErrInvalidClientCredentials = credstackError.NewError(401, "ERR_INVALID_CLIENT_CREDENTIALS", "token: Unable to issue token. Invalid client credentials were supplied")
+
+// ErrFailedToSignToken - An error that gets wrapped when jwt.Token.SignedString returns an error
+var ErrFailedToSignToken = credstackError.NewError(500, "ERR_FAILED_TO_SIGN", "token: Failed to sign token due to an internal error")
 
 /*
 NewToken - A universal function for issuing tokens under any grant type for any audience. This should be used as the token
@@ -28,27 +32,27 @@ application is also validated to ensure that it can issue tokens under the speci
 TODO: Store tokens in Mongo so that they can be revoked quickly
 TODO: Update this function to allow specifying expiration date
 */
-func NewToken(serv *server.Server, request *request.TokenRequest, issuer string) (string, error) {
+func NewToken(serv *server.Server, request *request.TokenRequest, issuer string) (*response.TokenResponse, error) {
 	app, err := application.GetApplication(serv, request.ClientId, true)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	err = ValidateTokenRequest(request, app)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	userApi, err := api.GetAPI(serv, request.Audience)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	tokenStr := ""
+	tokenResp := new(response.TokenResponse)
 	if request.GrantType == "client_credentials" {
 		privateKey, err := key.GetActiveKey(serv, userApi.TokenType.String(), userApi.Audience)
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 
 		tokenClaims := NewClaimsWithSubject(
@@ -61,14 +65,14 @@ func NewToken(serv *server.Server, request *request.TokenRequest, issuer string)
 		if userApi.TokenType.String() == "RS256" {
 			generated, err := GenerateRS256(privateKey, tokenClaims)
 			if err != nil {
-				return "", err
+				return nil, err
 			}
 
-			tokenStr = generated
+			tokenResp = generated
 		}
 	}
 
 	// not storing tokens here. BAD! need this for quick revocation
 
-	return tokenStr, nil
+	return tokenResp, nil
 }
