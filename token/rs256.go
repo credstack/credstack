@@ -4,13 +4,14 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stevezaluk/credstack-lib/key"
 	keyModel "github.com/stevezaluk/credstack-lib/proto/key"
+	"github.com/stevezaluk/credstack-lib/proto/response"
 )
 
 /*
 GenerateRS256 - Generates arbitrary RS256 tokens with the claims that are passed as an argument to this function. This
 function doesn't provide logic for storing the token, and is completely unaware of OAuth authentication flows
 */
-func GenerateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.MapClaims) (string, error) {
+func GenerateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.MapClaims) (*response.TokenResponse, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
 	/*
@@ -20,7 +21,7 @@ func GenerateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.MapClaims) (str
 	*/
 	privateKey, err := key.ToRSAPrivateKey(rsKey)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	/*
@@ -30,8 +31,27 @@ func GenerateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.MapClaims) (str
 	signedString, err := token.SignedString(privateKey)
 	if err != nil {
 		// this error needs to be wrapped
-		return "", err
+		return nil, err
 	}
 
-	return signedString, nil
+	expirationDate, err := token.Claims.GetExpirationTime()
+	if err != nil {
+		// this error needs to be wrapped
+		return nil, err
+	}
+
+	/*
+		After we actually sign our token, we can quickly convert it back into a response.TokenResponse structure so that
+		it can be returned from the API
+	*/
+	signedResponse := &response.TokenResponse{
+		AccessToken:  signedString,
+		TokenType:    "Bearer",
+		ExpiresIn:    uint32(expirationDate.Time.Unix()), // this is bad, could lose precision by down converting to uint32
+		RefreshToken: "",
+		IdToken:      "",
+		Scope:        "",
+	}
+
+	return signedResponse, nil
 }
