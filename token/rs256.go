@@ -5,14 +5,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stevezaluk/credstack-lib/key"
 	keyModel "github.com/stevezaluk/credstack-lib/proto/key"
-	"github.com/stevezaluk/credstack-lib/proto/response"
 )
 
 /*
 GenerateRS256 - Generates arbitrary RS256 tokens with the claims that are passed as an argument to this function. This
 function doesn't provide logic for storing the token, and is completely unaware of OAuth authentication flows
 */
-func GenerateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.MapClaims) (*response.TokenResponse, error) {
+func GenerateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.MapClaims) (*jwt.Token, string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
 	/*
@@ -22,7 +21,7 @@ func GenerateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.MapClaims) (*re
 	*/
 	privateKey, err := key.ToRSAPrivateKey(rsKey)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	/*
@@ -31,28 +30,8 @@ func GenerateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.MapClaims) (*re
 	*/
 	signedString, err := token.SignedString(privateKey)
 	if err != nil {
-		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
+		return nil, "", fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
 	}
 
-	expirationDate, err := token.Claims.GetExpirationTime()
-	if err != nil {
-		// wrapping this error with ErrFailedToSignToken is not ideal as it can lead to some confusion on
-		// how this function failed but... oh well!
-		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
-	}
-
-	/*
-		After we actually sign our token, we can quickly convert it back into a response.TokenResponse structure so that
-		it can be returned from the API
-	*/
-	signedResponse := &response.TokenResponse{
-		AccessToken:  signedString,
-		TokenType:    "Bearer",
-		ExpiresIn:    uint32(expirationDate.Time.Unix()), // this is bad, could lose precision by down converting to uint32
-		RefreshToken: "",
-		IdToken:      "",
-		Scope:        "",
-	}
-
-	return signedResponse, nil
+	return token, signedString, nil
 }

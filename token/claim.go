@@ -20,7 +20,7 @@ func NewClaims(iss string, aud string, kid string) jwt.MapClaims {
 		"kid": kid,
 		"iat": currentTime,
 		"nbf": currentTime,
-		"exp": jwt.NewNumericDate(currentTime.Add(time.Hour)),
+		"exp": jwt.NewNumericDate(currentTime.Add(24 * time.Hour)),
 	}
 }
 

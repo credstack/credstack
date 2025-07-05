@@ -76,7 +76,7 @@ func ValidateTokenRequest(request *tokenModel.TokenRequest, app *applicationMode
 	}
 
 	if request.GrantType == "client_credentials" {
-		if !app.IsPublic {
+		if app.IsPublic {
 			return ErrVisibilityIssue
 		}
 
