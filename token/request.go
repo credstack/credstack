@@ -6,11 +6,11 @@ import (
 	tokenModel "github.com/stevezaluk/credstack-lib/proto/request"
 )
 
-// ErrCannotIssueToken - An error that gets returned when an application tries to issue tokens for an audience that it is not authorized too
-var ErrCannotIssueToken = credstackError.NewError(403, "ERR_CANNOT_ISSUE_TOKEN", "token: Unable to issue token for the specified audience. Application is not authorized too")
+// ErrUnauthorizedAudience - An error that gets returned when an application tries to issue tokens for an audience that it is not authorized too
+var ErrUnauthorizedAudience = credstackError.NewError(403, "ERR_UNAUTHORIZED_AUDIENCE", "token: Unable to issue token for the specified audience. Application is not authorized too")
 
-// ErrInvalidGrantType - An error that gets returned when an application tries to issue tokens for a grant type that it is not authorized too
-var ErrInvalidGrantType = credstackError.NewError(403, "ERR_INVALID_GRANT_TYPE", "token: Invalid grant type for the specified application")
+// ErrUnauthorizedGrantType - An error that gets returned when an application tries to issue tokens for a grant type that it is not authorized too
+var ErrUnauthorizedGrantType = credstackError.NewError(403, "ERR_UNAUTHORIZED_GRANT_TYPE", "token: Invalid grant type for the specified application")
 
 /*
 validateAudience - Validates that an application is allowed to issue tokens for a specified audience. Returns true if it
@@ -61,11 +61,11 @@ that was received.
 */
 func ValidateTokenRequest(request *tokenModel.TokenRequest, app *applicationModel.Application) error {
 	if valid := validateAudience(app, request.Audience); !valid {
-		return ErrCannotIssueToken
+		return ErrUnauthorizedAudience
 	}
 
 	if valid := validateGrantType(app, request.GrantType); !valid {
-		return ErrInvalidGrantType
+		return ErrUnauthorizedGrantType
 	}
 
 	return nil
