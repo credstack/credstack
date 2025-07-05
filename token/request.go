@@ -83,7 +83,11 @@ func ValidateTokenRequest(request *tokenModel.TokenRequest, app *applicationMode
 		}
 	}
 
-	// need validation for auth code + PKCE
+	if request.GrantType == "authorization_code" {
+		if request.RedirectUri == "" || request.Code == "" {
+			return ErrInvalidTokenRequest
+		}
+	}
 
 	return nil
 }
