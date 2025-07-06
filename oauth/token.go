@@ -18,7 +18,7 @@ var ErrInvalidTokenRequest = credstackError.NewError(400, "ERR_INVALID_TOKEN_REQ
 var ErrInvalidClientCredentials = credstackError.NewError(401, "ERR_INVALID_CLIENT_CREDENTIALS", "token: Unable to issue token. Invalid client credentials were supplied")
 
 /*
-NewToken - A universal function for issuing tokens under any grant type for any audience. This should be used as the token
+IssueToken - A universal function for issuing tokens under any grant type for any audience. This should be used as the token
 generating function for implementing OAuth authentication flows. Depending on the authentication flow that is being
 used here, some parts of the request.TokenRequest structure that gets passed is mandatory and an ErrInvalidTokenRequest
 error will be returned if one is missing.
@@ -31,7 +31,7 @@ TODO: Store tokens in Mongo so that they can be revoked quickly
 TODO: Update this function to allow specifying expiration date
 TODO: Better abstraction here. This function is getting a bit convoluted (especially when more flows get added)
 */
-func NewToken(serv *server.Server, request *request.TokenRequest, issuer string) (*response.TokenResponse, error) {
+func IssueToken(serv *server.Server, request *request.TokenRequest, issuer string) (*response.TokenResponse, error) {
 	app, err := application.GetApplication(serv, request.ClientId, true)
 	if err != nil {
 		return nil, err
