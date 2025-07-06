@@ -42,7 +42,7 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 
 	tokenResp := new(response.TokenResponse)
 	if request.GrantType == "client_credentials" {
-		tokenClaims := oauth.NewClaimsWithSubject(
+		tokenClaims := NewClaimsWithSubject(
 			issuer,
 			userApi.Audience,
 			app.ClientId,
