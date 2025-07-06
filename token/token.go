@@ -26,6 +26,7 @@ tokenToResponse - Converts jwt.Token structures into response.TokenResponse stru
 effectively
 
 TODO: Need support for id tokens and refresh tokens here
+TODO: Expires in is not rendering properly, showing expiration instead of token lifetime
 */
 func tokenToResponse(token *jwt.Token, signedString string) (*response.TokenResponse, error) {
 	expirationDate, err := token.Claims.GetExpirationTime()
@@ -62,6 +63,7 @@ application is also validated to ensure that it can issue tokens under the speci
 
 TODO: Store tokens in Mongo so that they can be revoked quickly
 TODO: Update this function to allow specifying expiration date
+TODO: Better abstraction here. This function is getting a bit convoluted (especially when more flows get added)
 */
 func NewToken(serv *server.Server, request *request.TokenRequest, issuer string) (*response.TokenResponse, error) {
 	app, err := application.GetApplication(serv, request.ClientId, true)
@@ -81,25 +83,38 @@ func NewToken(serv *server.Server, request *request.TokenRequest, issuer string)
 
 	tokenResp := new(response.TokenResponse)
 	if request.GrantType == "client_credentials" {
-		privateKey, err := key.GetActiveKey(serv, userApi.TokenType.String(), userApi.Audience)
-		if err != nil {
-			return nil, err
-		}
-
 		tokenClaims := NewClaimsWithSubject(
 			issuer,
 			userApi.Audience,
-			privateKey.Header.Identifier,
 			app.ClientId,
 		)
 
 		if userApi.TokenType.String() == "RS256" {
+			privateKey, err := key.GetActiveKey(serv, userApi.TokenType.String(), userApi.Audience)
+			if err != nil {
+				return nil, err
+			}
+
 			generatedToken, signed, err := GenerateRS256(privateKey, tokenClaims)
 			if err != nil {
 				return nil, err
 			}
 
-			resp, err := tokenToResponse(generatedToken, signed) // failing due to expiration
+			resp, err := tokenToResponse(generatedToken, signed)
+			if err != nil {
+				return nil, err
+			}
+
+			tokenResp = resp
+		}
+
+		if userApi.TokenType.String() == "HS256" {
+			generatedToken, signed, err := GenerateHS256(app.ClientSecret, tokenClaims)
+			if err != nil {
+				return nil, err
+			}
+
+			resp, err := tokenToResponse(generatedToken, signed)
 			if err != nil {
 				return nil, err
 			}
