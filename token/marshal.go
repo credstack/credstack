@@ -13,6 +13,7 @@ effectively
 
 TODO: Need support for id tokens and refresh tokens here
 TODO: Expires in is not rendering properly, showing expiration instead of token lifetime
+TODO: This function feels kind of clunky...
 */
 func MarshalTokenResponse(token *jwt.Token, signedString string) (*response.TokenResponse, error) {
 	expirationDate, err := token.Claims.GetExpirationTime()
