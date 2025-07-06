@@ -1,4 +1,4 @@
-package token
+package oauth
 
 import (
 	credstackError "github.com/stevezaluk/credstack-lib/errors"

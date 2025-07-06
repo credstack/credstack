@@ -1,14 +1,14 @@
-package token
+package oauth
 
 import (
 	"github.com/stevezaluk/credstack-lib/api"
 	"github.com/stevezaluk/credstack-lib/application"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/key"
+	"github.com/stevezaluk/credstack-lib/oauth/algorithm"
 	"github.com/stevezaluk/credstack-lib/proto/request"
 	"github.com/stevezaluk/credstack-lib/proto/response"
 	"github.com/stevezaluk/credstack-lib/server"
-	"github.com/stevezaluk/credstack-lib/token/algorithm"
 )
 
 // ErrInvalidTokenRequest - An error that gets returned if one or more elements of the token request are missing

@@ -1,4 +1,4 @@
-package token
+package oauth
 
 import (
 	"github.com/golang-jwt/jwt/v5"

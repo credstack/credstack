@@ -1,10 +1,10 @@
-package token
+package oauth
 
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/stevezaluk/credstack-lib/oauth/algorithm"
 	"github.com/stevezaluk/credstack-lib/proto/response"
-	"github.com/stevezaluk/credstack-lib/token/algorithm"
 )
 
 /*
