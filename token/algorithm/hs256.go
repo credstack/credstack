@@ -1,6 +1,7 @@
 package algorithm
 
 import (
+	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stevezaluk/credstack-lib/secret"
 )
@@ -30,7 +31,7 @@ func GenerateHS256(clientSecret string, claims jwt.RegisteredClaims) (*jwt.Token
 	*/
 	signedString, err := token.SignedString(decoded)
 	if err != nil {
-		return nil, "", err
+		return nil, "", fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
 	}
 
 	return token, signedString, nil
