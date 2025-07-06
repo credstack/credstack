@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stevezaluk/credstack-lib/proto/response"
+	"github.com/stevezaluk/credstack-lib/token/algorithm"
 )
 
 /*
@@ -18,7 +19,7 @@ func MarshalTokenResponse(token *jwt.Token, signedString string) (*response.Toke
 	if err != nil {
 		// wrapping this error with ErrFailedToSignToken is not ideal as it can lead to some confusion on
 		// how this function failed but... oh well!
-		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
+		return nil, fmt.Errorf("%w (%v)", algorithm.ErrFailedToSignToken, err)
 	}
 	/*
 		After we actually sign our token, we can quickly convert it back into a response.TokenResponse structure so that

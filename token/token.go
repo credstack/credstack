@@ -8,6 +8,7 @@ import (
 	"github.com/stevezaluk/credstack-lib/proto/request"
 	"github.com/stevezaluk/credstack-lib/proto/response"
 	"github.com/stevezaluk/credstack-lib/server"
+	"github.com/stevezaluk/credstack-lib/token/algorithm"
 )
 
 // ErrInvalidTokenRequest - An error that gets returned if one or more elements of the token request are missing
@@ -15,9 +16,6 @@ var ErrInvalidTokenRequest = credstackError.NewError(400, "ERR_INVALID_TOKEN_REQ
 
 // ErrInvalidClientCredentials - An error that gets returned when the client credentials sent in a token request do not match what was received from the database (during client credentials flow)
 var ErrInvalidClientCredentials = credstackError.NewError(401, "ERR_INVALID_CLIENT_CREDENTIALS", "token: Unable to issue token. Invalid client credentials were supplied")
-
-// ErrFailedToSignToken - An error that gets wrapped when jwt.Token.SignedString returns an error
-var ErrFailedToSignToken = credstackError.NewError(500, "ERR_FAILED_TO_SIGN", "token: Failed to sign token due to an internal error")
 
 /*
 NewToken - A universal function for issuing tokens under any grant type for any audience. This should be used as the token
@@ -63,7 +61,7 @@ func NewToken(serv *server.Server, request *request.TokenRequest, issuer string)
 				return nil, err
 			}
 
-			generatedToken, signed, err := GenerateRS256(privateKey, tokenClaims)
+			generatedToken, signed, err := algorithm.GenerateRS256(privateKey, tokenClaims)
 			if err != nil {
 				return nil, err
 			}
@@ -77,7 +75,7 @@ func NewToken(serv *server.Server, request *request.TokenRequest, issuer string)
 		}
 
 		if userApi.TokenType.String() == "HS256" {
-			generatedToken, signed, err := GenerateHS256(app.ClientSecret, tokenClaims)
+			generatedToken, signed, err := algorithm.GenerateHS256(app.ClientSecret, tokenClaims)
 			if err != nil {
 				return nil, err
 			}
