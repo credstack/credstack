@@ -5,7 +5,7 @@ import (
 	"github.com/stevezaluk/credstack-lib/application"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/key"
-	"github.com/stevezaluk/credstack-lib/oauth/algorithm"
+	"github.com/stevezaluk/credstack-lib/oauth/token"
 	"github.com/stevezaluk/credstack-lib/proto/request"
 	"github.com/stevezaluk/credstack-lib/proto/response"
 	"github.com/stevezaluk/credstack-lib/server"
@@ -61,7 +61,7 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 				return nil, err
 			}
 
-			generatedToken, signed, err := algorithm.GenerateRS256(privateKey, tokenClaims)
+			generatedToken, signed, err := token.GenerateRS256(privateKey, tokenClaims)
 			if err != nil {
 				return nil, err
 			}
@@ -75,7 +75,7 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 		}
 
 		if userApi.TokenType.String() == "HS256" {
-			generatedToken, signed, err := algorithm.GenerateHS256(app.ClientSecret, tokenClaims)
+			generatedToken, signed, err := token.GenerateHS256(app.ClientSecret, tokenClaims)
 			if err != nil {
 				return nil, err
 			}
