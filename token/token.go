@@ -1,8 +1,6 @@
 package token
 
 import (
-	"fmt"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/stevezaluk/credstack-lib/api"
 	"github.com/stevezaluk/credstack-lib/application"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
@@ -70,7 +68,7 @@ func NewToken(serv *server.Server, request *request.TokenRequest, issuer string)
 				return nil, err
 			}
 
-			resp, err := tokenToResponse(generatedToken, signed)
+			resp, err := MarshalTokenResponse(generatedToken, signed)
 			if err != nil {
 				return nil, err
 			}
@@ -84,7 +82,7 @@ func NewToken(serv *server.Server, request *request.TokenRequest, issuer string)
 				return nil, err
 			}
 
-			resp, err := tokenToResponse(generatedToken, signed)
+			resp, err := MarshalTokenResponse(generatedToken, signed)
 			if err != nil {
 				return nil, err
 			}

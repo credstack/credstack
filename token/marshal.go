@@ -7,13 +7,13 @@ import (
 )
 
 /*
-tokenToResponse - Converts jwt.Token structures into response.TokenResponse structures so that they can be returned
+MarshalTokenResponse - Converts jwt.Token structures into response.TokenResponse structures so that they can be returned
 effectively
 
 TODO: Need support for id tokens and refresh tokens here
 TODO: Expires in is not rendering properly, showing expiration instead of token lifetime
 */
-func tokenToResponse(token *jwt.Token, signedString string) (*response.TokenResponse, error) {
+func MarshalTokenResponse(token *jwt.Token, signedString string) (*response.TokenResponse, error) {
 	expirationDate, err := token.Claims.GetExpirationTime()
 	if err != nil {
 		// wrapping this error with ErrFailedToSignToken is not ideal as it can lead to some confusion on
