@@ -1,21 +1,14 @@
-package oauth
+package token
 
 import (
 	"github.com/stevezaluk/credstack-lib/api"
 	"github.com/stevezaluk/credstack-lib/application"
-	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/key"
-	"github.com/stevezaluk/credstack-lib/oauth/token"
+	"github.com/stevezaluk/credstack-lib/oauth"
 	"github.com/stevezaluk/credstack-lib/proto/request"
 	"github.com/stevezaluk/credstack-lib/proto/response"
 	"github.com/stevezaluk/credstack-lib/server"
 )
-
-// ErrInvalidTokenRequest - An error that gets returned if one or more elements of the token request are missing
-var ErrInvalidTokenRequest = credstackError.NewError(400, "ERR_INVALID_TOKEN_REQ", "token: Failed to issue token. One or more parts of the token request is missing")
-
-// ErrInvalidClientCredentials - An error that gets returned when the client credentials sent in a token request do not match what was received from the database (during client credentials flow)
-var ErrInvalidClientCredentials = credstackError.NewError(401, "ERR_INVALID_CLIENT_CREDENTIALS", "token: Unable to issue token. Invalid client credentials were supplied")
 
 /*
 IssueToken - A universal function for issuing tokens under any grant type for any audience. This should be used as the token
@@ -37,7 +30,7 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 		return nil, err
 	}
 
-	err = ValidateTokenRequest(request, app)
+	err = oauth.ValidateTokenRequest(request, app)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +42,7 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 
 	tokenResp := new(response.TokenResponse)
 	if request.GrantType == "client_credentials" {
-		tokenClaims := NewClaimsWithSubject(
+		tokenClaims := oauth.NewClaimsWithSubject(
 			issuer,
 			userApi.Audience,
 			app.ClientId,
@@ -61,12 +54,12 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 				return nil, err
 			}
 
-			generatedToken, signed, err := token.GenerateRS256(privateKey, tokenClaims)
+			generatedToken, signed, err := GenerateRS256(privateKey, tokenClaims)
 			if err != nil {
 				return nil, err
 			}
 
-			resp, err := MarshalTokenResponse(generatedToken, signed)
+			resp, err := oauth.MarshalTokenResponse(generatedToken, signed)
 			if err != nil {
 				return nil, err
 			}
@@ -75,12 +68,12 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 		}
 
 		if userApi.TokenType.String() == "HS256" {
-			generatedToken, signed, err := token.GenerateHS256(app.ClientSecret, tokenClaims)
+			generatedToken, signed, err := GenerateHS256(app.ClientSecret, tokenClaims)
 			if err != nil {
 				return nil, err
 			}
 
-			resp, err := MarshalTokenResponse(generatedToken, signed)
+			resp, err := oauth.MarshalTokenResponse(generatedToken, signed)
 			if err != nil {
 				return nil, err
 			}

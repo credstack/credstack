@@ -15,6 +15,12 @@ var ErrUnauthorizedGrantType = credstackError.NewError(403, "ERR_UNAUTHORIZED_GR
 // ErrVisibilityIssue - An error that gets returned when the caller tries to issue a token for a public application
 var ErrVisibilityIssue = credstackError.NewError(400, "ERR_VISIBILITY_ERROR", "token: Failed to issue token for application. Public clients cannot use client credentials flow")
 
+// ErrInvalidTokenRequest - An error that gets returned if one or more elements of the token request are missing
+var ErrInvalidTokenRequest = credstackError.NewError(400, "ERR_INVALID_TOKEN_REQ", "token: Failed to issue token. One or more parts of the token request is missing")
+
+// ErrInvalidClientCredentials - An error that gets returned when the client credentials sent in a token request do not match what was received from the database (during client credentials flow)
+var ErrInvalidClientCredentials = credstackError.NewError(401, "ERR_INVALID_CLIENT_CREDENTIALS", "token: Unable to issue token. Invalid client credentials were supplied")
+
 /*
 validateAudience - Validates that an application is allowed to issue tokens for a specified audience. Returns true if it
 is allowed, returns false otherwise. If a nil application is provided in the first argument, then false is also returned

@@ -3,9 +3,12 @@ package oauth
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/stevezaluk/credstack-lib/oauth/token"
+	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/proto/response"
 )
+
+// ErrMarshalTokenResponse - An error that gets returned
+var ErrMarshalTokenResponse = credstackError.NewError(400, "ERR_MARSHAL_TOKEN_RESPONSE", "token: Failed to marshal token into token response")
 
 /*
 MarshalTokenResponse - Converts jwt.Token structures into response.TokenResponse structures so that they can be returned
@@ -20,8 +23,9 @@ func MarshalTokenResponse(tok *jwt.Token, signedString string) (*response.TokenR
 	if err != nil {
 		// wrapping this error with ErrFailedToSignToken is not ideal as it can lead to some confusion on
 		// how this function failed but... oh well!
-		return nil, fmt.Errorf("%w (%v)", token.ErrFailedToSignToken, err)
+		return nil, fmt.Errorf("%w (%v)", ErrMarshalTokenResponse, err)
 	}
+
 	/*
 		After we actually sign our token, we can quickly convert it back into a response.TokenResponse structure so that
 		it can be returned from the API
