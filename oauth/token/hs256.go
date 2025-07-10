@@ -3,16 +3,18 @@ package token
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/stevezaluk/credstack-lib/oauth"
+	"github.com/stevezaluk/credstack-lib/proto/response"
 	"github.com/stevezaluk/credstack-lib/secret"
 )
 
 /*
-GenerateHS256 - Generates arbitrary HS256 tokens with the claims that are passed as an argument to the function. It is
+generateHS256 - Generates arbitrary HS256 tokens with the claims that are passed as an argument to the function. It is
 expected that a base64 encoded secret string (like the ones generated from secret.RandString) is used as the secret here.
 When used with ClientCredentials flow, the client secret is expected here. As a result, the KID field is not added to the
 header with this function either as both the issuing and validating party must both know the client secret
 */
-func GenerateHS256(clientSecret string, claims jwt.RegisteredClaims) (*jwt.Token, string, error) {
+func generateHS256(clientSecret string, claims jwt.RegisteredClaims) (*response.TokenResponse, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	/*
@@ -23,7 +25,7 @@ func GenerateHS256(clientSecret string, claims jwt.RegisteredClaims) (*jwt.Token
 	decodedBytes := []byte(clientSecret)
 	decoded, err := secret.DecodeBase64(decodedBytes, uint32(len(decodedBytes)))
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	/*
@@ -31,8 +33,13 @@ func GenerateHS256(clientSecret string, claims jwt.RegisteredClaims) (*jwt.Token
 	*/
 	signedString, err := token.SignedString(decoded)
 	if err != nil {
-		return nil, "", fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
+		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
 	}
 
-	return token, signedString, nil
+	resp, err := oauth.MarshalTokenResponse(token, signedString)
+	if err != nil {
+		return nil, fmt.Errorf("%w (%v)", oauth.ErrMarshalTokenResponse, err)
+	}
+
+	return resp, nil
 }

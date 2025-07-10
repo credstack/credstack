@@ -54,12 +54,7 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 				return nil, err
 			}
 
-			generatedToken, signed, err := GenerateRS256(privateKey, tokenClaims)
-			if err != nil {
-				return nil, err
-			}
-
-			resp, err := oauth.MarshalTokenResponse(generatedToken, signed)
+			resp, err := generateRS256(privateKey, tokenClaims)
 			if err != nil {
 				return nil, err
 			}
@@ -68,12 +63,7 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 		}
 
 		if userApi.TokenType.String() == "HS256" {
-			generatedToken, signed, err := GenerateHS256(app.ClientSecret, tokenClaims)
-			if err != nil {
-				return nil, err
-			}
-
-			resp, err := oauth.MarshalTokenResponse(generatedToken, signed)
+			resp, err := generateHS256(app.ClientSecret, tokenClaims)
 			if err != nil {
 				return nil, err
 			}

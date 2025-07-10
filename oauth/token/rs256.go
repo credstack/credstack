@@ -5,6 +5,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/key"
+	"github.com/stevezaluk/credstack-lib/oauth"
+	"github.com/stevezaluk/credstack-lib/proto/response"
 
 	keyModel "github.com/stevezaluk/credstack-lib/proto/key"
 )
@@ -13,10 +15,10 @@ import (
 var ErrFailedToSignToken = credstackError.NewError(500, "ERR_FAILED_TO_SIGN", "token: Failed to sign token due to an internal error")
 
 /*
-GenerateRS256 - Generates arbitrary RS256 tokens with the claims that are passed as an argument to this function. This
+generateRS256 - Generates arbitrary RS256 tokens with the claims that are passed as an argument to this function. This
 function doesn't provide logic for storing the token, and is completely unaware of OAuth authentication flows
 */
-func GenerateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.RegisteredClaims) (*jwt.Token, string, error) {
+func generateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.RegisteredClaims) (*response.TokenResponse, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	token.Header["kid"] = rsKey.Header.Identifier
 
@@ -27,7 +29,7 @@ func GenerateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.RegisteredClaim
 	*/
 	privateKey, err := key.ToRSAPrivateKey(rsKey)
 	if err != nil {
-		return nil, "", err
+		return nil, err
 	}
 
 	/*
@@ -36,8 +38,13 @@ func GenerateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.RegisteredClaim
 	*/
 	signedString, err := token.SignedString(privateKey)
 	if err != nil {
-		return nil, "", fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
+		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
 	}
 
-	return token, signedString, nil
+	resp, err := oauth.MarshalTokenResponse(token, signedString)
+	if err != nil {
+		return nil, fmt.Errorf("%w (%v)", oauth.ErrMarshalTokenResponse, err)
+	}
+
+	return resp, nil
 }
