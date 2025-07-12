@@ -1,14 +1,58 @@
 package token
 
 import (
+	"fmt"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/stevezaluk/credstack-lib/api"
 	"github.com/stevezaluk/credstack-lib/application"
+	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/key"
 	"github.com/stevezaluk/credstack-lib/oauth"
+	apiModel "github.com/stevezaluk/credstack-lib/proto/api"
+	applicationModel "github.com/stevezaluk/credstack-lib/proto/application"
 	"github.com/stevezaluk/credstack-lib/proto/request"
 	"github.com/stevezaluk/credstack-lib/proto/response"
+
 	"github.com/stevezaluk/credstack-lib/server"
 )
+
+// ErrInvalidGrantType - A named error that gets returned when an unrecognized grant type is used to attempt to issue tokens
+var ErrInvalidGrantType = credstackError.NewError(400, "ERR_INVALID_GRANT", "token: Failed to issue token. The specified grant type does not exist")
+
+/*
+newToken - Provides a centralized area for token generation to occur. newToken provides the logic required for associating
+a token type it's associating handler. If a valid signing algorithm is used, then it will return its formatted token
+response, otherwise it will return ErrFailedToSignToken
+*/
+func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*response.TokenResponse, error) {
+	switch api.TokenType.String() {
+	case "RS256":
+		/*
+			We always use the first element in the audience slice as CredStack does not allow issuing multiple audiences
+			in tokens
+		*/
+		privateKey, err := key.GetActiveKey(serv, api.TokenType.String(), api.Audience)
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := generateRS256(privateKey, claims)
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	case "HS256":
+		resp, err := generateHS256(app.ClientSecret, claims)
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+
+	return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, "Invalid Signing Algorithm")
+}
 
 /*
 IssueToken - A universal function for issuing tokens under any grant type for any audience. This should be used as the token
@@ -22,7 +66,6 @@ application is also validated to ensure that it can issue tokens under the speci
 
 TODO: Store tokens in Mongo so that they can be revoked quickly
 TODO: Update this function to allow specifying expiration date
-TODO: Better abstraction here. This function is getting a bit convoluted (especially when more flows get added)
 */
 func IssueToken(serv *server.Server, request *request.TokenRequest, issuer string) (*response.TokenResponse, error) {
 	app, err := application.GetApplication(serv, request.ClientId, true)
@@ -40,7 +83,6 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 		return nil, err
 	}
 
-	tokenResp := new(response.TokenResponse)
 	if request.GrantType == "client_credentials" {
 		tokenClaims := NewClaimsWithSubject(
 			issuer,
@@ -48,31 +90,13 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 			app.ClientId,
 		)
 
-		if userApi.TokenType.String() == "RS256" {
-			privateKey, err := key.GetActiveKey(serv, userApi.TokenType.String(), userApi.Audience)
-			if err != nil {
-				return nil, err
-			}
-
-			resp, err := generateRS256(privateKey, tokenClaims)
-			if err != nil {
-				return nil, err
-			}
-
-			tokenResp = resp
+		tokenResp, err := newToken(serv, userApi, app, tokenClaims)
+		if err != nil {
+			return nil, err
 		}
 
-		if userApi.TokenType.String() == "HS256" {
-			resp, err := generateHS256(app.ClientSecret, tokenClaims)
-			if err != nil {
-				return nil, err
-			}
-
-			tokenResp = resp
-		}
+		return tokenResp, nil
 	}
 
-	// not storing tokens here. BAD! need this for quick revocation
-
-	return tokenResp, nil
+	return nil, nil // bad. need proper error here
 }
