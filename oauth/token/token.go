@@ -19,6 +19,9 @@ import (
 // ErrInvalidGrantType - A named error that gets returned when an unrecognized grant type is used to attempt to issue tokens
 var ErrInvalidGrantType = credstackError.NewError(400, "ERR_INVALID_GRANT", "token: Failed to issue token. The specified grant type does not exist")
 
+// ErrFailedToSignToken - An error that gets wrapped when jwt.Token.SignedString returns an error
+var ErrFailedToSignToken = credstackError.NewError(500, "ERR_FAILED_TO_SIGN", "token: Failed to sign token due to an internal error")
+
 /*
 newToken - Provides a centralized area for token generation to occur. newToken provides the logic required for associating
 a token type it's associating handler. If a valid signing algorithm is used, then it will return its formatted token

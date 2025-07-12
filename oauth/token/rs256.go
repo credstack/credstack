@@ -3,16 +3,12 @@ package token
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/key"
 	"github.com/stevezaluk/credstack-lib/oauth"
 	"github.com/stevezaluk/credstack-lib/proto/response"
 
 	keyModel "github.com/stevezaluk/credstack-lib/proto/key"
 )
-
-// ErrFailedToSignToken - An error that gets wrapped when jwt.Token.SignedString returns an error
-var ErrFailedToSignToken = credstackError.NewError(500, "ERR_FAILED_TO_SIGN", "token: Failed to sign token due to an internal error")
 
 /*
 generateRS256 - Generates arbitrary RS256 tokens with the claims that are passed as an argument to this function. This
