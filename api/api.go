@@ -11,6 +11,7 @@ import (
 	"github.com/stevezaluk/credstack-lib/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 // ErrApiAlreadyExists - Provides a named error for when you try to insert an API with a domain that already exists
@@ -123,6 +124,41 @@ func GetAPI(serv *server.Server, audience string) (*api.API, error) {
 	}
 
 	return &ret, nil
+}
+
+/*
+ListAPI - Lists all user defined API's present in the database. Optionally, a limit can be specified here to limit the
+amount of data returned at once. The maximum that can be returned in a single call is 10, and if a limit exceeds this, it
+will be reset to 10
+*/
+func ListAPI(serv *server.Server, limit int) ([]*api.API, error) {
+	if limit > 10 {
+		limit = 10
+	}
+
+	result, err := serv.Database().Collection("api").Find(
+		context.Background(),
+		bson.M{},
+		mongoOpts.Find().SetBatchSize(int32(limit)),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+	}
+
+	ret := make([]*api.API, 0, limit)
+
+	err = result.All(context.Background(), &ret)
+	if err != nil {
+		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrApiDoesNotExist
+		}
+	}
+
+	return ret, nil
 }
 
 /*
