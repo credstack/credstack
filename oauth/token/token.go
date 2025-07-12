@@ -66,6 +66,15 @@ TODO: Store tokens in Mongo so that they can be revoked quickly
 TODO: Update this function to allow specifying expiration date
 */
 func IssueToken(serv *server.Server, request *request.TokenRequest, issuer string) (*response.TokenResponse, error) {
+	/*
+		We always validate that these are not empty strings as these are required parameters for any grant type that is
+		used. This was moved away from ValidateTokenRequest, to ensure that these get validated **before** we make DB
+		calls
+	*/
+	if request.Audience == "" || request.GrantType == "" {
+		return nil, ErrInvalidTokenRequest
+	}
+
 	userApi, app, err := flow.InitiateAuthFlow(serv, request.Audience, request.ClientId, request.GrantType)
 	if err != nil {
 		return nil, err
