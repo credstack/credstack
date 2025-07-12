@@ -33,7 +33,7 @@ A single database call is consumed here to be able to insert the data into Mongo
 an existing application, then the error: ErrClientIDCollision is returned. Additionally, we wrap any errors that are
 encountered here and returned.
 */
-func NewApplication(serv *server.Server, name string, redirectUri string, grantTypes ...applicationModel.GrantTypes) (string, error) {
+func NewApplication(serv *server.Server, name string, isPublic bool, grantTypes ...applicationModel.GrantTypes) (string, error) {
 	/*
 		If we get a grant types slice that has a length of zero, we always want to append the Authorization Code grant
 		type to it. This ensures that we always have a form of authentication available
@@ -69,13 +69,15 @@ func NewApplication(serv *server.Server, name string, redirectUri string, grantT
 		TODO: URL Validation for redirect URI
 	*/
 	newApplication := &applicationModel.Application{
-		Header:        header.NewHeader(clientId),
-		Name:          name,
-		GrantType:     grantTypes,
-		RedirectUri:   redirectUri,
-		TokenLifetime: 86400,
-		ClientId:      clientId,
-		ClientSecret:  clientSecret,
+		Header:           header.NewHeader(clientId),
+		Name:             name,
+		IsPublic:         isPublic,
+		GrantType:        grantTypes,
+		RedirectUri:      "",
+		TokenLifetime:    86400,
+		ClientId:         clientId,
+		ClientSecret:     clientSecret,
+		AllowedAudiences: []string{},
 	}
 
 	/*
@@ -173,6 +175,10 @@ func UpdateApplication(serv *server.Server, clientId string, patch *applicationM
 			update["name"] = patch.Name
 		}
 
+		if patch.IsPublic {
+			update["is_public"] = patch.IsPublic
+		}
+
 		if patch.RedirectUri != "" {
 			update["redirect_uri"] = patch.RedirectUri
 		}
@@ -183,6 +189,10 @@ func UpdateApplication(serv *server.Server, clientId string, patch *applicationM
 
 		if len(patch.GrantType) != 0 {
 			update["grant_type"] = patch.GrantType
+		}
+
+		if len(patch.AllowedAudiences) != 0 {
+			update["allowed_audiences"] = patch.AllowedAudiences
 		}
 
 		return update
