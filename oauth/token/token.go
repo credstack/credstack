@@ -1,6 +1,7 @@
 package token
 
 import (
+	"crypto/subtle"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
@@ -10,7 +11,6 @@ import (
 	applicationModel "github.com/stevezaluk/credstack-lib/proto/application"
 	"github.com/stevezaluk/credstack-lib/proto/request"
 	"github.com/stevezaluk/credstack-lib/proto/response"
-
 	"github.com/stevezaluk/credstack-lib/server"
 )
 
@@ -83,6 +83,16 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 			userApi.Audience,
 			app.ClientId,
 		)
+
+		/*
+			We use subtle.ConstantTimeCompare here to ensure that we are protected from side channel attacks on the
+			server itself. Ideally, any credential validation that requires a direct comparison would use ConstantTimeCompare.
+
+			Any value returned by this function other than 1, indicates a failure
+		*/
+		if subtle.ConstantTimeCompare([]byte(app.ClientSecret), []byte(request.ClientSecret)) != 1 {
+			return nil, ErrInvalidClientCredentials
+		}
 
 		tokenResp, err := newToken(serv, userApi, app, tokenClaims)
 		if err != nil {

@@ -44,11 +44,6 @@ func ValidateTokenRequest(request *tokenModel.TokenRequest, app *applicationMode
 		if request.ClientId == "" || request.ClientSecret == "" {
 			return ErrInvalidTokenRequest
 		}
-
-		// this needs to be subtle compare. This needs to be moved to either InitiateAuthFlow or IssueToken
-		if request.ClientSecret != app.ClientSecret {
-			return ErrInvalidClientCredentials
-		}
 	}
 
 	/*
