@@ -98,5 +98,5 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 		return tokenResp, nil
 	}
 
-	return nil, nil // bad. need proper error here
+	return nil, ErrInvalidGrantType // bad. need proper error here
 }
