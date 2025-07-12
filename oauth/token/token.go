@@ -21,6 +21,8 @@ var ErrFailedToSignToken = credstackError.NewError(500, "ERR_FAILED_TO_SIGN", "t
 newToken - Provides a centralized area for token generation to occur. newToken provides the logic required for associating
 a token type it's associating handler. If a valid signing algorithm is used, then it will return its formatted token
 response, otherwise it will return ErrFailedToSignToken
+
+TODO: Store tokens in Mongo so that they can be revoked quickly
 */
 func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*response.TokenResponse, error) {
 	switch api.TokenType.String() {
@@ -62,7 +64,6 @@ Additionally, the client_id that is used in the token request is validated to en
 on behalf of the requested audience. If the client_id is no authorized, then ErrInvalidAudience is passed. Finally, the
 application is also validated to ensure that it can issue tokens under the specified OAuth grant type.
 
-TODO: Store tokens in Mongo so that they can be revoked quickly
 TODO: Update this function to allow specifying expiration date
 */
 func IssueToken(serv *server.Server, request *request.TokenRequest, issuer string) (*response.TokenResponse, error) {
