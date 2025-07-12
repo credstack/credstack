@@ -3,10 +3,9 @@ package token
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/stevezaluk/credstack-lib/api"
-	"github.com/stevezaluk/credstack-lib/application"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/key"
+	"github.com/stevezaluk/credstack-lib/oauth/flow"
 	apiModel "github.com/stevezaluk/credstack-lib/proto/api"
 	applicationModel "github.com/stevezaluk/credstack-lib/proto/application"
 	"github.com/stevezaluk/credstack-lib/proto/request"
@@ -14,9 +13,6 @@ import (
 
 	"github.com/stevezaluk/credstack-lib/server"
 )
-
-// ErrInvalidGrantType - A named error that gets returned when an unrecognized grant type is used to attempt to issue tokens
-var ErrInvalidGrantType = credstackError.NewError(400, "ERR_INVALID_GRANT", "token: Failed to issue token. The specified grant type does not exist")
 
 // ErrFailedToSignToken - An error that gets wrapped when jwt.Token.SignedString returns an error
 var ErrFailedToSignToken = credstackError.NewError(500, "ERR_FAILED_TO_SIGN", "token: Failed to sign token due to an internal error")
@@ -70,17 +66,12 @@ TODO: Store tokens in Mongo so that they can be revoked quickly
 TODO: Update this function to allow specifying expiration date
 */
 func IssueToken(serv *server.Server, request *request.TokenRequest, issuer string) (*response.TokenResponse, error) {
-	app, err := application.GetApplication(serv, request.ClientId, true)
+	userApi, app, err := flow.InitiateAuthFlow(serv, request.Audience, request.ClientId, request.GrantType)
 	if err != nil {
 		return nil, err
 	}
 
 	err = ValidateTokenRequest(request, app)
-	if err != nil {
-		return nil, err
-	}
-
-	userApi, err := api.GetAPI(serv, request.Audience)
 	if err != nil {
 		return nil, err
 	}
@@ -101,5 +92,5 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 		return tokenResp, nil
 	}
 
-	return nil, ErrInvalidGrantType // bad. need proper error here
+	return nil, ErrFailedToSignToken
 }

@@ -6,12 +6,6 @@ import (
 	tokenModel "github.com/stevezaluk/credstack-lib/proto/request"
 )
 
-// ErrUnauthorizedAudience - An error that gets returned when an application tries to issue tokens for an audience that it is not authorized too
-var ErrUnauthorizedAudience = credstackError.NewError(403, "ERR_UNAUTHORIZED_AUDIENCE", "token: Unable to issue token for the specified audience. Application is not authorized too")
-
-// ErrUnauthorizedGrantType - An error that gets returned when an application tries to issue tokens for a grant type that it is not authorized too
-var ErrUnauthorizedGrantType = credstackError.NewError(403, "ERR_UNAUTHORIZED_GRANT_TYPE", "token: Invalid grant type for the specified application")
-
 // ErrVisibilityIssue - An error that gets returned when the caller tries to issue a token for a public application
 var ErrVisibilityIssue = credstackError.NewError(400, "ERR_VISIBILITY_ERROR", "token: Failed to issue token for application. Public clients cannot use client credentials flow")
 
@@ -20,49 +14,6 @@ var ErrInvalidTokenRequest = credstackError.NewError(400, "ERR_INVALID_TOKEN_REQ
 
 // ErrInvalidClientCredentials - An error that gets returned when the client credentials sent in a token request do not match what was received from the database (during client credentials flow)
 var ErrInvalidClientCredentials = credstackError.NewError(401, "ERR_INVALID_CLIENT_CREDENTIALS", "token: Unable to issue token. Invalid client credentials were supplied")
-
-/*
-validateAudience - Validates that an application is allowed to issue tokens for a specified audience. Returns true if it
-is allowed, returns false otherwise. If a nil application is provided in the first argument, then false is also returned
-*/
-func validateAudience(app *applicationModel.Application, audience string) bool {
-	if app == nil {
-		return false
-	}
-
-	for _, aud := range app.AllowedAudiences {
-		if audience == aud {
-			return true
-		}
-	}
-
-	return false
-}
-
-/*
-validateGrantType - Validates that an application is allowed to issue tokens for a specific grant type. Returns true if it
-is allowed, returns false otherwise. If a nil application is provided in the first argument, then false is also returned
-*/
-func validateGrantType(app *applicationModel.Application, grant string) bool {
-	if app == nil {
-		return false
-	}
-
-	grantType, ok := applicationModel.GrantTypes_value[grant]
-	if !ok {
-		return false
-	}
-
-	convertedGrantType := applicationModel.GrantTypes(grantType)
-
-	for _, compare := range app.GrantType {
-		if compare == convertedGrantType {
-			return true
-		}
-	}
-
-	return false
-}
 
 /*
 ValidateTokenRequest - Initiates token request validation to ensure that tokens can be issued according to the request
@@ -75,18 +26,6 @@ func ValidateTokenRequest(request *tokenModel.TokenRequest, app *applicationMode
 	*/
 	if request.Audience == "" || request.GrantType == "" {
 		return ErrInvalidTokenRequest
-	}
-
-	/*
-		Next we validate the Application is authorized to issue tokens for the requested audience, under the
-		requested grant type
-	*/
-	if valid := validateAudience(app, request.Audience); !valid {
-		return ErrUnauthorizedAudience
-	}
-
-	if valid := validateGrantType(app, request.GrantType); !valid {
-		return ErrUnauthorizedGrantType
 	}
 
 	/*
@@ -106,7 +45,7 @@ func ValidateTokenRequest(request *tokenModel.TokenRequest, app *applicationMode
 			return ErrInvalidTokenRequest
 		}
 
-		// this needs to be subtle compare
+		// this needs to be subtle compare. This needs to be moved to either InitiateAuthFlow or IssueToken
 		if request.ClientSecret != app.ClientSecret {
 			return ErrInvalidClientCredentials
 		}

@@ -1,3 +1,69 @@
 package flow
 
+import (
+	"github.com/stevezaluk/credstack-lib/api"
+	"github.com/stevezaluk/credstack-lib/application"
+	credstackError "github.com/stevezaluk/credstack-lib/errors"
+	apiModel "github.com/stevezaluk/credstack-lib/proto/api"
+	applicationModel "github.com/stevezaluk/credstack-lib/proto/application"
+	"github.com/stevezaluk/credstack-lib/server"
+	"slices"
+)
 
+// ErrUnauthorizedAudience - An error that gets returned when an application tries to issue tokens for an audience that it is not authorized too
+var ErrUnauthorizedAudience = credstackError.NewError(403, "ERR_UNAUTHORIZED_AUDIENCE", "token: Unable to issue token for the specified audience. Application is not authorized too")
+
+// ErrUnauthorizedGrantType - An error that gets returned when an application tries to issue tokens for a grant type that it is not authorized too
+var ErrUnauthorizedGrantType = credstackError.NewError(403, "ERR_UNAUTHORIZED_GRANT_TYPE", "token: Invalid grant type for the specified application")
+
+// ErrInvalidGrantType - A named error that gets returned when an unrecognized grant type is used to attempt to issue tokens
+var ErrInvalidGrantType = credstackError.NewError(400, "ERR_INVALID_GRANT", "token: Failed to issue token. The specified grant type does not exist")
+
+/*
+InitiateAuthFlow - Fetch's an API based on its audience along with its associating application. This acts as a central
+"initialization" function for any OAuth authentication flows as we almost always need these two models. Additionally,
+some validation is performed here to ensure that the requested application is allowed to issue tokens for the requested
+*/
+func InitiateAuthFlow(serv *server.Server, audience string, clientId string, requestedGrant string) (*apiModel.API, *applicationModel.Application, error) {
+	app, err := application.GetApplication(serv, clientId, true)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	/*
+		We always want to validate that the application model is **permitted** to issue tokens under the
+		requested audience. This is done to ensure that the applications and api's the end user creates can
+		be granular in their permissions.
+
+		We do all of this validation here, before we request the API to ensure that we are not wasting CPU time by
+		making database calls for a potentially invalid request
+	*/
+	if !slices.Contains(app.AllowedAudiences, audience) {
+		return nil, nil, ErrUnauthorizedAudience
+	}
+
+	/*
+		Since Application.GrantType is an enum, we need to perform some conversion here to be able to
+		validate its string representation of it. Ideally, all of this validation could be externalized
+		to the DB layer by updating GetApplication to validate this
+	*/
+	grantType, ok := applicationModel.GrantTypes_value[requestedGrant]
+	if !ok {
+		return nil, nil, ErrInvalidGrantType
+	}
+
+	/*
+		Just like with the API audience, we validate that the application is allowed to issue tokens under the
+		requested grant type
+	*/
+	if !slices.Contains(app.GrantType, applicationModel.GrantTypes(grantType)) {
+		return nil, nil, ErrUnauthorizedGrantType
+	}
+
+	userApi, err := api.GetAPI(serv, audience)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return userApi, app, nil
+}
