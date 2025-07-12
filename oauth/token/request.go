@@ -19,6 +19,14 @@ ValidateTokenRequest - Initiates token request validation to ensure that tokens 
 that was received.
 */
 func ValidateTokenRequest(request *tokenModel.TokenRequest) error {
+	/*
+		We always validate that these are not empty strings as these are required parameters for any grant type that is
+		used. This was moved away from ValidateTokenRequest, to ensure that these get validated **before** we make DB
+		calls
+	*/
+	if request.Audience == "" || request.GrantType == "" {
+		return ErrInvalidTokenRequest
+	}
 
 	/*
 		Here want to validate parameters specific to the client_credentials flow. We also want to validate the visibility
