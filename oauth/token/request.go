@@ -2,7 +2,6 @@ package token
 
 import (
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
-	applicationModel "github.com/stevezaluk/credstack-lib/proto/application"
 	tokenModel "github.com/stevezaluk/credstack-lib/proto/request"
 )
 
@@ -19,16 +18,13 @@ var ErrInvalidClientCredentials = credstackError.NewError(401, "ERR_INVALID_CLIE
 ValidateTokenRequest - Initiates token request validation to ensure that tokens can be issued according to the request
 that was received.
 */
-func ValidateTokenRequest(request *tokenModel.TokenRequest, app *applicationModel.Application) error {
+func ValidateTokenRequest(request *tokenModel.TokenRequest) error {
 
 	/*
 		Here want to validate parameters specific to the client_credentials flow. We also want to validate the visibility
 		of the application here as public applications are not able to utilize client_credentials flow
 	*/
 	if request.GrantType == "client_credentials" {
-		if app.IsPublic {
-			return ErrVisibilityIssue
-		}
 
 		/*
 			This is kind of un-needed, as the below conditional would fail if this was an empty string, but it creates

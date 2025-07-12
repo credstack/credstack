@@ -80,18 +80,20 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 		return nil, err
 	}
 
-	err = ValidateTokenRequest(request, app)
+	err = ValidateTokenRequest(request)
 	if err != nil {
 		return nil, err
 	}
 
 	switch request.GrantType {
 	case "client_credentials":
-		tokenClaims := NewClaimsWithSubject(
-			issuer,
-			userApi.Audience,
-			app.ClientId,
-		)
+		/*
+			Only confidential applications are able to issue tokens under client credentials flow. Similar to our credentials
+			validation, we do this before anything else as we can't proceed with the token generation if this is true
+		*/
+		if app.IsPublic {
+			return nil, ErrVisibilityIssue
+		}
 
 		/*
 			We use subtle.ConstantTimeCompare here to ensure that we are protected from side channel attacks on the
@@ -102,6 +104,12 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 		if subtle.ConstantTimeCompare([]byte(app.ClientSecret), []byte(request.ClientSecret)) != 1 {
 			return nil, ErrInvalidClientCredentials
 		}
+
+		tokenClaims := NewClaimsWithSubject(
+			issuer,
+			userApi.Audience,
+			app.ClientId,
+		)
 
 		tokenResp, err := newToken(serv, userApi, app, tokenClaims)
 		if err != nil {
