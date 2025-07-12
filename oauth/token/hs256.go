@@ -13,7 +13,7 @@ expected that a base64 encoded secret string (like the ones generated from secre
 When used with ClientCredentials flow, the client secret is expected here. As a result, the KID field is not added to the
 header with this function either as both the issuing and validating party must both know the client secret
 */
-func generateHS256(clientSecret string, claims jwt.RegisteredClaims) (*response.TokenResponse, error) {
+func generateHS256(clientSecret string, claims jwt.RegisteredClaims, expiresIn uint32) (*response.TokenResponse, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	/*
@@ -35,7 +35,7 @@ func generateHS256(clientSecret string, claims jwt.RegisteredClaims) (*response.
 		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
 	}
 
-	resp, err := MarshalTokenResponse(token, signedString)
+	resp, err := MarshalTokenResponse(signedString, expiresIn)
 	if err != nil {
 		return nil, fmt.Errorf("%w (%v)", ErrMarshalTokenResponse, err)
 	}

@@ -13,7 +13,7 @@ import (
 generateRS256 - Generates arbitrary RS256 tokens with the claims that are passed as an argument to this function. This
 function doesn't provide logic for storing the token, and is completely unaware of OAuth authentication flows
 */
-func generateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.RegisteredClaims) (*response.TokenResponse, error) {
+func generateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.RegisteredClaims, expiresIn uint32) (*response.TokenResponse, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	token.Header["kid"] = rsKey.Header.Identifier
 
@@ -36,7 +36,7 @@ func generateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.RegisteredClaim
 		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
 	}
 
-	resp, err := MarshalTokenResponse(token, signedString)
+	resp, err := MarshalTokenResponse(signedString, expiresIn)
 	if err != nil {
 		return nil, fmt.Errorf("%w (%v)", ErrMarshalTokenResponse, err)
 	}

@@ -36,14 +36,14 @@ func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Appl
 			return nil, err
 		}
 
-		resp, err := generateRS256(privateKey, claims)
+		resp, err := generateRS256(privateKey, claims, uint32(app.TokenLifetime))
 		if err != nil {
 			return nil, err
 		}
 
 		return resp, nil
 	case "HS256":
-		resp, err := generateHS256(app.ClientSecret, claims)
+		resp, err := generateHS256(app.ClientSecret, claims, uint32(app.TokenLifetime))
 		if err != nil {
 			return nil, err
 		}
@@ -101,6 +101,7 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 			issuer,
 			userApi.Audience,
 			app.ClientId,
+			app.TokenLifetime,
 		)
 
 		tokenResp, err := newToken(serv, userApi, app, tokenClaims)
