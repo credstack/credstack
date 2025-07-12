@@ -83,7 +83,8 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 		return nil, err
 	}
 
-	if request.GrantType == "client_credentials" {
+	switch request.GrantType {
+	case "client_credentials":
 		tokenClaims := NewClaimsWithSubject(
 			issuer,
 			userApi.Audience,
