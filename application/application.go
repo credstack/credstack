@@ -105,6 +105,41 @@ func NewApplication(serv *server.Server, name string, isPublic bool, grantTypes 
 }
 
 /*
+ListApplication - Lists all applications present in the database. Optionally, a limit can be specified here to limit the
+amount of data returned at once. The maximum that can be returned in a single call is 10, and if a limit exceeds this, it
+will be reset to 10
+*/
+func ListApplication(serv *server.Server, limit int) ([]*applicationModel.Application, error) {
+	if limit > 10 {
+		limit = 10
+	}
+
+	result, err := serv.Database().Collection("application").Find(
+		context.Background(),
+		bson.M{},
+		mongoOpts.Find().SetBatchSize(int32(limit)),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+	}
+
+	ret := make([]*applicationModel.Application, 0, limit)
+
+	err = result.All(context.Background(), &ret)
+	if err != nil {
+		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrAppDoesNotExist
+		}
+	}
+
+	return ret, nil
+}
+
+/*
 GetApplication - Fetches an application from the database and returns is protobuf model. If you are fetching an app without
 its credentials, then set withCredentials to false. Projection is used on this to prevent the credentials from even leaving
 the database. If the app does not exist under the client_id, then ErrAppDoesNotExist is returned. If you try and fetch
