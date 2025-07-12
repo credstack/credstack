@@ -65,6 +65,47 @@ func GetUser(serv *server.Server, email string, withCredentials bool) (*userMode
 }
 
 /*
+ListUser - Lists all users present in the database. Optionally, a limit can be specified here to limit the
+amount of data returned at once. The maximum that can be returned in a single call is 10, and if a limit exceeds this, it
+will be reset to 10
+*/
+func ListUser(serv *server.Server, limit int, withCredentials bool) ([]*userModel.User, error) {
+	if limit > 10 {
+		limit = 10
+	}
+
+	findOpts := mongoOpts.Find().SetBatchSize(int32(limit))
+	if !withCredentials {
+		findOpts.SetProjection(bson.M{"credential": 0})
+	}
+
+	result, err := serv.Database().Collection("user").Find(
+		context.Background(),
+		bson.M{},
+		findOpts,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+	}
+
+	ret := make([]*userModel.User, 0, limit)
+
+	err = result.All(context.Background(), &ret)
+	if err != nil {
+		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrUserDoesNotExist
+		}
+	}
+
+	return ret, nil
+}
+
+/*
 UpdateUser - Provides functionality for updating a select number of fields of the user model. A valid email address
 must be provided as an argument for this function call. Fields to update can be passed in the patch parameter. The
 following fields can be updated: Username, GivenName, FamilyName, Gender, BirthDate, and Address. If you need to
