@@ -109,15 +109,20 @@ ListApplication - Lists all applications present in the database. Optionally, a 
 amount of data returned at once. The maximum that can be returned in a single call is 10, and if a limit exceeds this, it
 will be reset to 10
 */
-func ListApplication(serv *server.Server, limit int) ([]*applicationModel.Application, error) {
+func ListApplication(serv *server.Server, limit int, withCredentials bool) ([]*applicationModel.Application, error) {
 	if limit > 10 {
 		limit = 10
+	}
+
+	findOpts := mongoOpts.Find().SetLimit(int64(limit))
+	if !withCredentials {
+		findOpts = findOpts.SetProjection(bson.M{"client_secret": 0})
 	}
 
 	result, err := serv.Database().Collection("application").Find(
 		context.Background(),
 		bson.M{},
-		mongoOpts.Find().SetBatchSize(int32(limit)),
+		findOpts,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
