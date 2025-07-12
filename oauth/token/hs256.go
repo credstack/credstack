@@ -3,7 +3,6 @@ package token
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/stevezaluk/credstack-lib/oauth"
 	"github.com/stevezaluk/credstack-lib/proto/response"
 	"github.com/stevezaluk/credstack-lib/secret"
 )
@@ -36,9 +35,9 @@ func generateHS256(clientSecret string, claims jwt.RegisteredClaims) (*response.
 		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
 	}
 
-	resp, err := oauth.MarshalTokenResponse(token, signedString)
+	resp, err := MarshalTokenResponse(token, signedString)
 	if err != nil {
-		return nil, fmt.Errorf("%w (%v)", oauth.ErrMarshalTokenResponse, err)
+		return nil, fmt.Errorf("%w (%v)", ErrMarshalTokenResponse, err)
 	}
 
 	return resp, nil

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/stevezaluk/credstack-lib/key"
-	"github.com/stevezaluk/credstack-lib/oauth"
 	"github.com/stevezaluk/credstack-lib/proto/response"
 
 	keyModel "github.com/stevezaluk/credstack-lib/proto/key"
@@ -37,9 +36,9 @@ func generateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.RegisteredClaim
 		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
 	}
 
-	resp, err := oauth.MarshalTokenResponse(token, signedString)
+	resp, err := MarshalTokenResponse(token, signedString)
 	if err != nil {
-		return nil, fmt.Errorf("%w (%v)", oauth.ErrMarshalTokenResponse, err)
+		return nil, fmt.Errorf("%w (%v)", ErrMarshalTokenResponse, err)
 	}
 
 	return resp, nil

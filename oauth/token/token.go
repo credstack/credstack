@@ -7,7 +7,6 @@ import (
 	"github.com/stevezaluk/credstack-lib/application"
 	credstackError "github.com/stevezaluk/credstack-lib/errors"
 	"github.com/stevezaluk/credstack-lib/key"
-	"github.com/stevezaluk/credstack-lib/oauth"
 	apiModel "github.com/stevezaluk/credstack-lib/proto/api"
 	applicationModel "github.com/stevezaluk/credstack-lib/proto/application"
 	"github.com/stevezaluk/credstack-lib/proto/request"
@@ -76,7 +75,7 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 		return nil, err
 	}
 
-	err = oauth.ValidateTokenRequest(request, app)
+	err = ValidateTokenRequest(request, app)
 	if err != nil {
 		return nil, err
 	}
