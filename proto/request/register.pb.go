@@ -26,13 +26,13 @@ const (
 type UserRegisterRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// email - The primary email address for the user. Must be unique
-	Email string `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty" bson:"email"` // @gotags: bson:"email"
+	Email string `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty" bson:"email" form:"email"` // @gotags: bson:"email" form:"email"
 	// username - The username of the user. Does not need to be unique as primary lookup for the user is done via userId
-	Username string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty" bson:"username"` // @gotags: bson:"username"
+	Username string `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty" bson:"username" form:"username"` // @gotags: bson:"username" form:"username"
 	// password - The plain text password for the user. Will be hashed on the server-side using ArgonV2ID
-	Password string `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty" bson:"password"` // @gotags: bson:"password"
+	Password string `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty" bson:"password" form:"password"` // @gotags: bson:"password" form:"password"
 	// phone_number - The users phone number in the following format +1800-555-555
-	PhoneNumber   string `protobuf:"bytes,4,opt,name=phone_number,json=phoneNumber,proto3" json:"phone_number,omitempty" bson:"phone_number"` // @gotags: bson:"phone_number"
+	PhoneNumber   string `protobuf:"bytes,4,opt,name=phone_number,json=phoneNumber,proto3" json:"phone_number,omitempty" bson:"phone_number" form:"phone_number"` // @gotags: bson:"phone_number" form:"phone_number"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
