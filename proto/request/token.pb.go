@@ -26,17 +26,17 @@ const (
 type TokenRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// grant_type - Describes the type of OAuth grant flow you are using
-	GrantType string `protobuf:"bytes,1,opt,name=grant_type,json=grantType,proto3" json:"grant_type,omitempty" bson:"grant_type" form:"grant_type"` // @gotags: bson:"grant_type" form:"grant_type"
+	GrantType string `protobuf:"bytes,1,opt,name=grant_type,json=grantType,proto3" json:"grant_type,omitempty" bson:"grant_type" query:"grant_type"` // @gotags: bson:"grant_type" query:"grant_type"
 	// client_id - The client id of the application. Can be null in some cases
-	ClientId string `protobuf:"bytes,2,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" bson:"client_id" form:"client_id"` // @gotags: bson:"client_id" form:"client_id"
+	ClientId string `protobuf:"bytes,2,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty" bson:"client_id" query:"client_id"` // @gotags: bson:"client_id" query:"client_id"
 	// client_secret - The client secret of the application. Can be null in some cases
-	ClientSecret string `protobuf:"bytes,3,opt,name=client_secret,json=clientSecret,proto3" json:"client_secret,omitempty" bson:"client_secret" form:"client_secret"` // @gotags: bson:"client_secret" form:"client_secret"
+	ClientSecret string `protobuf:"bytes,3,opt,name=client_secret,json=clientSecret,proto3" json:"client_secret,omitempty" bson:"client_secret" query:"client_secret"` // @gotags: bson:"client_secret" query:"client_secret"
 	// audience - The audience for the API you are requesting a token for
-	Audience string `protobuf:"bytes,4,opt,name=audience,proto3" json:"audience,omitempty" bson:"audience" form:"audience"` // @gotags: bson:"audience" form:"audience"
+	Audience string `protobuf:"bytes,4,opt,name=audience,proto3" json:"audience,omitempty" bson:"audience" query:"audience"` // @gotags: bson:"audience" query:"audience"
 	// code - The code used in Authorization Code flow
-	Code string `protobuf:"bytes,5,opt,name=code,proto3" json:"code,omitempty" bson:"code" form:"code"` // @gotags: bson:"code" form:"code"
+	Code string `protobuf:"bytes,5,opt,name=code,proto3" json:"code,omitempty" bson:"code" query:"code"` // @gotags: bson:"code" query:"code"
 	// redirect_uri - The redirect URI used in Authorization code flow
-	RedirectUri   string `protobuf:"bytes,6,opt,name=redirect_uri,json=redirectUri,proto3" json:"redirect_uri,omitempty" bson:"redirect_uri" form:"redirect_uri"` // @gotags: bson:"redirect_uri" form:"redirect_uri"
+	RedirectUri   string `protobuf:"bytes,6,opt,name=redirect_uri,json=redirectUri,proto3" json:"redirect_uri,omitempty" bson:"redirect_uri" query:"redirect_uri"` // @gotags: bson:"redirect_uri" query:"redirect_uri"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
