@@ -24,11 +24,11 @@ const (
 type LoginRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// email - The primary email address for the user. Must be unique
-	Email string `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty" bson:"email" form:"email"` // @gotags: bson:"email" form:"email"
+	Email string `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty" bson:"email" query:"email"` // @gotags: bson:"email" query:"email"
 	// password - The plain text password for the user. Will be hashed on the server-side using ArgonV2ID
-	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty" bson:"password" form:"password"` // @gotags: bson:"password" form:"password"
+	Password string `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty" bson:"password" query:"password"` // @gotags: bson:"password" query:"password"
 	// mfaCode - The user's multifactor authentication code generated on there device
-	MfaCode       uint32 `protobuf:"varint,3,opt,name=mfa_code,json=mfaCode,proto3" json:"mfa_code,omitempty" bson:"mfa_code" form:"mfa_code"` // @gotags: bson:"mfa_code" form:"mfa_code"
+	MfaCode       uint32 `protobuf:"varint,3,opt,name=mfa_code,json=mfaCode,proto3" json:"mfa_code,omitempty" bson:"mfa_code" query:"mfa_code"` // @gotags: bson:"mfa_code" query:"mfa_code"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
