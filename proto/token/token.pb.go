@@ -34,12 +34,16 @@ type Token struct {
 	AccessToken string `protobuf:"bytes,3,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty" bson:"access_token"` // @gotags: bson:"access_token"
 	// refresh_token - The refresh token that was issued
 	RefreshToken string `protobuf:"bytes,4,opt,name=refresh_token,json=refreshToken,proto3" json:"refresh_token,omitempty" bson:"refresh_token"` // @gotags: bson:"refresh_token"
+	// id_token - The ID token that was issued
+	IdToken string `protobuf:"bytes,5,opt,name=id_token,json=idToken,proto3" json:"id_token,omitempty" bson:"id_token"` // @gotags: bson:"id_token"
+	// expires_in - The time in seconds that the token expires in
+	ExpiresIn uint32 `protobuf:"varint,6,opt,name=expires_in,json=expiresIn,proto3" json:"expires_in,omitempty" bson:"expires_in"` // @gotags: bson:"expires_in"
 	// expires_at - A timestamp that represents the datetime in which the access token expires
-	ExpiresAt *timestamp.Timestamp `protobuf:"bytes,5,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty" bson:"expires_at"` // @gotags: bson:"expires_at"
+	ExpiresAt *timestamp.Timestamp `protobuf:"bytes,7,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty" bson:"expires_at"` // @gotags: bson:"expires_at"
 	// refresh_expires_at - A timestamp that represents the datetime in which the refresh token expires
-	RefreshExpiresAt *timestamp.Timestamp `protobuf:"bytes,6,opt,name=refresh_expires_at,json=refreshExpiresAt,proto3" json:"refresh_expires_at,omitempty" bson:"refresh_expires_at"` // @gotags: bson:"refresh_expires_at"
+	RefreshExpiresAt *timestamp.Timestamp `protobuf:"bytes,8,opt,name=refresh_expires_at,json=refreshExpiresAt,proto3" json:"refresh_expires_at,omitempty" bson:"refresh_expires_at"` // @gotags: bson:"refresh_expires_at"
 	// scope - Any permission scopes that were issued with the token
-	Scope         string `protobuf:"bytes,7,opt,name=scope,proto3" json:"scope,omitempty" bson:"scope"` // @gotags: bson:"scope"
+	Scope         string `protobuf:"bytes,9,opt,name=scope,proto3" json:"scope,omitempty" bson:"scope"` // @gotags: bson:"scope"
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -102,6 +106,20 @@ func (x *Token) GetRefreshToken() string {
 	return ""
 }
 
+func (x *Token) GetIdToken() string {
+	if x != nil {
+		return x.IdToken
+	}
+	return ""
+}
+
+func (x *Token) GetExpiresIn() uint32 {
+	if x != nil {
+		return x.ExpiresIn
+	}
+	return 0
+}
+
 func (x *Token) GetExpiresAt() *timestamp.Timestamp {
 	if x != nil {
 		return x.ExpiresAt
@@ -127,16 +145,19 @@ var File_proto_token_token_proto protoreflect.FileDescriptor
 
 const file_proto_token_token_proto_rawDesc = "" +
 	"\n" +
-	"\x17proto/token/token.proto\x12\x05token\x1a\x1fgoogle/protobuf/timestamp.proto\"\x99\x02\n" +
+	"\x17proto/token/token.proto\x12\x05token\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd3\x02\n" +
 	"\x05Token\x12\x10\n" +
 	"\x03sub\x18\x01 \x01(\tR\x03sub\x12\x1b\n" +
 	"\tclient_id\x18\x02 \x01(\tR\bclientId\x12!\n" +
 	"\faccess_token\x18\x03 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x04 \x01(\tR\frefreshToken\x129\n" +
+	"\rrefresh_token\x18\x04 \x01(\tR\frefreshToken\x12\x19\n" +
+	"\bid_token\x18\x05 \x01(\tR\aidToken\x12\x1d\n" +
 	"\n" +
-	"expires_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12H\n" +
-	"\x12refresh_expires_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\x10refreshExpiresAt\x12\x14\n" +
-	"\x05scope\x18\a \x01(\tR\x05scopeB0Z.github.com/credstack/credstack-lib/proto/tokenb\x06proto3"
+	"expires_in\x18\x06 \x01(\rR\texpiresIn\x129\n" +
+	"\n" +
+	"expires_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12H\n" +
+	"\x12refresh_expires_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\x10refreshExpiresAt\x12\x14\n" +
+	"\x05scope\x18\t \x01(\tR\x05scopeB0Z.github.com/credstack/credstack-lib/proto/tokenb\x06proto3"
 
 var (
 	file_proto_token_token_proto_rawDescOnce sync.Once
