@@ -10,6 +10,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+/*
+ClientCredentialsFlow - Attempts to issue a token under Client Credentials flow and begins any validation required for
+ensuring that the request received was valid.
+*/
 func ClientCredentialsFlow(app *applicationModel.Application, api *apiModel.API, request *tokenModel.TokenRequest, issuer string) (*jwt.RegisteredClaims, error) {
 	/*
 		Only confidential applications are able to issue tokens under client credentials flow. Similar to our credentials
