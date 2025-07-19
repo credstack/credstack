@@ -13,22 +13,7 @@ ValidateTokenRequest - Initiates token request validation to ensure that tokens 
 that was received.
 */
 func ValidateTokenRequest(request *tokenModel.TokenRequest) error {
-
-	/*
-		Here want to validate parameters specific to the client_credentials flow. We also want to validate the visibility
-		of the application here as public applications are not able to utilize client_credentials flow
-	*/
-	if request.GrantType == "client_credentials" {
-
-		/*
-			This is kind of un-needed, as the below conditional would fail if this was an empty string, but it creates
-			some clarity on the errors that are occurring during the token issuance process
-		*/
-		if request.ClientId == "" || request.ClientSecret == "" {
-			return ErrInvalidTokenRequest
-		}
-	}
-
+	
 	/*
 		Authorization code flow is a bit simpler to validate for, as we only really need to ensure that request.Code and
 		request.RedirectUri match. We don't need to explicitly validate the client_id here as application.GetApplication
