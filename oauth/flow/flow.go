@@ -4,7 +4,6 @@ import (
 	"github.com/credstack/credstack-lib/api"
 	"github.com/credstack/credstack-lib/application"
 	credstackError "github.com/credstack/credstack-lib/errors"
-	"github.com/credstack/credstack-lib/oauth/token"
 	apiModel "github.com/credstack/credstack-lib/proto/api"
 	applicationModel "github.com/credstack/credstack-lib/proto/application"
 	"github.com/credstack/credstack-lib/proto/request"
@@ -84,24 +83,14 @@ func IssueTokenForFlow(serv *server.Server, request *request.TokenRequest, issue
 		return nil, ErrInvalidTokenRequest
 	}
 
-	userApi, app, err := InitiateAuthFlow(serv, request.Audience, request.ClientId, request.GrantType)
-	if err != nil {
-		return nil, err
-	}
-
 	switch request.GrantType {
 	case "client_credentials":
-		claims, err := ClientCredentialsFlow(app, userApi, request, issuer)
+		resp, err := ClientCredentialsFlow(serv, request, issuer)
 		if err != nil {
 			return nil, err
 		}
 
-		tokenResp, err := token.NewToken(serv, userApi, app, *claims)
-		if err != nil {
-			return nil, err
-		}
-
-		return tokenResp, nil
+		return resp, nil
 	}
 
 	return nil, ErrInvalidGrantType

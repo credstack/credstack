@@ -4,17 +4,22 @@ import (
 	"crypto/subtle"
 	"github.com/credstack/credstack-lib/application"
 	"github.com/credstack/credstack-lib/oauth/claim"
-	apiModel "github.com/credstack/credstack-lib/proto/api"
-	applicationModel "github.com/credstack/credstack-lib/proto/application"
+	"github.com/credstack/credstack-lib/oauth/token"
 	"github.com/credstack/credstack-lib/proto/request"
-	"github.com/golang-jwt/jwt/v5"
+	tokenModel "github.com/credstack/credstack-lib/proto/token"
+	"github.com/credstack/credstack-lib/server"
 )
 
 /*
 ClientCredentialsFlow - Attempts to issue a token under Client Credentials flow and begins any validation required for
 ensuring that the request received was valid.
 */
-func ClientCredentialsFlow(app *applicationModel.Application, api *apiModel.API, request *request.TokenRequest, issuer string) (*jwt.RegisteredClaims, error) {
+func ClientCredentialsFlow(serv *server.Server, request *request.TokenRequest, issuer string) (*tokenModel.TokenResponse, error) {
+	userApi, app, err := InitiateAuthFlow(serv, request.Audience, request.ClientId, request.GrantType)
+	if err != nil {
+		return nil, err
+	}
+
 	/*
 		Only confidential applications are able to issue tokens under client credentials flow. Similar to our credentials
 		validation, we do this before anything else as we can't proceed with the token generation if this is true
@@ -35,10 +40,15 @@ func ClientCredentialsFlow(app *applicationModel.Application, api *apiModel.API,
 
 	tokenClaims := claim.NewClaimsWithSubject(
 		issuer,
-		api.Audience,
+		userApi.Audience,
 		app.ClientId,
 		app.TokenLifetime,
 	)
 
-	return &tokenClaims, nil
+	tokenResp, err := token.NewToken(serv, userApi, app, tokenClaims)
+	if err != nil {
+		return nil, err
+	}
+
+	return tokenResp, nil
 }
