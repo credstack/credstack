@@ -4,8 +4,11 @@ import (
 	"github.com/credstack/credstack-lib/api"
 	"github.com/credstack/credstack-lib/application"
 	credstackError "github.com/credstack/credstack-lib/errors"
+	"github.com/credstack/credstack-lib/oauth/token"
 	apiModel "github.com/credstack/credstack-lib/proto/api"
 	applicationModel "github.com/credstack/credstack-lib/proto/application"
+	"github.com/credstack/credstack-lib/proto/request"
+	tokenModel "github.com/credstack/credstack-lib/proto/token"
 	"github.com/credstack/credstack-lib/server"
 	"slices"
 )
@@ -18,6 +21,9 @@ var ErrUnauthorizedGrantType = credstackError.NewError(403, "ERR_UNAUTHORIZED_GR
 
 // ErrInvalidGrantType - A named error that gets returned when an unrecognized grant type is used to attempt to issue tokens
 var ErrInvalidGrantType = credstackError.NewError(400, "ERR_INVALID_GRANT", "token: Failed to issue token. The specified grant type does not exist")
+
+// ErrInvalidTokenRequest - An error that gets returned if one or more elements of the token request are missing
+var ErrInvalidTokenRequest = credstackError.NewError(400, "ERR_INVALID_TOKEN_REQ", "token: Failed to issue token. One or more parts of the token request is missing")
 
 /*
 InitiateAuthFlow - Fetch's an API based on its audience along with its associating application. This acts as a central
@@ -66,4 +72,37 @@ func InitiateAuthFlow(serv *server.Server, audience string, clientId string, req
 	}
 
 	return userApi, app, nil
+}
+
+/*
+IssueTokenForFlow - Responsible for issuing access tokens under a specific OAuth authentication flow. Handles validating
+token requests and marshaling access tokens to a token.TokenResponse structure. Any errors that are returned from this
+function are wrapped with errors.CredstackError.
+*/
+func IssueTokenForFlow(serv *server.Server, request *request.TokenRequest, issuer string) (*tokenModel.TokenResponse, error) {
+	if request.Audience == "" || request.GrantType == "" {
+		return nil, ErrInvalidTokenRequest
+	}
+
+	userApi, app, err := InitiateAuthFlow(serv, request.Audience, request.ClientId, request.GrantType)
+	if err != nil {
+		return nil, err
+	}
+
+	switch request.GrantType {
+	case "client_credentials":
+		claims, err := ClientCredentialsFlow(app, userApi, request, issuer)
+		if err != nil {
+			return nil, err
+		}
+
+		tokenResp, err := token.NewToken(serv, userApi, app, *claims)
+		if err != nil {
+			return nil, err
+		}
+
+		return tokenResp, nil
+	}
+
+	return nil, ErrInvalidGrantType
 }

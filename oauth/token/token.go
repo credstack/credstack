@@ -6,10 +6,8 @@ import (
 	"fmt"
 	credstackError "github.com/credstack/credstack-lib/errors"
 	"github.com/credstack/credstack-lib/key"
-	"github.com/credstack/credstack-lib/oauth/flow"
 	apiModel "github.com/credstack/credstack-lib/proto/api"
 	applicationModel "github.com/credstack/credstack-lib/proto/application"
-	"github.com/credstack/credstack-lib/proto/request"
 	tokenModel "github.com/credstack/credstack-lib/proto/token"
 	"github.com/credstack/credstack-lib/server"
 	"github.com/golang-jwt/jwt/v5"
@@ -25,11 +23,11 @@ var ErrFailedToSignToken = credstackError.NewError(500, "ERR_FAILED_TO_SIGN", "t
 var ErrTokenCollision = credstackError.NewError(500, "ERR_TOKEN_COLLISION", "token: A duplicate access token was issued")
 
 /*
-newToken - Provides a centralized area for token generation to occur. newToken provides the logic required for associating
+NewToken - Provides a centralized area for token generation to occur. newToken provides the logic required for associating
 a token type it's associating handler. If a valid signing algorithm is used, then it will return its formatted token
 response, otherwise it will return ErrFailedToSignToken
 */
-func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*tokenModel.TokenResponse, error) {
+func NewToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*tokenModel.TokenResponse, error) {
 	var tokenResp *tokenModel.TokenResponse
 
 	switch api.TokenType.String() {
@@ -99,46 +97,4 @@ func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Appl
 	}
 
 	return tokenResp, nil
-}
-
-/*
-IssueToken - A universal function for issuing tokens under any grant type for any audience. This should be used as the token
-generating function for implementing OAuth authentication flows. Depending on the authentication flow that is being
-used here, some parts of the request.TokenRequest structure that gets passed is mandatory and an ErrInvalidTokenRequest
-error will be returned if one is missing.
-
-Additionally, the client_id that is used in the token request is validated to ensure that it is allowed to issue tokens
-on behalf of the requested audience. If the client_id is no authorized, then ErrInvalidAudience is passed. Finally, the
-application is also validated to ensure that it can issue tokens under the specified OAuth grant type.
-*/
-func IssueToken(serv *server.Server, request *request.TokenRequest, issuer string) (*tokenModel.TokenResponse, error) {
-	/*
-		We always validate that these are not empty strings as these are required parameters for any grant type that is
-		used.
-	*/
-	if request.Audience == "" || request.GrantType == "" {
-		return nil, ErrInvalidTokenRequest
-	}
-
-	userApi, app, err := flow.InitiateAuthFlow(serv, request.Audience, request.ClientId, request.GrantType)
-	if err != nil {
-		return nil, err
-	}
-
-	switch request.GrantType {
-	case "client_credentials":
-		claims, err := flow.ClientCredentialsFlow(app, userApi, request, issuer)
-		if err != nil {
-			return nil, err
-		}
-
-		tokenResp, err := newToken(serv, userApi, app, *claims)
-		if err != nil {
-			return nil, err
-		}
-
-		return tokenResp, nil
-	}
-
-	return nil, ErrFailedToSignToken
 }
