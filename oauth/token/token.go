@@ -2,13 +2,10 @@ package token
 
 import (
 	"context"
-	"crypto/subtle"
 	"errors"
 	"fmt"
-	"github.com/credstack/credstack-lib/application"
 	credstackError "github.com/credstack/credstack-lib/errors"
 	"github.com/credstack/credstack-lib/key"
-	"github.com/credstack/credstack-lib/oauth/claim"
 	"github.com/credstack/credstack-lib/oauth/flow"
 	apiModel "github.com/credstack/credstack-lib/proto/api"
 	applicationModel "github.com/credstack/credstack-lib/proto/application"
@@ -129,32 +126,12 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 
 	switch request.GrantType {
 	case "client_credentials":
-		/*
-			Only confidential applications are able to issue tokens under client credentials flow. Similar to our credentials
-			validation, we do this before anything else as we can't proceed with the token generation if this is true
-		*/
-		if app.IsPublic {
-			return nil, application.ErrVisibilityIssue
+		claims, err := flow.ClientCredentialsFlow(app, userApi, request, issuer)
+		if err != nil {
+			return nil, err
 		}
 
-		/*
-			We use subtle.ConstantTimeCompare here to ensure that we are protected from side channel attacks on the
-			server itself. Ideally, any credential validation that requires a direct comparison would use ConstantTimeCompare.
-
-			Any value returned by this function other than 1, indicates a failure
-		*/
-		if subtle.ConstantTimeCompare([]byte(app.ClientSecret), []byte(request.ClientSecret)) != 1 {
-			return nil, application.ErrInvalidClientCredentials
-		}
-
-		tokenClaims := claim.NewClaimsWithSubject(
-			issuer,
-			userApi.Audience,
-			app.ClientId,
-			app.TokenLifetime,
-		)
-
-		tokenResp, err := newToken(serv, userApi, app, tokenClaims)
+		tokenResp, err := newToken(serv, userApi, app, *claims)
 		if err != nil {
 			return nil, err
 		}
