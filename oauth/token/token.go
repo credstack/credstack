@@ -72,7 +72,9 @@ func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Appl
 	internalToken := &tokenModel.Token{
 		AccessToken:  tokenResp.AccessToken,
 		RefreshToken: tokenResp.RefreshToken,
+		IdToken:      tokenResp.IdToken,
 		ClientId:     app.ClientId,
+		ExpiresIn:    tokenResp.ExpiresIn,
 		ExpiresAt:    pbTimestamp.New(time.Now().Add(time.Duration(tokenResp.ExpiresIn))),
 		Scope:        tokenResp.Scope,
 	}
