@@ -1,8 +1,8 @@
 package token
 
 import (
-	credstackError "github.com/stevezaluk/credstack-lib/errors"
-	"github.com/stevezaluk/credstack-lib/proto/response"
+	credstackError "github.com/credstack/credstack-lib/errors"
+	"github.com/credstack/credstack-lib/proto/response"
 )
 
 // ErrMarshalTokenResponse - An error that gets returned

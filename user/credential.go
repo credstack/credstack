@@ -2,10 +2,10 @@ package user
 
 import (
 	"fmt"
-	credstackError "github.com/stevezaluk/credstack-lib/errors"
-	"github.com/stevezaluk/credstack-lib/options"
-	"github.com/stevezaluk/credstack-lib/proto/user"
-	"github.com/stevezaluk/credstack-lib/secret"
+	credstackError "github.com/credstack/credstack-lib/errors"
+	"github.com/credstack/credstack-lib/options"
+	"github.com/credstack/credstack-lib/proto/user"
+	"github.com/credstack/credstack-lib/secret"
 )
 
 // ErrUserCredentialInvalid - Provides a named error for when user credential validation fails

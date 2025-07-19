@@ -73,7 +73,7 @@ const file_proto_key_jwks_proto_rawDesc = "" +
 	"\n" +
 	"\x14proto/key/jwks.proto\x12\x03key\x1a\x13proto/key/jwk.proto\"4\n" +
 	"\rJSONWebKeySet\x12#\n" +
-	"\x04keys\x18\x01 \x03(\v2\x0f.key.JSONWebKeyR\x04keysB/Z-github.com/stevezaluk/credstack-lib/proto/keyb\x06proto3"
+	"\x04keys\x18\x01 \x03(\v2\x0f.key.JSONWebKeyR\x04keysB.Z,github.com/credstack/credstack-lib/proto/keyb\x06proto3"
 
 var (
 	file_proto_key_jwks_proto_rawDescOnce sync.Once

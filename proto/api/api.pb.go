@@ -7,7 +7,7 @@
 package api
 
 import (
-	header "github.com/stevezaluk/credstack-lib/proto/header"
+	header "github.com/credstack/credstack-lib/proto/header"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -164,7 +164,7 @@ const file_proto_api_api_proto_rawDesc = "" +
 	"\fenforce_rbac\x18\x05 \x01(\bR\venforceRbac*!\n" +
 	"\tTokenType\x12\t\n" +
 	"\x05HS256\x10\x00\x12\t\n" +
-	"\x05RS256\x10\x01B/Z-github.com/stevezaluk/credstack-lib/proto/apib\x06proto3"
+	"\x05RS256\x10\x01B.Z,github.com/credstack/credstack-lib/proto/apib\x06proto3"
 
 var (
 	file_proto_api_api_proto_rawDescOnce sync.Once

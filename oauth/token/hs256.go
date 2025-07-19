@@ -2,9 +2,9 @@ package token
 
 import (
 	"fmt"
+	"github.com/credstack/credstack-lib/proto/response"
+	"github.com/credstack/credstack-lib/secret"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/stevezaluk/credstack-lib/proto/response"
-	"github.com/stevezaluk/credstack-lib/secret"
 )
 
 /*

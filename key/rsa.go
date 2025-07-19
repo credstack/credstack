@@ -5,9 +5,9 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
-	"github.com/stevezaluk/credstack-lib/header"
-	"github.com/stevezaluk/credstack-lib/proto/key"
-	"github.com/stevezaluk/credstack-lib/secret"
+	"github.com/credstack/credstack-lib/header"
+	"github.com/credstack/credstack-lib/proto/key"
+	"github.com/credstack/credstack-lib/secret"
 	"math/big"
 )
 

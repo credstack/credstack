@@ -3,15 +3,15 @@ package token
 import (
 	"crypto/subtle"
 	"fmt"
+	credstackError "github.com/credstack/credstack-lib/errors"
+	"github.com/credstack/credstack-lib/key"
+	"github.com/credstack/credstack-lib/oauth/flow"
+	apiModel "github.com/credstack/credstack-lib/proto/api"
+	applicationModel "github.com/credstack/credstack-lib/proto/application"
+	"github.com/credstack/credstack-lib/proto/request"
+	"github.com/credstack/credstack-lib/proto/response"
+	"github.com/credstack/credstack-lib/server"
 	"github.com/golang-jwt/jwt/v5"
-	credstackError "github.com/stevezaluk/credstack-lib/errors"
-	"github.com/stevezaluk/credstack-lib/key"
-	"github.com/stevezaluk/credstack-lib/oauth/flow"
-	apiModel "github.com/stevezaluk/credstack-lib/proto/api"
-	applicationModel "github.com/stevezaluk/credstack-lib/proto/application"
-	"github.com/stevezaluk/credstack-lib/proto/request"
-	"github.com/stevezaluk/credstack-lib/proto/response"
-	"github.com/stevezaluk/credstack-lib/server"
 )
 
 // ErrFailedToSignToken - An error that gets wrapped when jwt.Token.SignedString returns an error

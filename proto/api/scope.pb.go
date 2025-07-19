@@ -7,7 +7,7 @@
 package api
 
 import (
-	header "github.com/stevezaluk/credstack-lib/proto/header"
+	header "github.com/credstack/credstack-lib/proto/header"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -107,7 +107,7 @@ const file_proto_api_scope_proto_rawDesc = "" +
 	"\x06header\x18\x01 \x01(\v2\x0e.header.HeaderR\x06header\x12%\n" +
 	"\x0eassociated_api\x18\x02 \x01(\tR\rassociatedApi\x12\x10\n" +
 	"\x03key\x18\x03 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x04 \x01(\tR\x05valueB/Z-github.com/stevezaluk/credstack-lib/proto/apib\x06proto3"
+	"\x05value\x18\x04 \x01(\tR\x05valueB.Z,github.com/credstack/credstack-lib/proto/apib\x06proto3"
 
 var (
 	file_proto_api_scope_proto_rawDescOnce sync.Once

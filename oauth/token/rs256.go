@@ -2,11 +2,11 @@ package token
 
 import (
 	"fmt"
+	"github.com/credstack/credstack-lib/key"
+	"github.com/credstack/credstack-lib/proto/response"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/stevezaluk/credstack-lib/key"
-	"github.com/stevezaluk/credstack-lib/proto/response"
 
-	keyModel "github.com/stevezaluk/credstack-lib/proto/key"
+	keyModel "github.com/credstack/credstack-lib/proto/key"
 )
 
 /*

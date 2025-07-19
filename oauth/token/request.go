@@ -1,8 +1,8 @@
 package token
 
 import (
-	credstackError "github.com/stevezaluk/credstack-lib/errors"
-	tokenModel "github.com/stevezaluk/credstack-lib/proto/request"
+	credstackError "github.com/credstack/credstack-lib/errors"
+	tokenModel "github.com/credstack/credstack-lib/proto/request"
 )
 
 // ErrVisibilityIssue - An error that gets returned when the caller tries to issue a token for a public application

@@ -7,7 +7,7 @@
 package key
 
 import (
-	header "github.com/stevezaluk/credstack-lib/proto/header"
+	header "github.com/credstack/credstack-lib/proto/header"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -126,7 +126,7 @@ const file_proto_key_private_proto_rawDesc = "" +
 	"\x04size\x18\x04 \x01(\x03R\x04size\x12\x1d\n" +
 	"\n" +
 	"is_current\x18\x05 \x01(\bR\tisCurrent\x12\x1a\n" +
-	"\baudience\x18\x06 \x01(\tR\baudienceB/Z-github.com/stevezaluk/credstack-lib/proto/keyb\x06proto3"
+	"\baudience\x18\x06 \x01(\tR\baudienceB.Z,github.com/credstack/credstack-lib/proto/keyb\x06proto3"
 
 var (
 	file_proto_key_private_proto_rawDescOnce sync.Once

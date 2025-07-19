@@ -124,7 +124,7 @@ const file_proto_key_jwk_proto_rawDesc = "" +
 	"\x03kid\x18\x03 \x01(\tR\x03kid\x12\x10\n" +
 	"\x03alg\x18\x04 \x01(\tR\x03alg\x12\f\n" +
 	"\x01n\x18\x05 \x01(\tR\x01n\x12\f\n" +
-	"\x01e\x18\x06 \x01(\tR\x01eB/Z-github.com/stevezaluk/credstack-lib/proto/keyb\x06proto3"
+	"\x01e\x18\x06 \x01(\tR\x01eB.Z,github.com/credstack/credstack-lib/proto/keyb\x06proto3"
 
 var (
 	file_proto_key_jwk_proto_rawDescOnce sync.Once

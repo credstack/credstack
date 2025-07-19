@@ -7,7 +7,7 @@
 package user
 
 import (
-	header "github.com/stevezaluk/credstack-lib/proto/header"
+	header "github.com/credstack/credstack-lib/proto/header"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -241,7 +241,7 @@ const file_proto_user_user_proto_rawDesc = "" +
 	"credential\x18\x0f \x01(\v2\x14.user.UserCredentialR\n" +
 	"credential\x12\x16\n" +
 	"\x06scopes\x18\x10 \x03(\tR\x06scopes\x12\x14\n" +
-	"\x05roles\x18\x11 \x03(\tR\x05rolesB0Z.github.com/stevezaluk/credstack-lib/proto/userb\x06proto3"
+	"\x05roles\x18\x11 \x03(\tR\x05rolesB/Z-github.com/credstack/credstack-lib/proto/userb\x06proto3"
 
 var (
 	file_proto_user_user_proto_rawDescOnce sync.Once

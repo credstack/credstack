@@ -7,7 +7,7 @@
 package api
 
 import (
-	header "github.com/stevezaluk/credstack-lib/proto/header"
+	header "github.com/credstack/credstack-lib/proto/header"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -107,7 +107,7 @@ const file_proto_api_role_proto_rawDesc = "" +
 	"\x06scopes\x18\x04 \x03(\v2\x15.api.Role.ScopesEntryR\x06scopes\x1a9\n" +
 	"\vScopesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B/Z-github.com/stevezaluk/credstack-lib/proto/apib\x06proto3"
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01B.Z,github.com/credstack/credstack-lib/proto/apib\x06proto3"
 
 var (
 	file_proto_api_role_proto_rawDescOnce sync.Once

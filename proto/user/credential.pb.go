@@ -136,7 +136,7 @@ const file_proto_user_credential_proto_rawDesc = "" +
 	"\n" +
 	"key_length\x18\x06 \x01(\rR\tkeyLength\x12\x1f\n" +
 	"\vsalt_length\x18\a \x01(\rR\n" +
-	"saltLengthB0Z.github.com/stevezaluk/credstack-lib/proto/userb\x06proto3"
+	"saltLengthB/Z-github.com/credstack/credstack-lib/proto/userb\x06proto3"
 
 var (
 	file_proto_user_credential_proto_rawDescOnce sync.Once
