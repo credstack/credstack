@@ -15,6 +15,8 @@ import (
 	"github.com/credstack/credstack-lib/server"
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	pbTimestamp "google.golang.org/protobuf/types/known/timestamppb"
+	"time"
 )
 
 // ErrFailedToSignToken - An error that gets wrapped when jwt.Token.SignedString returns an error
@@ -60,6 +62,22 @@ func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Appl
 	}
 
 	/*
+		We use a separate model here to track tokens internally as we need some additional metadata to properly
+		support revocation and introspection
+
+		This isn't working with TTL indexes properly, so for now tokens will pretty much never get removed
+		from the database. This is a major limitation here, but without creating some hacky shit it will
+		have to exist.
+	*/
+	internalToken := &tokenModel.Token{
+		AccessToken:  tokenResp.AccessToken,
+		RefreshToken: tokenResp.RefreshToken,
+		ClientId:     app.ClientId,
+		ExpiresAt:    pbTimestamp.New(time.Now().Add(time.Duration(tokenResp.ExpiresIn))),
+		Scope:        tokenResp.Scope,
+	}
+
+	/*
 		Were currently just storing the plain old token response here, which may pose some issues down the road specifically
 		if we want to implement functionality for revoking tokens for a specific user. This will fit the token revocation
 		endpoint spec as defined in RFC 7009 fairly well though, as we really just need the access token we want to
@@ -67,9 +85,8 @@ func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Appl
 
 		Keep in mind, JWTs are stateless. So "revoking" a token, really just means that the token will not be reported
 		as active by the token introspection endpoint
-
 	*/
-	_, err := serv.Database().Collection("token").InsertOne(context.Background(), tokenResp)
+	_, err := serv.Database().Collection("token").InsertOne(context.Background(), internalToken)
 	if err != nil {
 		var writeError mongo.WriteException
 		if errors.As(err, &writeError) {
