@@ -114,9 +114,12 @@ on behalf of the requested audience. If the client_id is no authorized, then Err
 application is also validated to ensure that it can issue tokens under the specified OAuth grant type.
 */
 func IssueToken(serv *server.Server, request *request.TokenRequest, issuer string) (*tokenModel.TokenResponse, error) {
-	err := ValidateTokenRequest(request)
-	if err != nil {
-		return nil, err
+	/*
+		We always validate that these are not empty strings as these are required parameters for any grant type that is
+		used.
+	*/
+	if request.Audience == "" || request.GrantType == "" {
+		return nil, ErrInvalidTokenRequest
 	}
 
 	userApi, app, err := flow.InitiateAuthFlow(serv, request.Audience, request.ClientId, request.GrantType)
