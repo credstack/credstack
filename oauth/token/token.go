@@ -8,6 +8,7 @@ import (
 	"github.com/credstack/credstack-lib/application"
 	credstackError "github.com/credstack/credstack-lib/errors"
 	"github.com/credstack/credstack-lib/key"
+	"github.com/credstack/credstack-lib/oauth/claim"
 	"github.com/credstack/credstack-lib/oauth/flow"
 	apiModel "github.com/credstack/credstack-lib/proto/api"
 	applicationModel "github.com/credstack/credstack-lib/proto/application"
@@ -146,7 +147,7 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 			return nil, application.ErrInvalidClientCredentials
 		}
 
-		tokenClaims := NewClaimsWithSubject(
+		tokenClaims := claim.NewClaimsWithSubject(
 			issuer,
 			userApi.Audience,
 			app.ClientId,
