@@ -27,6 +27,8 @@ var ErrTokenCollision = credstackError.NewError(500, "ERR_TOKEN_COLLISION", "tok
 newToken - Provides a centralized area for token generation to occur. newToken provides the logic required for associating
 a token type it's associating handler. If a valid signing algorithm is used, then it will return its formatted token
 response, otherwise it will return ErrFailedToSignToken
+
+TODO: We really need a custom model for storing access tokens. A custom expiresAt field is needed for leveraging TTL indexes. This needs to be an actual timestamp, not just seconds until the token expires
 */
 func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*response.TokenResponse, error) {
 	var tokenResp *response.TokenResponse
@@ -66,7 +68,6 @@ func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Appl
 		Keep in mind, JWTs are stateless. So "revoking" a token, really just means that the token will not be reported
 		as active by the token introspection endpoint
 
-		TODO: We really need a custom model for storing access tokens. A custom expiresAt field is needed for leveraging TTL indexes. This needs to be an actual timestamp, not just seconds until the token expires
 	*/
 	_, err := serv.Database().Collection("token").InsertOne(context.Background(), tokenResp)
 	if err != nil {
