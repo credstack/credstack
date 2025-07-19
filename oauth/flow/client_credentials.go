@@ -6,7 +6,7 @@ import (
 	"github.com/credstack/credstack-lib/oauth/claim"
 	apiModel "github.com/credstack/credstack-lib/proto/api"
 	applicationModel "github.com/credstack/credstack-lib/proto/application"
-	tokenModel "github.com/credstack/credstack-lib/proto/request"
+	"github.com/credstack/credstack-lib/proto/request"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -14,7 +14,7 @@ import (
 ClientCredentialsFlow - Attempts to issue a token under Client Credentials flow and begins any validation required for
 ensuring that the request received was valid.
 */
-func ClientCredentialsFlow(app *applicationModel.Application, api *apiModel.API, request *tokenModel.TokenRequest, issuer string) (*jwt.RegisteredClaims, error) {
+func ClientCredentialsFlow(app *applicationModel.Application, api *apiModel.API, request *request.TokenRequest, issuer string) (*jwt.RegisteredClaims, error) {
 	/*
 		Only confidential applications are able to issue tokens under client credentials flow. Similar to our credentials
 		validation, we do this before anything else as we can't proceed with the token generation if this is true
