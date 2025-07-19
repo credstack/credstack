@@ -25,11 +25,11 @@ var ErrInvalidGrantType = credstackError.NewError(400, "ERR_INVALID_GRANT", "tok
 var ErrInvalidTokenRequest = credstackError.NewError(400, "ERR_INVALID_TOKEN_REQ", "token: Failed to issue token. One or more parts of the token request is missing")
 
 /*
-InitiateAuthFlow - Fetch's an API based on its audience along with its associating application. This acts as a central
+initiateAuthFlow - Fetch's an API based on its audience along with its associating application. This acts as a central
 "initialization" function for any OAuth authentication flows as we almost always need these two models. Additionally,
 some validation is performed here to ensure that the requested application is allowed to issue tokens for the requested
 */
-func InitiateAuthFlow(serv *server.Server, audience string, clientId string, requestedGrant string) (*apiModel.API, *applicationModel.Application, error) {
+func initiateAuthFlow(serv *server.Server, audience string, clientId string, requestedGrant string) (*apiModel.API, *applicationModel.Application, error) {
 	app, err := application.GetApplication(serv, clientId, true)
 	if err != nil {
 		return nil, nil, err
