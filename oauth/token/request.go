@@ -11,9 +11,6 @@ var ErrVisibilityIssue = credstackError.NewError(400, "ERR_VISIBILITY_ERROR", "t
 // ErrInvalidTokenRequest - An error that gets returned if one or more elements of the token request are missing
 var ErrInvalidTokenRequest = credstackError.NewError(400, "ERR_INVALID_TOKEN_REQ", "token: Failed to issue token. One or more parts of the token request is missing")
 
-// ErrInvalidClientCredentials - An error that gets returned when the client credentials sent in a token request do not match what was received from the database (during client credentials flow)
-var ErrInvalidClientCredentials = credstackError.NewError(401, "ERR_INVALID_CLIENT_CREDENTIALS", "token: Unable to issue token. Invalid client credentials were supplied")
-
 /*
 ValidateTokenRequest - Initiates token request validation to ensure that tokens can be issued according to the request
 that was received.

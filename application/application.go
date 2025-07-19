@@ -14,6 +14,9 @@ import (
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
+// ErrInvalidClientCredentials - An error that gets returned when the client credentials sent in a token request do not match what was received from the database (during client credentials flow)
+var ErrInvalidClientCredentials = credstackError.NewError(401, "ERR_INVALID_CLIENT_CREDENTIALS", "token: Unable to issue token. Invalid client credentials were supplied")
+
 // ErrClientIDCollision - Provides a named error for when a new application is created with the same client ID
 var ErrClientIDCollision = credstackError.NewError(500, "APP_CLIENT_ID_COLLISION", "application: A collision was detected while creating a new application")
 

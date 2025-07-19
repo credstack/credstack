@@ -5,6 +5,7 @@ import (
 	"crypto/subtle"
 	"errors"
 	"fmt"
+	"github.com/credstack/credstack-lib/application"
 	credstackError "github.com/credstack/credstack-lib/errors"
 	"github.com/credstack/credstack-lib/key"
 	"github.com/credstack/credstack-lib/oauth/flow"
@@ -142,7 +143,7 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 			Any value returned by this function other than 1, indicates a failure
 		*/
 		if subtle.ConstantTimeCompare([]byte(app.ClientSecret), []byte(request.ClientSecret)) != 1 {
-			return nil, ErrInvalidClientCredentials
+			return nil, application.ErrInvalidClientCredentials
 		}
 
 		tokenClaims := NewClaimsWithSubject(
