@@ -125,7 +125,7 @@ const file_proto_request_token_proto_rawDesc = "" +
 	"\rclient_secret\x18\x03 \x01(\tR\fclientSecret\x12\x1a\n" +
 	"\baudience\x18\x04 \x01(\tR\baudience\x12\x12\n" +
 	"\x04code\x18\x05 \x01(\tR\x04code\x12!\n" +
-	"\fredirect_uri\x18\x06 \x01(\tR\vredirectUriB3Z1github.com/stevezaluk/credstack-lib/proto/requestb\x06proto3"
+	"\fredirect_uri\x18\x06 \x01(\tR\vredirectUriB2Z0github.com/credstack/credstack-lib/proto/requestb\x06proto3"
 
 var (
 	file_proto_request_token_proto_rawDescOnce sync.Once

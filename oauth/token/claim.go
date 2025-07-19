@@ -1,8 +1,8 @@
 package token
 
 import (
+	"github.com/credstack/credstack-lib/internal"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/stevezaluk/credstack-lib/internal"
 	"time"
 )
 

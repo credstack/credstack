@@ -123,7 +123,7 @@ const file_proto_wellknown_oauth_proto_rawDesc = "" +
 	"\x0etoken_endpoint\x18\x03 \x01(\tR\rtokenEndpoint\x12/\n" +
 	"\x13revocation_endpoint\x18\x04 \x01(\tR\x12revocationEndpoint\x125\n" +
 	"\x16introspection_endpoint\x18\x05 \x01(\tR\x15introspectionEndpoint\x12\x19\n" +
-	"\bjwks_uri\x18\x06 \x01(\tR\ajwksUriB5Z3github.com/stevezaluk/credstack-lib/proto/wellknownb\x06proto3"
+	"\bjwks_uri\x18\x06 \x01(\tR\ajwksUriB4Z2github.com/credstack/credstack-lib/proto/wellknownb\x06proto3"
 
 var (
 	file_proto_wellknown_oauth_proto_rawDescOnce sync.Once
