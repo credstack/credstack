@@ -11,7 +11,7 @@ import (
 	apiModel "github.com/credstack/credstack-lib/proto/api"
 	applicationModel "github.com/credstack/credstack-lib/proto/application"
 	"github.com/credstack/credstack-lib/proto/request"
-	"github.com/credstack/credstack-lib/proto/response"
+	tokenModel "github.com/credstack/credstack-lib/proto/token"
 	"github.com/credstack/credstack-lib/server"
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -30,8 +30,8 @@ response, otherwise it will return ErrFailedToSignToken
 
 TODO: We really need a custom model for storing access tokens. A custom expiresAt field is needed for leveraging TTL indexes. This needs to be an actual timestamp, not just seconds until the token expires
 */
-func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*response.TokenResponse, error) {
-	var tokenResp *response.TokenResponse
+func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*tokenModel.TokenResponse, error) {
+	var tokenResp *tokenModel.TokenResponse
 
 	switch api.TokenType.String() {
 	case "RS256":
@@ -95,7 +95,7 @@ Additionally, the client_id that is used in the token request is validated to en
 on behalf of the requested audience. If the client_id is no authorized, then ErrInvalidAudience is passed. Finally, the
 application is also validated to ensure that it can issue tokens under the specified OAuth grant type.
 */
-func IssueToken(serv *server.Server, request *request.TokenRequest, issuer string) (*response.TokenResponse, error) {
+func IssueToken(serv *server.Server, request *request.TokenRequest, issuer string) (*tokenModel.TokenResponse, error) {
 	err := ValidateTokenRequest(request)
 	if err != nil {
 		return nil, err

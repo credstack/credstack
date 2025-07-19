@@ -2,7 +2,7 @@ package token
 
 import (
 	credstackError "github.com/credstack/credstack-lib/errors"
-	"github.com/credstack/credstack-lib/proto/response"
+	tokenModel "github.com/credstack/credstack-lib/proto/token"
 )
 
 // ErrMarshalTokenResponse - An error that gets returned
@@ -16,12 +16,12 @@ TODO: Need support for id tokens and refresh tokens here
 TODO: Expires in is not rendering properly, showing expiration instead of token lifetime
 TODO: This function feels kind of clunky...
 */
-func MarshalTokenResponse(accessToken string, expiration uint32) (*response.TokenResponse, error) {
+func MarshalTokenResponse(accessToken string, expiration uint32) (*tokenModel.TokenResponse, error) {
 	/*
 		After we actually sign our token, we can quickly convert it back into a response.TokenResponse structure so that
 		it can be returned from the API
 	*/
-	signedResponse := &response.TokenResponse{
+	signedResponse := &tokenModel.TokenResponse{
 		AccessToken:  accessToken,
 		TokenType:    "Bearer",
 		ExpiresIn:    expiration, // this is bad, not creating future support for custom expiration's

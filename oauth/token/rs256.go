@@ -3,7 +3,7 @@ package token
 import (
 	"fmt"
 	"github.com/credstack/credstack-lib/key"
-	"github.com/credstack/credstack-lib/proto/response"
+	tokenModel "github.com/credstack/credstack-lib/proto/token"
 	"github.com/golang-jwt/jwt/v5"
 
 	keyModel "github.com/credstack/credstack-lib/proto/key"
@@ -13,7 +13,7 @@ import (
 generateRS256 - Generates arbitrary RS256 tokens with the claims that are passed as an argument to this function. This
 function doesn't provide logic for storing the token, and is completely unaware of OAuth authentication flows
 */
-func generateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.RegisteredClaims, expiresIn uint32) (*response.TokenResponse, error) {
+func generateRS256(rsKey *keyModel.PrivateJSONWebKey, claims jwt.RegisteredClaims, expiresIn uint32) (*tokenModel.TokenResponse, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	token.Header["kid"] = rsKey.Header.Identifier
 

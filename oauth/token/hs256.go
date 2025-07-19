@@ -2,7 +2,7 @@ package token
 
 import (
 	"fmt"
-	"github.com/credstack/credstack-lib/proto/response"
+	tokenModel "github.com/credstack/credstack-lib/proto/token"
 	"github.com/credstack/credstack-lib/secret"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -13,7 +13,7 @@ expected that a base64 encoded secret string (like the ones generated from secre
 When used with ClientCredentials flow, the client secret is expected here. As a result, the KID field is not added to the
 header with this function either as both the issuing and validating party must both know the client secret
 */
-func generateHS256(clientSecret string, claims jwt.RegisteredClaims, expiresIn uint32) (*response.TokenResponse, error) {
+func generateHS256(clientSecret string, claims jwt.RegisteredClaims, expiresIn uint32) (*tokenModel.TokenResponse, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	/*

@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v3.12.4
-// source: proto/response/token.proto
+// source: proto/token/response.proto
 
-package response
+package token
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -42,7 +42,7 @@ type TokenResponse struct {
 
 func (x *TokenResponse) Reset() {
 	*x = TokenResponse{}
-	mi := &file_proto_response_token_proto_msgTypes[0]
+	mi := &file_proto_token_response_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -54,7 +54,7 @@ func (x *TokenResponse) String() string {
 func (*TokenResponse) ProtoMessage() {}
 
 func (x *TokenResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_response_token_proto_msgTypes[0]
+	mi := &file_proto_token_response_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67,7 +67,7 @@ func (x *TokenResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TokenResponse.ProtoReflect.Descriptor instead.
 func (*TokenResponse) Descriptor() ([]byte, []int) {
-	return file_proto_response_token_proto_rawDescGZIP(), []int{0}
+	return file_proto_token_response_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *TokenResponse) GetAccessToken() string {
@@ -112,11 +112,11 @@ func (x *TokenResponse) GetScope() string {
 	return ""
 }
 
-var File_proto_response_token_proto protoreflect.FileDescriptor
+var File_proto_token_response_proto protoreflect.FileDescriptor
 
-const file_proto_response_token_proto_rawDesc = "" +
+const file_proto_token_response_proto_rawDesc = "" +
 	"\n" +
-	"\x1aproto/response/token.proto\x12\bresponse\"\xc6\x01\n" +
+	"\x1aproto/token/response.proto\x12\x05token\"\xc6\x01\n" +
 	"\rTokenResponse\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x19\n" +
 	"\bid_token\x18\x02 \x01(\tR\aidToken\x12\x1d\n" +
@@ -125,25 +125,25 @@ const file_proto_response_token_proto_rawDesc = "" +
 	"\n" +
 	"expires_in\x18\x04 \x01(\rR\texpiresIn\x12#\n" +
 	"\rrefresh_token\x18\x05 \x01(\tR\frefreshToken\x12\x14\n" +
-	"\x05scope\x18\x06 \x01(\tR\x05scopeB3Z1github.com/credstack/credstack-lib/proto/responseb\x06proto3"
+	"\x05scope\x18\x06 \x01(\tR\x05scopeB0Z.github.com/credstack/credstack-lib/proto/tokenb\x06proto3"
 
 var (
-	file_proto_response_token_proto_rawDescOnce sync.Once
-	file_proto_response_token_proto_rawDescData []byte
+	file_proto_token_response_proto_rawDescOnce sync.Once
+	file_proto_token_response_proto_rawDescData []byte
 )
 
-func file_proto_response_token_proto_rawDescGZIP() []byte {
-	file_proto_response_token_proto_rawDescOnce.Do(func() {
-		file_proto_response_token_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_response_token_proto_rawDesc), len(file_proto_response_token_proto_rawDesc)))
+func file_proto_token_response_proto_rawDescGZIP() []byte {
+	file_proto_token_response_proto_rawDescOnce.Do(func() {
+		file_proto_token_response_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_token_response_proto_rawDesc), len(file_proto_token_response_proto_rawDesc)))
 	})
-	return file_proto_response_token_proto_rawDescData
+	return file_proto_token_response_proto_rawDescData
 }
 
-var file_proto_response_token_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
-var file_proto_response_token_proto_goTypes = []any{
-	(*TokenResponse)(nil), // 0: response.TokenResponse
+var file_proto_token_response_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_proto_token_response_proto_goTypes = []any{
+	(*TokenResponse)(nil), // 0: token.TokenResponse
 }
-var file_proto_response_token_proto_depIdxs = []int32{
+var file_proto_token_response_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -151,26 +151,26 @@ var file_proto_response_token_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_proto_response_token_proto_init() }
-func file_proto_response_token_proto_init() {
-	if File_proto_response_token_proto != nil {
+func init() { file_proto_token_response_proto_init() }
+func file_proto_token_response_proto_init() {
+	if File_proto_token_response_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_response_token_proto_rawDesc), len(file_proto_response_token_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_token_response_proto_rawDesc), len(file_proto_token_response_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   1,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_proto_response_token_proto_goTypes,
-		DependencyIndexes: file_proto_response_token_proto_depIdxs,
-		MessageInfos:      file_proto_response_token_proto_msgTypes,
+		GoTypes:           file_proto_token_response_proto_goTypes,
+		DependencyIndexes: file_proto_token_response_proto_depIdxs,
+		MessageInfos:      file_proto_token_response_proto_msgTypes,
 	}.Build()
-	File_proto_response_token_proto = out.File
-	file_proto_response_token_proto_goTypes = nil
-	file_proto_response_token_proto_depIdxs = nil
+	File_proto_token_response_proto = out.File
+	file_proto_token_response_proto_goTypes = nil
+	file_proto_token_response_proto_depIdxs = nil
 }
