@@ -1,7 +1,9 @@
 package token
 
 import (
+	"context"
 	"crypto/subtle"
+	"errors"
 	"fmt"
 	credstackError "github.com/credstack/credstack-lib/errors"
 	"github.com/credstack/credstack-lib/key"
@@ -12,25 +14,25 @@ import (
 	"github.com/credstack/credstack-lib/proto/response"
 	"github.com/credstack/credstack-lib/server"
 	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // ErrFailedToSignToken - An error that gets wrapped when jwt.Token.SignedString returns an error
 var ErrFailedToSignToken = credstackError.NewError(500, "ERR_FAILED_TO_SIGN", "token: Failed to sign token due to an internal error")
 
+// ErrTokenCollision - An error that gets returned when a duplicate access token is created. This should realistically never return as JWT access tokens are unique
+var ErrTokenCollision = credstackError.NewError(500, "ERR_TOKEN_COLLISION", "token: A duplicate access token was issued")
+
 /*
 newToken - Provides a centralized area for token generation to occur. newToken provides the logic required for associating
 a token type it's associating handler. If a valid signing algorithm is used, then it will return its formatted token
 response, otherwise it will return ErrFailedToSignToken
-
-TODO: Store tokens in Mongo so that they can be revoked quickly
 */
 func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*response.TokenResponse, error) {
+	var tokenResp *response.TokenResponse
+
 	switch api.TokenType.String() {
 	case "RS256":
-		/*
-			We always use the first element in the audience slice as CredStack does not allow issuing multiple audiences
-			in tokens
-		*/
 		privateKey, err := key.GetActiveKey(serv, api.TokenType.String(), api.Audience)
 		if err != nil {
 			return nil, err
@@ -41,17 +43,45 @@ func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Appl
 			return nil, err
 		}
 
-		return resp, nil
+		tokenResp = resp
 	case "HS256":
 		resp, err := generateHS256(app.ClientSecret, claims, uint32(app.TokenLifetime))
 		if err != nil {
 			return nil, err
 		}
 
-		return resp, nil
+		tokenResp = resp
 	}
 
-	return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, "Invalid Signing Algorithm")
+	if tokenResp == nil {
+		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, "Invalid Signing Algorithm")
+	}
+
+	/*
+		Were currently just storing the plain old token response here, which may pose some issues down the road specifically
+		if we want to implement functionality for revoking tokens for a specific user. This will fit the token revocation
+		endpoint spec as defined in RFC 7009 fairly well though, as we really just need the access token we want to
+		revoke here.
+
+		Keep in mind, JWTs are stateless. So "revoking" a token, really just means that the token will not be reported
+		as active by the token introspection endpoint
+
+		TODO: We really need a custom model for storing access tokens. A custom expiresAt field is needed for leveraging TTL indexes. This needs to be an actual timestamp, not just seconds until the token expires
+	*/
+	_, err := serv.Database().Collection("token").InsertOne(context.Background(), tokenResp)
+	if err != nil {
+		var writeError mongo.WriteException
+		if errors.As(err, &writeError) {
+			if writeError.HasErrorCode(11000) { // 11000 is the error code for a WriteError. This should be a const
+				return nil, ErrTokenCollision // this should almost never occur, but we check for it regardless
+			}
+		}
+
+		// always return a wrapped internal database error here
+		return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+	}
+
+	return tokenResp, nil
 }
 
 /*
@@ -63,8 +93,6 @@ error will be returned if one is missing.
 Additionally, the client_id that is used in the token request is validated to ensure that it is allowed to issue tokens
 on behalf of the requested audience. If the client_id is no authorized, then ErrInvalidAudience is passed. Finally, the
 application is also validated to ensure that it can issue tokens under the specified OAuth grant type.
-
-TODO: Update this function to allow specifying expiration date
 */
 func IssueToken(serv *server.Server, request *request.TokenRequest, issuer string) (*response.TokenResponse, error) {
 	err := ValidateTokenRequest(request)
