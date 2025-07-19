@@ -5,9 +5,6 @@ import (
 	tokenModel "github.com/credstack/credstack-lib/proto/request"
 )
 
-// ErrVisibilityIssue - An error that gets returned when the caller tries to issue a token for a public application
-var ErrVisibilityIssue = credstackError.NewError(400, "ERR_VISIBILITY_ERROR", "token: Failed to issue token for application. Public clients cannot use client credentials flow")
-
 // ErrInvalidTokenRequest - An error that gets returned if one or more elements of the token request are missing
 var ErrInvalidTokenRequest = credstackError.NewError(400, "ERR_INVALID_TOKEN_REQ", "token: Failed to issue token. One or more parts of the token request is missing")
 

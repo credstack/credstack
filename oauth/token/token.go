@@ -134,7 +134,7 @@ func IssueToken(serv *server.Server, request *request.TokenRequest, issuer strin
 			validation, we do this before anything else as we can't proceed with the token generation if this is true
 		*/
 		if app.IsPublic {
-			return nil, ErrVisibilityIssue
+			return nil, application.ErrVisibilityIssue
 		}
 
 		/*
