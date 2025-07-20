@@ -26,8 +26,8 @@ will be inserted into the generated token. Calling this function alone, does not
 generates the token. An instantiated server structure needs to be passed here to ensure that we can fetch the current
 active encryption key for token signing (RS256)
 */
-func GenerateToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*tokenModel.TokenResponse, error) {
-	var tokenResp *tokenModel.TokenResponse
+func GenerateToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*tokenModel.Token, error) {
+	var token *tokenModel.Token
 
 	switch api.TokenType.String() {
 	case "RS256":
@@ -36,26 +36,26 @@ func GenerateToken(serv *server.Server, api *apiModel.API, app *applicationModel
 			return nil, err
 		}
 
-		resp, err := generateRS256(privateKey, claims, uint32(app.TokenLifetime))
+		tok, err := generateRS256(privateKey, claims, uint32(app.TokenLifetime))
 		if err != nil {
 			return nil, err
 		}
 
-		tokenResp = resp
+		token = tok
 	case "HS256":
-		resp, err := generateHS256(app.ClientSecret, claims, uint32(app.TokenLifetime))
+		tok, err := generateHS256(app.ClientSecret, claims, uint32(app.TokenLifetime))
 		if err != nil {
 			return nil, err
 		}
 
-		tokenResp = resp
+		token = tok
 	}
 
-	if tokenResp == nil {
+	if token == nil {
 		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, "Invalid Signing Algorithm")
 	}
 
-	return tokenResp, nil
+	return token, nil
 }
 
 /*
