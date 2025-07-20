@@ -6,7 +6,7 @@ import (
 	"fmt"
 	credstackError "github.com/credstack/credstack-lib/errors"
 	"github.com/credstack/credstack-lib/server"
-	"github.com/credstack/credstack-models/proto/key"
+	jwkModel "github.com/credstack/credstack-models/proto/jwk"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -23,8 +23,8 @@ be exposed publicly as they are symmetrical
 
 TODO: Maybe rethink this to return only keys by a specific audience
 */
-func GetJWKS(serv *server.Server) (*key.JSONWebKeySet, error) {
-	jwks := new(key.JSONWebKeySet)
+func GetJWKS(serv *server.Server) (*jwkModel.JSONWebKeySet, error) {
+	jwks := new(jwkModel.JSONWebKeySet)
 
 	/*
 		This function call is actually fairly simple, as all we really need to do here is list out the entire collection.
@@ -57,8 +57,8 @@ func GetJWKS(serv *server.Server) (*key.JSONWebKeySet, error) {
 GetJWK - Fetches the public JSON Web Key that matches the key identifier passed in the parameter. This just returns
 the model and other functions provided in this package can be used to convert it back to a valid rsa.PublicKey
 */
-func GetJWK(serv *server.Server, kid string) (*key.JSONWebKey, error) {
-	var jwk key.JSONWebKey
+func GetJWK(serv *server.Server, kid string) (*jwkModel.JSONWebKey, error) {
+	var jwk jwkModel.JSONWebKey
 
 	/*
 		The header.identifier field always represents our Key Identifiers (kid) so we can always safely lookup our key
@@ -87,8 +87,8 @@ functions are provided within the package to convert this model into a valid RSA
 TODO: This does not support HS-256
 TODO: This may not be needed, validate as the rest of this package gets fleshed out
 */
-func GetActiveKey(serv *server.Server, alg string, audience string) (*key.PrivateJSONWebKey, error) {
-	var jwk key.PrivateJSONWebKey
+func GetActiveKey(serv *server.Server, alg string, audience string) (*jwkModel.PrivateJSONWebKey, error) {
+	var jwk jwkModel.PrivateJSONWebKey
 
 	/*
 		The header.identifier field always represents our Key Identifiers (kid) so we can always safely lookup our key
@@ -119,8 +119,8 @@ Additionally, this function does not validate that its given audience exists, be
 TODO: Update alg to use protobuf enum
 TODO: Update this to remove alg check. HS256 tokens use client secret for signing
 */
-func NewKey(serv *server.Server, alg string, audience string) (*key.PrivateJSONWebKey, error) {
-	ret := new(key.PrivateJSONWebKey)
+func NewKey(serv *server.Server, alg string, audience string) (*jwkModel.PrivateJSONWebKey, error) {
+	ret := new(jwkModel.PrivateJSONWebKey)
 	if alg == "RS256" {
 		privateKey, jwk, err := GenerateRSAKey(audience)
 		if err != nil {
