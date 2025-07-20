@@ -5,9 +5,9 @@ import (
 	"github.com/credstack/credstack-lib/application"
 	"github.com/credstack/credstack-lib/oauth/claim"
 	"github.com/credstack/credstack-lib/oauth/token"
-	"github.com/credstack/credstack-lib/proto/request"
-	tokenModel "github.com/credstack/credstack-lib/proto/token"
 	"github.com/credstack/credstack-lib/server"
+	"github.com/credstack/credstack-models/proto/request"
+	tokenModel "github.com/credstack/credstack-models/proto/token"
 )
 
 /*

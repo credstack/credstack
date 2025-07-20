@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	credstackError "github.com/credstack/credstack-lib/errors"
-	"github.com/credstack/credstack-lib/proto/key"
 	"github.com/credstack/credstack-lib/server"
+	"github.com/credstack/credstack-models/proto/key"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )

@@ -6,10 +6,10 @@ import (
 	"fmt"
 	credstackError "github.com/credstack/credstack-lib/errors"
 	"github.com/credstack/credstack-lib/key"
-	apiModel "github.com/credstack/credstack-lib/proto/api"
-	applicationModel "github.com/credstack/credstack-lib/proto/application"
-	tokenModel "github.com/credstack/credstack-lib/proto/token"
 	"github.com/credstack/credstack-lib/server"
+	apiModel "github.com/credstack/credstack-models/proto/api"
+	applicationModel "github.com/credstack/credstack-models/proto/application"
+	tokenModel "github.com/credstack/credstack-models/proto/token"
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )

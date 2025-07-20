@@ -2,7 +2,7 @@ package token
 
 import (
 	credstackError "github.com/credstack/credstack-lib/errors"
-	tokenModel "github.com/credstack/credstack-lib/proto/token"
+	tokenModel "github.com/credstack/credstack-models/proto/token"
 )
 
 // ErrMarshalTokenResponse - An error that gets returned
