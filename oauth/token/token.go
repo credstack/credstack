@@ -63,10 +63,10 @@ NewToken - Provides a centralized area for token generation to occur. newToken p
 a token type it's associating handler. If a valid signing algorithm is used, then it will return its formatted token
 response, otherwise it will return ErrFailedToSignToken
 */
-func NewToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) error {
+func NewToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*tokenModel.TokenResponse, error) {
 	token, err := generateToken(serv, api, app, claims)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	/*
@@ -83,13 +83,22 @@ func NewToken(serv *server.Server, api *apiModel.API, app *applicationModel.Appl
 		var writeError mongo.WriteException
 		if errors.As(err, &writeError) {
 			if writeError.HasErrorCode(11000) { // 11000 is the error code for a WriteError. This should be a const
-				return ErrTokenCollision // this should almost never occur, but we check for it regardless
+				return nil, ErrTokenCollision // this should almost never occur, but we check for it regardless
 			}
 		}
 
 		// always return a wrapped internal database error here
-		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 	}
 
-	return nil
+	resp := &tokenModel.TokenResponse{
+		AccessToken:  token.AccessToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    token.ExpiresIn,
+		IdToken:      "",
+		RefreshToken: "",
+		Scope:        "",
+	}
+
+	return resp, nil
 }
