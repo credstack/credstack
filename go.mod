@@ -14,7 +14,7 @@ require (
 )
 
 require (
-	github.com/credstack/credstack-models v1.3.1 // indirect
+	github.com/credstack/credstack-models v1.3.2 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
