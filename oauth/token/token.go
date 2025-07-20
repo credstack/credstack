@@ -21,12 +21,12 @@ var ErrFailedToSignToken = credstackError.NewError(500, "ERR_FAILED_TO_SIGN", "t
 var ErrTokenCollision = credstackError.NewError(500, "ERR_TOKEN_COLLISION", "token: A duplicate access token was issued")
 
 /*
-GenerateToken - Generates a token based on the Application and API that are passed in the parameter. Claims that are passed
+generateToken - Generates a token based on the Application and API that are passed in the parameter. Claims that are passed
 will be inserted into the generated token. Calling this function alone, does not store the tokens in the database and only
 generates the token. An instantiated server structure needs to be passed here to ensure that we can fetch the current
 active encryption key for token signing (RS256)
 */
-func GenerateToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*tokenModel.Token, error) {
+func generateToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*tokenModel.Token, error) {
 	var token *tokenModel.Token
 
 	switch api.TokenType.String() {
@@ -63,7 +63,12 @@ NewToken - Provides a centralized area for token generation to occur. newToken p
 a token type it's associating handler. If a valid signing algorithm is used, then it will return its formatted token
 response, otherwise it will return ErrFailedToSignToken
 */
-func NewToken(serv *server.Server, token *tokenModel.Token) error {
+func NewToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) error {
+	token, err := generateToken(serv, api, app, claims)
+	if err != nil {
+		return err
+	}
+
 	/*
 		Were currently just storing the plain old token response here, which may pose some issues down the road specifically
 		if we want to implement functionality for revoking tokens for a specific user. This will fit the token revocation
@@ -73,7 +78,7 @@ func NewToken(serv *server.Server, token *tokenModel.Token) error {
 		Keep in mind, JWTs are stateless. So "revoking" a token, really just means that the token will not be reported
 		as active by the token introspection endpoint
 	*/
-	_, err := serv.Database().Collection("token").InsertOne(context.Background(), token)
+	_, err = serv.Database().Collection("token").InsertOne(context.Background(), token)
 	if err != nil {
 		var writeError mongo.WriteException
 		if errors.As(err, &writeError) {
