@@ -4,11 +4,11 @@ import (
 	"github.com/credstack/credstack-lib/api"
 	"github.com/credstack/credstack-lib/application"
 	credstackError "github.com/credstack/credstack-lib/errors"
-	apiModel "github.com/credstack/credstack-lib/proto/api"
-	applicationModel "github.com/credstack/credstack-lib/proto/application"
-	"github.com/credstack/credstack-lib/proto/request"
-	tokenModel "github.com/credstack/credstack-lib/proto/token"
 	"github.com/credstack/credstack-lib/server"
+	apiModel "github.com/credstack/credstack-models/proto/api"
+	applicationModel "github.com/credstack/credstack-models/proto/application"
+	"github.com/credstack/credstack-models/proto/request"
+	tokenModel "github.com/credstack/credstack-models/proto/token"
 	"slices"
 )
 

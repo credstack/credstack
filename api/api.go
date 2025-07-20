@@ -6,9 +6,9 @@ import (
 	"fmt"
 	credstackError "github.com/credstack/credstack-lib/errors"
 	"github.com/credstack/credstack-lib/header"
-	"github.com/credstack/credstack-lib/key"
-	"github.com/credstack/credstack-lib/proto/api"
+	"github.com/credstack/credstack-lib/oauth/jwk"
 	"github.com/credstack/credstack-lib/server"
+	"github.com/credstack/credstack-models/proto/api"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -59,7 +59,7 @@ func NewAPI(serv *server.Server, name string, audience string, tokenType api.Tok
 	/*
 		We always need to generate a new key for the API to be able to use
 	*/
-	_, err := key.NewKey(serv, newApi.TokenType.String(), newApi.Audience)
+	_, err := jwk.NewKey(serv, newApi.TokenType.String(), newApi.Audience)
 	if err != nil {
 		return err
 	}
