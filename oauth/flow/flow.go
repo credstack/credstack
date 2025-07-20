@@ -6,6 +6,8 @@ import (
 	credstackError "github.com/credstack/credstack-lib/errors"
 	apiModel "github.com/credstack/credstack-lib/proto/api"
 	applicationModel "github.com/credstack/credstack-lib/proto/application"
+	"github.com/credstack/credstack-lib/proto/request"
+	tokenModel "github.com/credstack/credstack-lib/proto/token"
 	"github.com/credstack/credstack-lib/server"
 	"slices"
 )
@@ -19,12 +21,15 @@ var ErrUnauthorizedGrantType = credstackError.NewError(403, "ERR_UNAUTHORIZED_GR
 // ErrInvalidGrantType - A named error that gets returned when an unrecognized grant type is used to attempt to issue tokens
 var ErrInvalidGrantType = credstackError.NewError(400, "ERR_INVALID_GRANT", "token: Failed to issue token. The specified grant type does not exist")
 
+// ErrInvalidTokenRequest - An error that gets returned if one or more elements of the token request are missing
+var ErrInvalidTokenRequest = credstackError.NewError(400, "ERR_INVALID_TOKEN_REQ", "token: Failed to issue token. One or more parts of the token request is missing")
+
 /*
-InitiateAuthFlow - Fetch's an API based on its audience along with its associating application. This acts as a central
+initiateAuthFlow - Fetch's an API based on its audience along with its associating application. This acts as a central
 "initialization" function for any OAuth authentication flows as we almost always need these two models. Additionally,
 some validation is performed here to ensure that the requested application is allowed to issue tokens for the requested
 */
-func InitiateAuthFlow(serv *server.Server, audience string, clientId string, requestedGrant string) (*apiModel.API, *applicationModel.Application, error) {
+func initiateAuthFlow(serv *server.Server, audience string, clientId string, requestedGrant string) (*apiModel.API, *applicationModel.Application, error) {
 	app, err := application.GetApplication(serv, clientId, true)
 	if err != nil {
 		return nil, nil, err
@@ -66,4 +71,27 @@ func InitiateAuthFlow(serv *server.Server, audience string, clientId string, req
 	}
 
 	return userApi, app, nil
+}
+
+/*
+IssueTokenForFlow - Responsible for issuing access tokens under a specific OAuth authentication flow. Handles validating
+token requests and marshaling access tokens to a token.TokenResponse structure. Any errors that are returned from this
+function are wrapped with errors.CredstackError.
+*/
+func IssueTokenForFlow(serv *server.Server, request *request.TokenRequest, issuer string) (*tokenModel.TokenResponse, error) {
+	if request.Audience == "" || request.GrantType == "" {
+		return nil, ErrInvalidTokenRequest
+	}
+
+	switch request.GrantType {
+	case "client_credentials":
+		resp, err := ClientCredentialsFlow(serv, request, issuer)
+		if err != nil {
+			return nil, err
+		}
+
+		return resp, nil
+	}
+
+	return nil, ErrInvalidGrantType
 }

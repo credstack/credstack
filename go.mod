@@ -3,6 +3,8 @@ module github.com/credstack/credstack-lib
 go 1.24.2
 
 require (
+	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/golang/protobuf v1.5.0
 	github.com/google/uuid v1.6.0
 	github.com/spf13/viper v1.20.1
 	go.mongodb.org/mongo-driver/v2 v2.2.1
@@ -14,8 +16,6 @@ require (
 require (
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect

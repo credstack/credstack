@@ -1,4 +1,4 @@
-package token
+package claim
 
 import (
 	"github.com/credstack/credstack-lib/internal"

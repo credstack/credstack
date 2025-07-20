@@ -2,9 +2,11 @@ package token
 
 import (
 	"fmt"
-	"github.com/credstack/credstack-lib/proto/response"
+	tokenModel "github.com/credstack/credstack-lib/proto/token"
 	"github.com/credstack/credstack-lib/secret"
 	"github.com/golang-jwt/jwt/v5"
+	pbTimestamp "google.golang.org/protobuf/types/known/timestamppb"
+	"time"
 )
 
 /*
@@ -12,9 +14,11 @@ generateHS256 - Generates arbitrary HS256 tokens with the claims that are passed
 expected that a base64 encoded secret string (like the ones generated from secret.RandString) is used as the secret here.
 When used with ClientCredentials flow, the client secret is expected here. As a result, the KID field is not added to the
 header with this function either as both the issuing and validating party must both know the client secret
+
+TODO: ExpiresIn is a bit arbitrary here, this can be pulled this from the claims
 */
-func generateHS256(clientSecret string, claims jwt.RegisteredClaims, expiresIn uint32) (*response.TokenResponse, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+func generateHS256(clientSecret string, claims jwt.RegisteredClaims, expiresIn uint32) (*tokenModel.Token, error) {
+	generatedJwt := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	/*
 		Unlike RS256 tokens, the client secret is simply used to sign the token with SigningMethodHS256. This provides
@@ -30,15 +34,20 @@ func generateHS256(clientSecret string, claims jwt.RegisteredClaims, expiresIn u
 	/*
 		Then we just sign the token with the decoded secret.
 	*/
-	signedString, err := token.SignedString(decoded)
+	sig, err := generatedJwt.SignedString(decoded)
 	if err != nil {
 		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, err)
 	}
 
-	resp, err := MarshalTokenResponse(signedString, expiresIn)
-	if err != nil {
-		return nil, fmt.Errorf("%w (%v)", ErrMarshalTokenResponse, err)
+	/*
+		Marshal the generated JWT into a structure that we can actually store in the database
+	*/
+	token := &tokenModel.Token{
+		Sub:         claims.Subject,
+		AccessToken: sig,
+		ExpiresIn:   expiresIn,
+		ExpiresAt:   pbTimestamp.New(time.Now().Add(time.Duration(expiresIn))), // this should be moved to a function
 	}
 
-	return resp, nil
+	return token, nil
 }

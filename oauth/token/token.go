@@ -1,116 +1,103 @@
 package token
 
 import (
-	"crypto/subtle"
+	"context"
+	"errors"
 	"fmt"
 	credstackError "github.com/credstack/credstack-lib/errors"
 	"github.com/credstack/credstack-lib/key"
-	"github.com/credstack/credstack-lib/oauth/flow"
 	apiModel "github.com/credstack/credstack-lib/proto/api"
 	applicationModel "github.com/credstack/credstack-lib/proto/application"
-	"github.com/credstack/credstack-lib/proto/request"
-	"github.com/credstack/credstack-lib/proto/response"
+	tokenModel "github.com/credstack/credstack-lib/proto/token"
 	"github.com/credstack/credstack-lib/server"
 	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // ErrFailedToSignToken - An error that gets wrapped when jwt.Token.SignedString returns an error
 var ErrFailedToSignToken = credstackError.NewError(500, "ERR_FAILED_TO_SIGN", "token: Failed to sign token due to an internal error")
 
-/*
-newToken - Provides a centralized area for token generation to occur. newToken provides the logic required for associating
-a token type it's associating handler. If a valid signing algorithm is used, then it will return its formatted token
-response, otherwise it will return ErrFailedToSignToken
+// ErrTokenCollision - An error that gets returned when a duplicate access token is created. This should realistically never return as JWT access tokens are unique
+var ErrTokenCollision = credstackError.NewError(500, "ERR_TOKEN_COLLISION", "token: A duplicate access token was issued")
 
-TODO: Store tokens in Mongo so that they can be revoked quickly
+/*
+generateToken - Generates a token based on the Application and API that are passed in the parameter. Claims that are passed
+will be inserted into the generated token. Calling this function alone, does not store the tokens in the database and only
+generates the token. An instantiated server structure needs to be passed here to ensure that we can fetch the current
+active encryption key for token signing (RS256)
 */
-func newToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*response.TokenResponse, error) {
+func generateToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*tokenModel.Token, error) {
+	var token *tokenModel.Token
+
 	switch api.TokenType.String() {
 	case "RS256":
-		/*
-			We always use the first element in the audience slice as CredStack does not allow issuing multiple audiences
-			in tokens
-		*/
 		privateKey, err := key.GetActiveKey(serv, api.TokenType.String(), api.Audience)
 		if err != nil {
 			return nil, err
 		}
 
-		resp, err := generateRS256(privateKey, claims, uint32(app.TokenLifetime))
+		tok, err := generateRS256(privateKey, claims, uint32(app.TokenLifetime))
 		if err != nil {
 			return nil, err
 		}
 
-		return resp, nil
+		token = tok
 	case "HS256":
-		resp, err := generateHS256(app.ClientSecret, claims, uint32(app.TokenLifetime))
+		tok, err := generateHS256(app.ClientSecret, claims, uint32(app.TokenLifetime))
 		if err != nil {
 			return nil, err
 		}
 
-		return resp, nil
+		token = tok
 	}
 
-	return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, "Invalid Signing Algorithm")
+	if token == nil {
+		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, "Invalid Signing Algorithm")
+	}
+
+	return token, nil
 }
 
 /*
-IssueToken - A universal function for issuing tokens under any grant type for any audience. This should be used as the token
-generating function for implementing OAuth authentication flows. Depending on the authentication flow that is being
-used here, some parts of the request.TokenRequest structure that gets passed is mandatory and an ErrInvalidTokenRequest
-error will be returned if one is missing.
-
-Additionally, the client_id that is used in the token request is validated to ensure that it is allowed to issue tokens
-on behalf of the requested audience. If the client_id is no authorized, then ErrInvalidAudience is passed. Finally, the
-application is also validated to ensure that it can issue tokens under the specified OAuth grant type.
-
-TODO: Update this function to allow specifying expiration date
+NewToken - Generates a token according to the algorithm provided by the API passed as a parameter. Any tokens generated
+with this function are stored in the database, and are automatically converted to a token response.
 */
-func IssueToken(serv *server.Server, request *request.TokenRequest, issuer string) (*response.TokenResponse, error) {
-	err := ValidateTokenRequest(request)
+func NewToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*tokenModel.TokenResponse, error) {
+	token, err := generateToken(serv, api, app, claims)
 	if err != nil {
 		return nil, err
 	}
 
-	userApi, app, err := flow.InitiateAuthFlow(serv, request.Audience, request.ClientId, request.GrantType)
+	/*
+		Were currently just storing the plain old token response here, which may pose some issues down the road specifically
+		if we want to implement functionality for revoking tokens for a specific user. This will fit the token revocation
+		endpoint spec as defined in RFC 7009 fairly well though, as we really just need the access token we want to
+		revoke here.
+
+		Keep in mind, JWTs are stateless. So "revoking" a token, really just means that the token will not be reported
+		as active by the token introspection endpoint
+	*/
+	_, err = serv.Database().Collection("token").InsertOne(context.Background(), token)
 	if err != nil {
-		return nil, err
+		var writeError mongo.WriteException
+		if errors.As(err, &writeError) {
+			if writeError.HasErrorCode(11000) { // 11000 is the error code for a WriteError. This should be a const
+				return nil, ErrTokenCollision // this should almost never occur, but we check for it regardless
+			}
+		}
+
+		// always return a wrapped internal database error here
+		return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 	}
 
-	switch request.GrantType {
-	case "client_credentials":
-		/*
-			Only confidential applications are able to issue tokens under client credentials flow. Similar to our credentials
-			validation, we do this before anything else as we can't proceed with the token generation if this is true
-		*/
-		if app.IsPublic {
-			return nil, ErrVisibilityIssue
-		}
-
-		/*
-			We use subtle.ConstantTimeCompare here to ensure that we are protected from side channel attacks on the
-			server itself. Ideally, any credential validation that requires a direct comparison would use ConstantTimeCompare.
-
-			Any value returned by this function other than 1, indicates a failure
-		*/
-		if subtle.ConstantTimeCompare([]byte(app.ClientSecret), []byte(request.ClientSecret)) != 1 {
-			return nil, ErrInvalidClientCredentials
-		}
-
-		tokenClaims := NewClaimsWithSubject(
-			issuer,
-			userApi.Audience,
-			app.ClientId,
-			app.TokenLifetime,
-		)
-
-		tokenResp, err := newToken(serv, userApi, app, tokenClaims)
-		if err != nil {
-			return nil, err
-		}
-
-		return tokenResp, nil
+	resp := &tokenModel.TokenResponse{
+		AccessToken:  token.AccessToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    token.ExpiresIn,
+		IdToken:      "",
+		RefreshToken: "",
+		Scope:        "",
 	}
 
-	return nil, ErrFailedToSignToken
+	return resp, nil
 }
