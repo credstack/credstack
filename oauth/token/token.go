@@ -59,9 +59,8 @@ func generateToken(serv *server.Server, api *apiModel.API, app *applicationModel
 }
 
 /*
-NewToken - Provides a centralized area for token generation to occur. newToken provides the logic required for associating
-a token type it's associating handler. If a valid signing algorithm is used, then it will return its formatted token
-response, otherwise it will return ErrFailedToSignToken
+NewToken - Generates a token according to the algorithm provided by the API passed as a parameter. Any tokens generated
+with this function are stored in the database, and are automatically converted to a token response.
 */
 func NewToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*tokenModel.TokenResponse, error) {
 	token, err := generateToken(serv, api, app, claims)
