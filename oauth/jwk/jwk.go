@@ -1,4 +1,4 @@
-package key
+package jwk
 
 import (
 	"context"
