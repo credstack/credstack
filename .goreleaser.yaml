@@ -9,6 +9,11 @@ before:
 builds:
   - skip: true
 
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}"
+  format: "zip"
+
 archives:
   - id: source
     formats: ["zip", "tar.gz"]
