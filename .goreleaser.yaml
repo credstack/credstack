@@ -11,7 +11,7 @@ builds:
 
 archives:
   - id: source
-    formats: ['zip']
+    formats: ["zip", "tar.gz"]
     name_template: "{{ .ProjectName }}_{{ .Version }}"
     files:
       - "**/*.go"
