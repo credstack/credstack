@@ -1,0 +1,43 @@
+version: 2
+
+project_name: credstack-lib
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - skip: true
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}"
+  format: "zip"
+
+archives:
+  - id: source
+    formats: ["zip", "tar.gz"]
+    name_template: "{{ .ProjectName }}_{{ .Version }}"
+    files:
+      - "**/*.go"
+      - "**/*.md"
+      - "*.md"
+      - go.mod
+      - go.sum
+      - LICENSE
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+release:
+  footer: >-
+    ---
+
+    This is a beta release. Use at your own risk.\n
+    Release provides the library only and does not provide the API or the CLI.\n
+    \nReleased by [GoReleaser](https://github.com/goreleaser/goreleaser).

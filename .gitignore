@@ -27,3 +27,5 @@ go.work.sum
 # Go files
 main.go
 
+# Exclude locally built artifacts
+dist/
