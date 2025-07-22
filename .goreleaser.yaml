@@ -1,30 +1,24 @@
 version: 2
 
+project_name: credstack-lib
+
 before:
   hooks:
     - go mod tidy
 
 builds:
-  - env:
-      - CGO_ENABLED=0
-    goos:
-      - linux
-      - darwin
-    goarch:
-      - arm
-      - arm64
-      - amd64
+  - skip: true
 
 archives:
-  - formats: [tar.gz]
-    # this name template makes the OS and Arch compatible with the results of `uname`.
-    name_template: >-
-      {{ .ProjectName }}_
-      {{- title .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else if eq .Arch "386" }}i386
-      {{- else }}{{ .Arch }}{{ end }}
-      {{- if .Arm }}v{{ .Arm }}{{ end }}
+  - id: source
+    formats: ['zip']
+    files:
+      - "**/*.go"
+      - "**/*.md"
+      - "*.md"
+      - go.mod
+      - go.sum
+      - LICENSE
 
 changelog:
   sort: asc
