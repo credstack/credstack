@@ -5,7 +5,6 @@ import (
 	"github.com/credstack/credstack-lib/application"
 	credstackError "github.com/credstack/credstack-lib/errors"
 	"github.com/credstack/credstack-lib/server"
-	apiModel "github.com/credstack/credstack-models/proto/api"
 	applicationModel "github.com/credstack/credstack-models/proto/application"
 	"github.com/credstack/credstack-models/proto/request"
 	tokenModel "github.com/credstack/credstack-models/proto/token"
@@ -25,14 +24,20 @@ var ErrInvalidGrantType = credstackError.NewError(400, "ERR_INVALID_GRANT", "tok
 var ErrInvalidTokenRequest = credstackError.NewError(400, "ERR_INVALID_TOKEN_REQ", "token: Failed to issue token. One or more parts of the token request is missing")
 
 /*
-initiateAuthFlow - Fetch's an API based on its audience along with its associating application. This acts as a central
-"initialization" function for any OAuth authentication flows as we almost always need these two models. Additionally,
-some validation is performed here to ensure that the requested application is allowed to issue tokens for the requested
+initiateAuthFlow - Initiate auth flow not only fetches the application and API models from the database based on what was
+requested by the caller in request.TokenRequest, but also performs validation on this. initiateAuthFlow performs validation
+to ensure that the audience present in the token request is under the applications allowed audiences list. Additionally,
+this function ensures that the requested grant type is both authorized and valid.
+
+This function returns a tokenModel.AuthenticationTicket, which provides all the context required for credstack to issue
+a token. This primarily includes a pointer to the token request, along with the application and API structures. In future
+releases this may include the claims required to be placed within the token as well. This authentication ticket is then
+passed the authentication flow handler for the request grant type
 */
-func initiateAuthFlow(serv *server.Server, request *request.TokenRequest) (*apiModel.API, *applicationModel.Application, error) {
+func initiateAuthFlow(serv *server.Server, request *request.TokenRequest) (*tokenModel.AuthenticationTicket, error) {
 	app, err := application.GetApplication(serv, request.ClientId, true)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	/*
@@ -44,7 +49,7 @@ func initiateAuthFlow(serv *server.Server, request *request.TokenRequest) (*apiM
 		making database calls for a potentially invalid request
 	*/
 	if !slices.Contains(app.AllowedAudiences, request.Audience) {
-		return nil, nil, ErrUnauthorizedAudience
+		return nil, ErrUnauthorizedAudience
 	}
 
 	/*
@@ -54,7 +59,7 @@ func initiateAuthFlow(serv *server.Server, request *request.TokenRequest) (*apiM
 	*/
 	grantType, ok := applicationModel.GrantTypes_value[request.GrantType]
 	if !ok {
-		return nil, nil, ErrInvalidGrantType
+		return nil, ErrInvalidGrantType
 	}
 
 	/*
@@ -62,15 +67,21 @@ func initiateAuthFlow(serv *server.Server, request *request.TokenRequest) (*apiM
 		requested grant type
 	*/
 	if !slices.Contains(app.GrantType, applicationModel.GrantTypes(grantType)) {
-		return nil, nil, ErrUnauthorizedGrantType
+		return nil, ErrUnauthorizedGrantType
 	}
 
 	userApi, err := api.GetAPI(serv, request.Audience)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return userApi, app, nil
+	ticket := &tokenModel.AuthenticationTicket{
+		Application:  app,
+		Api:          userApi,
+		TokenRequest: request,
+	}
+
+	return ticket, nil
 }
 
 /*
@@ -83,9 +94,14 @@ func IssueTokenForFlow(serv *server.Server, request *request.TokenRequest, issue
 		return nil, ErrInvalidTokenRequest
 	}
 
+	ticket, err := initiateAuthFlow(serv, request)
+	if err != nil {
+		return nil, err
+	}
+
 	switch request.GrantType {
 	case "client_credentials":
-		resp, err := ClientCredentialsFlow(serv, request, issuer)
+		resp, err := ClientCredentialsFlow(serv, ticket, issuer)
 		if err != nil {
 			return nil, err
 		}
