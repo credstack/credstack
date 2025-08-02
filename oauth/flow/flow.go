@@ -35,6 +35,16 @@ releases this may include the claims required to be placed within the token as w
 passed the authentication flow handler for the request grant type
 */
 func initiateAuthFlow(serv *server.Server, request *request.TokenRequest) (*tokenModel.AuthenticationTicket, error) {
+	/*
+		Since Application.GrantType is an enum, we need to perform some conversion here to be able to
+		validate its string representation of it. Ideally, all of this validation could be externalized
+		to the DB layer by updating GetApplication to validate this
+	*/
+	grantType, ok := applicationModel.GrantTypes_value[request.GrantType]
+	if !ok {
+		return nil, ErrInvalidGrantType
+	}
+
 	app, err := application.GetApplication(serv, request.ClientId, true)
 	if err != nil {
 		return nil, err
@@ -50,16 +60,6 @@ func initiateAuthFlow(serv *server.Server, request *request.TokenRequest) (*toke
 	*/
 	if !slices.Contains(app.AllowedAudiences, request.Audience) {
 		return nil, ErrUnauthorizedAudience
-	}
-
-	/*
-		Since Application.GrantType is an enum, we need to perform some conversion here to be able to
-		validate its string representation of it. Ideally, all of this validation could be externalized
-		to the DB layer by updating GetApplication to validate this
-	*/
-	grantType, ok := applicationModel.GrantTypes_value[request.GrantType]
-	if !ok {
-		return nil, ErrInvalidGrantType
 	}
 
 	/*
