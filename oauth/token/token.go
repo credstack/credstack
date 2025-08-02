@@ -7,8 +7,6 @@ import (
 	credstackError "github.com/credstack/credstack-lib/errors"
 	"github.com/credstack/credstack-lib/oauth/jwk"
 	"github.com/credstack/credstack-lib/server"
-	apiModel "github.com/credstack/credstack-models/proto/api"
-	applicationModel "github.com/credstack/credstack-models/proto/application"
 	tokenModel "github.com/credstack/credstack-models/proto/token"
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -26,24 +24,24 @@ will be inserted into the generated token. Calling this function alone, does not
 generates the token. An instantiated server structure needs to be passed here to ensure that we can fetch the current
 active encryption key for token signing (RS256)
 */
-func generateToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*tokenModel.Token, error) {
+func generateToken(serv *server.Server, ticket *tokenModel.AuthenticationTicket, claims jwt.RegisteredClaims) (*tokenModel.Token, error) {
 	var token *tokenModel.Token
 
-	switch api.TokenType.String() {
+	switch ticket.Api.TokenType.String() {
 	case "RS256":
-		privateKey, err := jwk.GetActiveKey(serv, api.TokenType.String(), api.Audience)
+		privateKey, err := jwk.GetActiveKey(serv, ticket.Api.TokenType.String(), ticket.Api.Audience)
 		if err != nil {
 			return nil, err
 		}
 
-		tok, err := generateRS256(privateKey, claims, uint32(app.TokenLifetime))
+		tok, err := generateRS256(privateKey, claims, uint32(ticket.Application.TokenLifetime))
 		if err != nil {
 			return nil, err
 		}
 
 		token = tok
 	case "HS256":
-		tok, err := generateHS256(app.ClientSecret, claims, uint32(app.TokenLifetime))
+		tok, err := generateHS256(ticket.Application.ClientSecret, claims, uint32(ticket.Application.TokenLifetime))
 		if err != nil {
 			return nil, err
 		}
@@ -62,8 +60,8 @@ func generateToken(serv *server.Server, api *apiModel.API, app *applicationModel
 NewToken - Generates a token according to the algorithm provided by the API passed as a parameter. Any tokens generated
 with this function are stored in the database, and are automatically converted to a token response.
 */
-func NewToken(serv *server.Server, api *apiModel.API, app *applicationModel.Application, claims jwt.RegisteredClaims) (*tokenModel.TokenResponse, error) {
-	token, err := generateToken(serv, api, app, claims)
+func NewToken(serv *server.Server, ticket *tokenModel.AuthenticationTicket, claims jwt.RegisteredClaims) (*tokenModel.TokenResponse, error) {
+	token, err := generateToken(serv, ticket, claims)
 	if err != nil {
 		return nil, err
 	}
