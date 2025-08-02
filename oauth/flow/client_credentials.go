@@ -15,7 +15,7 @@ ClientCredentialsFlow - Attempts to issue a token under Client Credentials flow 
 ensuring that the request received was valid.
 */
 func ClientCredentialsFlow(serv *server.Server, request *request.TokenRequest, issuer string) (*tokenModel.TokenResponse, error) {
-	userApi, app, err := initiateAuthFlow(serv, request.Audience, request.ClientId, request.GrantType)
+	userApi, app, err := initiateAuthFlow(serv, request)
 	if err != nil {
 		return nil, err
 	}

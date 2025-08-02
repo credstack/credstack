@@ -29,8 +29,8 @@ initiateAuthFlow - Fetch's an API based on its audience along with its associati
 "initialization" function for any OAuth authentication flows as we almost always need these two models. Additionally,
 some validation is performed here to ensure that the requested application is allowed to issue tokens for the requested
 */
-func initiateAuthFlow(serv *server.Server, audience string, clientId string, requestedGrant string) (*apiModel.API, *applicationModel.Application, error) {
-	app, err := application.GetApplication(serv, clientId, true)
+func initiateAuthFlow(serv *server.Server, request *request.TokenRequest) (*apiModel.API, *applicationModel.Application, error) {
+	app, err := application.GetApplication(serv, request.ClientId, true)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -43,7 +43,7 @@ func initiateAuthFlow(serv *server.Server, audience string, clientId string, req
 		We do all of this validation here, before we request the API to ensure that we are not wasting CPU time by
 		making database calls for a potentially invalid request
 	*/
-	if !slices.Contains(app.AllowedAudiences, audience) {
+	if !slices.Contains(app.AllowedAudiences, request.Audience) {
 		return nil, nil, ErrUnauthorizedAudience
 	}
 
@@ -52,7 +52,7 @@ func initiateAuthFlow(serv *server.Server, audience string, clientId string, req
 		validate its string representation of it. Ideally, all of this validation could be externalized
 		to the DB layer by updating GetApplication to validate this
 	*/
-	grantType, ok := applicationModel.GrantTypes_value[requestedGrant]
+	grantType, ok := applicationModel.GrantTypes_value[request.GrantType]
 	if !ok {
 		return nil, nil, ErrInvalidGrantType
 	}
@@ -65,7 +65,7 @@ func initiateAuthFlow(serv *server.Server, audience string, clientId string, req
 		return nil, nil, ErrUnauthorizedGrantType
 	}
 
-	userApi, err := api.GetAPI(serv, audience)
+	userApi, err := api.GetAPI(serv, request.Audience)
 	if err != nil {
 		return nil, nil, err
 	}
