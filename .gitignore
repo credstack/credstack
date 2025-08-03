@@ -23,9 +23,8 @@ go.work.sum
 
 # env file
 .env
-
-# Go files
-main.go
+*/.env
 
 # Exclude locally built artifacts
 dist/
+build/
