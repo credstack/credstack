@@ -4,7 +4,7 @@ package application;
 
 import "proto/header/header.proto";
 
-option go_package = "github.com/credstack/credstack-models/proto/application";
+option go_package = "github.com/credstack/credstack/pkg/models/application";
 
 /*
 GrantTypes - A list of enums representing an OAuth Grant Type

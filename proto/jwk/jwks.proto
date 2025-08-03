@@ -4,7 +4,7 @@ package jwk;
 
 import "proto/jwk/jwk.proto";
 
-option go_package = "github.com/credstack/credstack-models/proto/jwk";
+option go_package = "github.com/credstack/credstack/pkg/models/jwk";
 
 /*
 JSONWebKeySet - A standard JSON Web Key Set

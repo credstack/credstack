@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package wellknown;
 
-option go_package = "github.com/credstack/credstack-models/proto/wellknown";
+option go_package = "github.com/credstack/credstack/pkg/models/wellknown";
 
 /*
 OIDCConfiguration - Defines common endpoints in OAuth and OIDC

@@ -5,7 +5,7 @@ package user;
 import "proto/user/credential.proto";
 import "proto/header/header.proto";
 
-option go_package = "github.com/credstack/credstack-models/proto/user";
+option go_package = "github.com/credstack/credstack/pkg/models/user";
 
 /*
 User - Represents a user registered with CredStack. Describes all standard claims for the OpenID Connect spec

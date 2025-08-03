@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package token;
 
-option go_package = "github.com/credstack/credstack-models/proto/request";
+option go_package = "github.com/credstack/credstack/pkg/models/request";
 
 /*
 TokenIntrospectRequest - Represents an end-user request to the /oauth/introspect endpoint

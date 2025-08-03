@@ -4,7 +4,7 @@ package jwk;
 
 import "proto/header/header.proto";
 
-option go_package = "github.com/credstack/credstack-models/proto/jwk";
+option go_package = "github.com/credstack/credstack/pkg/models/jwk";
 
 /*
 PrivateJSONWebKey - Represents a encryption key that can be used for signing tokens. This model can be used for both

@@ -4,7 +4,7 @@ package api;
 
 import "proto/header/header.proto";
 
-option go_package = "github.com/credstack/credstack-models/proto/api";
+option go_package = "github.com/credstack/credstack/pkg/models/api";
 
 /*
 Role - A container for permission scopes that can be assigned to users

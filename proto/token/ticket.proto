@@ -6,7 +6,7 @@ import "proto/application/application.proto";
 import "proto/api/api.proto";
 import "proto/request/token.proto";
 
-option go_package = "github.com/credstack/credstack-models/proto/token";
+option go_package = "github.com/credstack/credstack/pkg/models/token";
 
 /*
 AuthenticationTicket - An authentication ticket is an internal structure used by CredStack to issue tokens. This is

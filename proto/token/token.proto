@@ -4,7 +4,7 @@ package token;
 
 import "google/protobuf/timestamp.proto";
 
-option go_package = "github.com/credstack/credstack-models/proto/token";
+option go_package = "github.com/credstack/credstack/pkg/models/token";
 
 /*
 Token - An internal representation of an issued token. This is generally not displayed

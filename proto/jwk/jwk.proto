@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package jwk;
 
-option go_package = "github.com/credstack/credstack-models/proto/jwk";
+option go_package = "github.com/credstack/credstack/pkg/models/jwk";
 
 /*
 JSONWebKey - A simple structure representing a public JSON Web Key
