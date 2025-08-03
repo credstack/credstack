@@ -22,40 +22,40 @@ func AddRoutes() {
 	/*
 		Application Routes - /management/application
 	*/
-	App.Get("/management/application", management.GetApplicationHandler, middleware.LogMiddleware)
-	App.Post("/management/application", management.PostApplicationHandler, middleware.LogMiddleware)
-	App.Patch("/management/application", management.PatchApplicationHandler, middleware.LogMiddleware)
-	App.Delete("/management/application", management.DeleteApplicationHandler, middleware.LogMiddleware)
+	App.Get("/management/application", middleware.LogMiddleware, management.GetApplicationHandler)
+	App.Post("/management/application", middleware.LogMiddleware, management.PostApplicationHandler)
+	App.Patch("/management/application", middleware.LogMiddleware, management.PatchApplicationHandler)
+	App.Delete("/management/application", middleware.LogMiddleware, management.DeleteApplicationHandler)
 
 	/*
 		API Routes - /management/api
 	*/
-	App.Get("/management/api", management.GetAPIHandler, middleware.LogMiddleware)
-	App.Post("/management/api", management.PostAPIHandler, middleware.LogMiddleware)
-	App.Patch("/management/api", management.PatchAPIHandler, middleware.LogMiddleware)
-	App.Delete("/management/api", management.DeleteAPIHandler, middleware.LogMiddleware)
+	App.Get("/management/api", middleware.LogMiddleware, management.GetAPIHandler)
+	App.Post("/management/api", middleware.LogMiddleware, management.PostAPIHandler)
+	App.Patch("/management/api", middleware.LogMiddleware, management.PatchAPIHandler)
+	App.Delete("/management/api", middleware.LogMiddleware, management.DeleteAPIHandler)
 
 	/*
 		User Routes - /management/user
 	*/
-	App.Get("/management/user", management.GetUserHandler, middleware.LogMiddleware)
-	App.Patch("/management/user", management.PatchUserHandler, middleware.LogMiddleware)
-	App.Delete("/management/user", management.DeleteUserHandler, middleware.LogMiddleware)
+	App.Get("/management/user", middleware.LogMiddleware, management.GetUserHandler)
+	App.Patch("/management/user", middleware.LogMiddleware, management.PatchUserHandler)
+	App.Delete("/management/user", middleware.LogMiddleware, management.DeleteUserHandler)
 
 	/*
 		Internal Authentication - /auth/*
 	*/
-	App.Post("/auth/register", auth.RegisterUserHandler, middleware.LogMiddleware)
+	App.Post("/auth/register", middleware.LogMiddleware, auth.RegisterUserHandler)
 
 	/*
 		OAuth Handlers - /oauth2/*
 	*/
 
-	App.Get("/oauth/token", oauth.GetTokenHandler, middleware.LogMiddleware)
+	App.Get("/oauth/token", middleware.LogMiddleware, oauth.GetTokenHandler)
 	/*
 		Well Known Handlers
 	*/
-	App.Get("/.well-known/jwks.json", wellknown.GetJWKHandler, middleware.LogMiddleware)
+	App.Get("/.well-known/jwks.json", middleware.LogMiddleware, wellknown.GetJWKHandler)
 }
 
 /*
