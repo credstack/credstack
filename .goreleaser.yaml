@@ -7,7 +7,21 @@ before:
     - go mod tidy
 
 builds:
-  - skip: true
+  - id: "credstack-api"
+    main: "./cmd/api"
+    binary: credstack-api
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -a
+    ldflags:
+      - '-extldflags "-static"'
+    env:
+      - CGO_ENABLED=0
 
 source:
   enabled: true
@@ -33,6 +47,7 @@ changelog:
       - "^docs:"
       - "^test:"
       - "^chore:"
+      - "^build:"
 
 release:
   footer: >-
