@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# generate-pb.sh - Generates protobuf's and inject's struct tags
+
 SRC="$1"
 DST="$2"
 
