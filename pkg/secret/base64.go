@@ -3,7 +3,7 @@ package secret
 import (
 	"encoding/base64"
 	"fmt"
-	credstackError "github.com/credstack/credstack-lib/pkg/errors"
+	credstackError "github.com/credstack/credstack/pkg/errors"
 )
 
 // ErrFailedToBaseDecode - Provides a named error for when base64 decoding data fails during a user credential validation

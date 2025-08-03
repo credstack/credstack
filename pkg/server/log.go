@@ -1,8 +1,8 @@
 package server
 
 import (
-	"github.com/credstack/credstack-lib/internal"
-	"github.com/credstack/credstack-lib/pkg/options"
+	"github.com/credstack/credstack/internal"
+	"github.com/credstack/credstack/pkg/options"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"

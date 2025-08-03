@@ -2,8 +2,8 @@ package server
 
 import (
 	"context"
-	credstackError "github.com/credstack/credstack-lib/pkg/errors"
-	"github.com/credstack/credstack-lib/pkg/options"
+	credstackError "github.com/credstack/credstack/pkg/errors"
+	"github.com/credstack/credstack/pkg/options"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"

@@ -1,9 +1,9 @@
 package header
 
 import (
-	"github.com/credstack/credstack-lib/internal"
-	"github.com/credstack/credstack-lib/pkg/secret"
 	"github.com/credstack/credstack-models/proto/header"
+	"github.com/credstack/credstack/internal"
+	"github.com/credstack/credstack/pkg/secret"
 )
 
 /*

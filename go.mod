@@ -1,4 +1,4 @@
-module github.com/credstack/credstack-lib
+module github.com/credstack/credstack
 
 go 1.24.2
 

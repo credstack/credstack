@@ -2,7 +2,7 @@ package secret
 
 import (
 	"crypto/subtle"
-	"github.com/credstack/credstack-lib/pkg/options"
+	"github.com/credstack/credstack/pkg/options"
 	"golang.org/x/crypto/argon2"
 )
 

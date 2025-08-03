@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	credstackError "github.com/credstack/credstack-lib/pkg/errors"
-	"github.com/credstack/credstack-lib/pkg/server"
 	jwkModel "github.com/credstack/credstack-models/proto/jwk"
+	credstackError "github.com/credstack/credstack/pkg/errors"
+	"github.com/credstack/credstack/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )

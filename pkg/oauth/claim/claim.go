@@ -1,7 +1,7 @@
 package claim
 
 import (
-	"github.com/credstack/credstack-lib/internal"
+	"github.com/credstack/credstack/internal"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
 )
