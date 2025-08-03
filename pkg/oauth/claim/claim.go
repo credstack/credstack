@@ -1,7 +1,7 @@
 package claim
 
 import (
-	"github.com/credstack/credstack/internal"
+	internalTime "github.com/credstack/credstack/internal/time"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
 )
@@ -12,7 +12,7 @@ to it: iss, aud, kid, iat, nbf, and exp. No custom expiration dates are supporte
 after they are issued
 */
 func NewClaims(iss string, aud string, exp uint64) jwt.RegisteredClaims {
-	currentTime := time.Unix(internal.UnixTimestamp(), 0)
+	currentTime := time.Unix(internalTime.UnixTimestamp(), 0)
 
 	return jwt.RegisteredClaims{
 		Issuer:    iss,

@@ -1,7 +1,7 @@
 package header
 
 import (
-	"github.com/credstack/credstack/internal"
+	internalTime "github.com/credstack/credstack/internal/time"
 	"github.com/credstack/credstack/pkg/models/header"
 	"github.com/credstack/credstack/pkg/secret"
 )
@@ -16,7 +16,7 @@ func NewHeader(basis string) *header.Header {
 		Normally, I would inline this function call into each of the fields of the header.Header struct
 		however doing that could present slight discrepancies in each timestamp
 	*/
-	timestamp := internal.UnixTimestamp()
+	timestamp := internalTime.UnixTimestamp()
 
 	return &header.Header{
 		Identifier: secret.GenerateUUID(basis),
