@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package token;
+
+option go_package = "github.com/credstack/credstack-models/proto/request";
+
+/*
+TokenIntrospectRequest - Represents an end-user request to the /oauth/introspect endpoint
+ */
+message TokenIntrospectRequest {
+  // token - The token that the user wishes to introspect
+  string token = 1; // @gotags: bson:"token"
+
+  // token_type_hint - A hint that assists the server in what token is being passed. Can be: access_token, refresh_token
+  string token_type_hint = 3; // @gotags: bson:"token_type_hint"
+}

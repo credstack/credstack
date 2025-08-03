@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package token;
+
+import "proto/application/application.proto";
+import "proto/api/api.proto";
+import "proto/request/token.proto";
+
+option go_package = "github.com/credstack/credstack-models/proto/token";
+
+/*
+AuthenticationTicket - An authentication ticket is an internal structure used by CredStack to issue tokens. This is
+not defined within the OAuth/OIDC spec, however its existence keeps functions clean and prevents having 4-5 parameters
+in a single function
+
+TODO: Ideally, this would include claims as well however creating a claims structure would mean we would have to write functions for marshaling this
+ */
+message AuthenticationTicket {
+  // application - The application that user is attempting to issue a token from
+  application.Application application = 1; // @gotags: bson:"application"
+
+  // api - The API that the represents the audience the user wants a token from
+  api.API api = 2; // @gotags: bson:"api"
+
+  // token_request - The token request that the user has made
+  request.TokenRequest token_request = 3; // @gotags: bson:"token_request"
+}

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package jwk;
+
+import "proto/header/header.proto";
+
+option go_package = "github.com/credstack/credstack-models/proto/jwk";
+
+/*
+PrivateJSONWebKey - Represents a encryption key that can be used for signing tokens. This model can be used for both
+RS tokens and HS tokens
+ */
+message PrivateJSONWebKey {
+  // header - The generated header for the key pair
+  header.Header header = 1; // @gotags: bson:"header"
+
+  // alg - Specify's the algorithm used for generating the key
+  string alg = 2; // @gotags: bson:"alg"
+
+  // key_material - The PEM encoded private key
+  string key_material = 3; // @gotags: bson:"key_material"
+
+  // size - The size of the key in bits
+  int64 size = 4; // @gotags: bson:"size"
+
+  // is_current - If set to true, then this key is selected for signing tokens
+  bool is_current = 5; // @gotags: bson:"is_current"
+
+  // audience - The audience of the API that this key was allocated for
+  string audience = 6; // @gotags: bson:"audience"
+}

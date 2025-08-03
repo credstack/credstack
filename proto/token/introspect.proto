@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package token;
+
+option go_package = "github.com/credstack/credstack-models/proto/token";
+
+/*
+TokenIntrospectResponse - Represents a response from the endpoint /oauth/introspect
+ */
+message TokenIntrospectResponse {
+  // active - A boolean value that determines if the token is active or not
+  bool active = 1; // @gotags: bson:"active"
+
+  // client_id - The client identifier for the application that issued the token
+  string client_id = 2; // @gotags: bson:"client_id"
+
+  // sub - The subject of who the token was issued for. Can be a username or client id if client credentials flow was used
+  string sub = 3; // @gotags: bson:"sub"
+
+  // scope - Any scopes that were issued with the token
+  string scope = 4; // @gotags: bson:"scope"
+
+  // exp - A unix timestamp representing the tokens expiration date
+  int64 exp = 5; // @gotags: bson:"exp"
+}

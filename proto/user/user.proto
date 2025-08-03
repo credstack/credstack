@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package user;
+
+import "proto/user/credential.proto";
+import "proto/header/header.proto";
+
+option go_package = "github.com/credstack/credstack-models/proto/user";
+
+/*
+User - Represents a user registered with CredStack. Describes all standard claims for the OpenID Connect spec
+ */
+message User {
+  // header - Shared data values used across all objects
+  header.Header header = 1; // @gotags: bson:"header"
+
+  // sub - A UUID v5 based on the users email address, used for identifying the user. This is the same as the identifier in the header
+  string sub = 2; // @gotags: bson:"sub"
+
+  // username - The username of the user. Does not need to be unique as primary lookup for the user is done via userId
+  string username = 3; // @gotags: bson:"username"
+
+  // email - The primary email address for the user. Must be unique
+  string email = 4; // @gotags: bson:"email"
+
+  // email_verified - A boolean value describing if the user has validated there email address
+  bool email_verified = 5; // @gotags: bson:"email_verified"
+
+  // given_name - The users first name. Can be null, and does not need to be unique
+  string given_name = 6; // @gotags: bson:"given_name"
+
+  // middle_name - The users middle name. Can be null, and does not need to be unique
+  string middle_name = 7; // @gotags: bson:"middle_name"
+
+  // family_name - The users last name. Can be null, and does not need to be unique
+  string family_name = 8; // @gotags: bson:"family_name"
+
+  // gender - The users gender. Can be null
+  string gender = 9; // @gotags: bson:"gender"
+
+  // birth_date - The users birthdate represented as YYYY-MM-DD
+  string birth_date = 10; // @gotags: bson:"birth_date"
+
+  // zone_info - The timezone for the user that should be respected by timestamps. Defaults to America/New_York
+  string zone_info = 11; // @gotags: bson:"zone_info"
+
+  // phone_number - The users phone number in the following format +1800-555-555
+  string phone_number = 12; // @gotags: bson:"phone_number"
+
+  // phone_number_verified - A boolean value describing if the user has validated there email address
+  bool phone_number_verified = 13; // @gotags: bson:"phone_number_verified"
+
+  // address - The users physical mailing address. Can be null
+  string address = 14; // @gotags: bson:"address"
+
+  // credential - A message representing the users hashed password. Will be left null when exporting unless explicitly declared
+  UserCredential credential = 15; // @gotags: bson:"credential"
+
+  // scopes - A list of scope ID's that were directly assigned to the user
+  repeated string scopes = 16; // @gotags: bson:"scopes"
+
+  // roles - A list of role ID's that were directly assigned to the user
+  repeated string roles = 17; // @gotags: bson:"roles"
+}
