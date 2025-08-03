@@ -5,8 +5,8 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
-	"github.com/credstack/credstack-lib/header"
-	"github.com/credstack/credstack-lib/secret"
+	"github.com/credstack/credstack-lib/pkg/header"
+	"github.com/credstack/credstack-lib/pkg/secret"
 	jwkModel "github.com/credstack/credstack-models/proto/jwk"
 	"math/big"
 )

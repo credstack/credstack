@@ -2,7 +2,7 @@ package token
 
 import (
 	"fmt"
-	"github.com/credstack/credstack-lib/oauth/jwk"
+	"github.com/credstack/credstack-lib/pkg/oauth/jwk"
 	jwkModel "github.com/credstack/credstack-models/proto/jwk"
 	tokenModel "github.com/credstack/credstack-models/proto/token"
 	"github.com/golang-jwt/jwt/v5"

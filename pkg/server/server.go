@@ -1,6 +1,6 @@
 package server
 
-import "github.com/credstack/credstack-lib/options"
+import "github.com/credstack/credstack-lib/pkg/options"
 
 /*
 Server - Provides an abstraction of any commonly used resources that services would need

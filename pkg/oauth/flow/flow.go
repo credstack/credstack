@@ -1,10 +1,10 @@
 package flow
 
 import (
-	"github.com/credstack/credstack-lib/api"
-	"github.com/credstack/credstack-lib/application"
-	credstackError "github.com/credstack/credstack-lib/errors"
-	"github.com/credstack/credstack-lib/server"
+	"github.com/credstack/credstack-lib/pkg/api"
+	"github.com/credstack/credstack-lib/pkg/application"
+	credstackError "github.com/credstack/credstack-lib/pkg/errors"
+	"github.com/credstack/credstack-lib/pkg/server"
 	applicationModel "github.com/credstack/credstack-models/proto/application"
 	"github.com/credstack/credstack-models/proto/request"
 	tokenModel "github.com/credstack/credstack-models/proto/token"

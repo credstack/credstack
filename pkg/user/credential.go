@@ -2,9 +2,9 @@ package user
 
 import (
 	"fmt"
-	credstackError "github.com/credstack/credstack-lib/errors"
-	"github.com/credstack/credstack-lib/options"
-	"github.com/credstack/credstack-lib/secret"
+	credstackError "github.com/credstack/credstack-lib/pkg/errors"
+	"github.com/credstack/credstack-lib/pkg/options"
+	"github.com/credstack/credstack-lib/pkg/secret"
 	"github.com/credstack/credstack-models/proto/user"
 )
 
