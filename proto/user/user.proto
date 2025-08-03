@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package user;
 
-import "proto/user/credential.proto";
-import "proto/header/header.proto";
+import "user/credential.proto";
+import "header/header.proto";
 
 option go_package = "github.com/credstack/credstack/pkg/models/user";
 

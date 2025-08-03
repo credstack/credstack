@@ -2,7 +2,7 @@ package token
 
 import (
 	"fmt"
-	tokenModel "github.com/credstack/credstack-models/proto/token"
+	tokenModel "github.com/credstack/credstack/pkg/models/token"
 	"github.com/credstack/credstack/pkg/secret"
 	"github.com/golang-jwt/jwt/v5"
 	pbTimestamp "google.golang.org/protobuf/types/known/timestamppb"

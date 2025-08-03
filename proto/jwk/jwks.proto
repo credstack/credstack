@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package jwk;
 
-import "proto/jwk/jwk.proto";
+import "jwk/jwk.proto";
 
 option go_package = "github.com/credstack/credstack/pkg/models/jwk";
 

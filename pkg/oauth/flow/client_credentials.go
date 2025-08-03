@@ -2,8 +2,8 @@ package flow
 
 import (
 	"crypto/subtle"
-	tokenModel "github.com/credstack/credstack-models/proto/token"
 	"github.com/credstack/credstack/pkg/application"
+	tokenModel "github.com/credstack/credstack/pkg/models/token"
 	"github.com/credstack/credstack/pkg/oauth/claim"
 	"github.com/credstack/credstack/pkg/oauth/token"
 	"github.com/credstack/credstack/pkg/server"

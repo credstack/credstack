@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package token;
 
-import "proto/application/application.proto";
-import "proto/api/api.proto";
-import "proto/request/token.proto";
+import "application/application.proto";
+import "api/api.proto";
+import "request/token.proto";
 
 option go_package = "github.com/credstack/credstack/pkg/models/token";
 
