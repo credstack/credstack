@@ -1,5 +1,5 @@
 {
-  "mongo.hostname":"credstack.local",
+  "mongo.hostname":"mongodb.local",
   "mongo.port":27017,
   "mongo.username":"admin",
   "mongo.password":"admin",
