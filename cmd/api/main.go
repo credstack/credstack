@@ -7,13 +7,14 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/credstack/credstack/internal/api"
-	"github.com/credstack/credstack/pkg/server"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/credstack/credstack/internal/api"
+	"github.com/credstack/credstack/pkg/server"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
