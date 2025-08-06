@@ -1,5 +1,5 @@
 GC = go
-GFLAGS = -ldflags="-s -w"
+GFLAGS = '-ldflags="-s -w"'
 DEV_GFLAGS = -v -x
 BUILD_FOLDER=dist/
 LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
@@ -11,7 +11,7 @@ config:
 
 # api - Builds the api and outputs it to the BUILD_FOLDER
 api:
-	$(GC) cmd/api $(GFLAGS) -o $(BUILD_FOLDER)/credstack-api
+	$(GC) build cmd/api $(GFLAGS) -o dist/credstack-api
 
 # protobuf - Generates protocol buffers and injects desired struct tags
 protobuf:
