@@ -4,11 +4,6 @@ DEV_GFLAGS = -v -x
 BUILD_FOLDER=dist/
 LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
 
-# deps - Installs all dependencies required for developing credstack
-dev-deps:
-	$(GC) mod download
-	./scripts/install-deps.sh
-
 # config - Creates a config file with sane defaults
 config:
 	mkdir -p ~/.credstack/logs
