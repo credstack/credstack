@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package application;
+
+import "header/header.proto";
+
+option go_package = "github.com/credstack/credstack/pkg/models/application";
+
+/*
+GrantTypes - A list of enums representing an OAuth Grant Type
+ */
+enum GrantTypes {
+  // client_credentials - Client credentials grant allows direct issuance of tokens in exchange for a client ID and secret
+  client_credentials = 0;
+
+  // authorization_code - Authorization Code Grant + PKCE allows tokens to be issued after the user has authentication with an OIDC provider
+  authorization_code = 1;
+
+  // password - Deprecated OAuth grant that allows direct issuance of tokens in exchange for raw user credentials
+  password = 2;
+}
+
+/*
+Application - The core resource allowing that provides the issuance of tokens
+ */
+message Application {
+  // header - Shared data values used across all objects
+  header.Header header = 1; // @gotags: bson:"header"
+
+  // name - A user provided, arbitrary name for the application
+  string name = 2; // @gotags: bson:"name"
+
+  // is_public - Indicates if this is a public or confidential application
+  bool is_public = 3; // @gotags: bson:"is_public"
+
+  // client_id - The client ID used in the authorization process
+  string client_id = 4; // @gotags: bson:"client_id"
+
+  // client_secret - The client secret used in the authorization process
+  string client_secret = 5; // @gotags: bson:"client_secret"
+
+  // redirect_uri - A redirect URI for the application to redirect to after authorization
+  string redirect_uri = 6; // @gotags: bson:"redirect_uri"
+
+  // token_lifetime - The amount of time in seconds, before the token expires
+  uint64 token_lifetime = 7; // @gotags: bson:"token_lifetime"
+
+  // grant_type - The grant types this Application is authorized to issue on
+  repeated GrantTypes grant_type = 8; // @gotags: bson:"grant_type"
+
+  // allowed_audiences - A list of strings that represents which API's this application can issue tokens for
+  repeated string allowed_audiences = 9; // @gotags: bson:"allowed_audiences"
+}

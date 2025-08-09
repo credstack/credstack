@@ -1,0 +1,11 @@
+{
+  "mongo.hostname":"mongodb.local",
+  "mongo.port":27017,
+  "mongo.username":"admin",
+  "mongo.password":"admin",
+  "mongo.use_authentication":true,
+  "mongo.default_database":"credstack",
+  "mongo.authentication_database":"admin",
+  "log.use_file_logging":true,
+  "log.path":"~/.credstack/logs"
+}

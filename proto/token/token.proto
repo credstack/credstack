@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package token;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/credstack/credstack/pkg/models/token";
+
+/*
+Token - An internal representation of an issued token. This is generally not displayed
+to the user, but is instead used for tracking tokens internally in the database
+ */
+message Token {
+  // sub - The subject the token was issued for. Can be a user id or a client ID
+  string sub = 1; // @gotags: bson:"sub"
+
+  // client_id - The client ID of the application that issued the token
+  string client_id = 2; // @gotags: bson:"client_id"
+
+  // access_token - The access token that was issued
+  string access_token = 3; // @gotags: bson:"access_token"
+
+  // refresh_token - The refresh token that was issued
+  string refresh_token = 4; // @gotags: bson:"refresh_token"
+
+  // id_token - The ID token that was issued
+  string id_token = 5; // @gotags: bson:"id_token"
+
+  // expires_in - The time in seconds that the token expires in
+  uint32 expires_in = 6; // @gotags: bson:"expires_in"
+
+  // expires_at - A timestamp that represents the datetime in which the access token expires
+  google.protobuf.Timestamp expires_at = 7; // @gotags: bson:"expires_at"
+
+  // refresh_expires_at - A timestamp that represents the datetime in which the refresh token expires
+  google.protobuf.Timestamp refresh_expires_at = 8; // @gotags: bson:"refresh_expires_at"
+
+  // scope - Any permission scopes that were issued with the token
+  string scope = 9; // @gotags: bson:"scope"
+}

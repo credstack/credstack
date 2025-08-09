@@ -1,13 +1,27 @@
 version: 2
 
-project_name: credstack-lib
+project_name: credstack
 
 before:
   hooks:
     - go mod tidy
 
 builds:
-  - skip: true
+  - id: "credstack-api"
+    main: "./cmd/api"
+    binary: credstack-api
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -v
+    ldflags:
+      - '-s -w'
+    env:
+      - CGO_ENABLED=0
 
 source:
   enabled: true
@@ -33,6 +47,7 @@ changelog:
       - "^docs:"
       - "^test:"
       - "^chore:"
+      - "^build:"
 
 release:
   footer: >-

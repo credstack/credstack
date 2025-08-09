@@ -1,2 +1,2 @@
-# credstack-lib
-A library providing core logic for credstack-api, the open source identity provider
+# credstack
+The open source & cloud-native identity provider

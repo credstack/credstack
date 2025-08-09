@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package api;
+
+import "header/header.proto";
+
+option go_package = "github.com/credstack/credstack/pkg/models/api";
+
+/*
+PermissionScope - A structure representing a unit of permissions that can be evaluated by the API.
+When marshaled and returned to the user, key and value are appended together in the following format:
+
+`key:value`
+ */
+message PermissionScope {
+  // header - Shared data values used across all objects
+  header.Header header = 1; // @gotags: bson:"header"
+
+  // associated_api - The API this permission scope is assigned to
+  string associated_api = 2; // @gotags: bson:"associated_api"
+
+  // key - A key for the permission scope
+  string key = 3; // @gotags: bson:"key"
+
+  // value - A value for the permission scope
+  string value = 4; // @gotags: bson:"value"
+}
