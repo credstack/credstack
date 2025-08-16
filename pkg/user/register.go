@@ -34,11 +34,11 @@ var ErrEmailAddressInvalid = credstackError.NewError(400, "EMAIL_ADDRESS_INVALID
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
 
 /*
-RegisterUser - Core logic for registering new users with credstack. Performs full validation on any of the user data
+Register - Core logic for registering new users with credstack. Performs full validation on any of the user data
 provided here. New users must have a unique email address and this will be validated here. Any errors propagated through
 this function call is returned. This is generally only named errors defined in this package.
 */
-func RegisterUser(serv *server.Server, opts *options.CredentialOptions, email string, username string, password string) error {
+func Register(serv *server.Server, opts *options.CredentialOptions, email string, username string, password string) error {
 	/*
 		Originally, I was going to place this logic in NewCredential, however we don't want to consume a DB call
 		if the information provided here is invalid (Bad Request)
