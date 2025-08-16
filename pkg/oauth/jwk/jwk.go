@@ -48,13 +48,13 @@ type JSONWebKeySet struct {
 }
 
 /*
-GetJWKS - Fetches all JSON Web Keys stored in the database and returns them as a slice. Only RSA Keys are returned with
+JWKS - Fetches all JSON Web Keys stored in the database and returns them as a slice. Only RSA Keys are returned with
 this function call, as this is intended to be used with the .well-known/jwks.json endpoint, and HSA secrets should not
 be exposed publicly as they are symmetrical
 
 TODO: Maybe rethink this to return only keys by a specific audience
 */
-func GetJWKS(serv *server.Server) (*JSONWebKeySet, error) {
+func JWKS(serv *server.Server) (*JSONWebKeySet, error) {
 	jwks := new(JSONWebKeySet)
 
 	/*
@@ -85,10 +85,10 @@ func GetJWKS(serv *server.Server) (*JSONWebKeySet, error) {
 }
 
 /*
-GetJWK - Fetches the public JSON Web Key that matches the key identifier passed in the parameter. This just returns
+Get - Fetches the public JSON Web Key that matches the key identifier passed in the parameter. This just returns
 the model and other functions provided in this package can be used to convert it back to a valid rsa.PublicKey
 */
-func GetJWK(serv *server.Server, kid string) (*JSONWebKey, error) {
+func Get(serv *server.Server, kid string) (*JSONWebKey, error) {
 	var jwk JSONWebKey
 
 	/*
@@ -111,14 +111,14 @@ func GetJWK(serv *server.Server, kid string) (*JSONWebKey, error) {
 }
 
 /*
-GetActiveKey - Fetches the latest active private key according to the algorithm that is passed in the parameter. The same
+ActiveKey - Fetches the latest active private key according to the algorithm that is passed in the parameter. The same
 model (key.PrivateJSONWebKey) is used for both RS256 and HS256 keys, so the same function can be used for either. Additional
 functions are provided within the package to convert this model into a valid RSA private key to use
 
 TODO: This does not support HS-256
 TODO: This may not be needed, validate as the rest of this package gets fleshed out
 */
-func GetActiveKey(serv *server.Server, alg string, audience string) (*PrivateJSONWebKey, error) {
+func ActiveKey(serv *server.Server, alg string, audience string) (*PrivateJSONWebKey, error) {
 	var jwk PrivateJSONWebKey
 
 	/*
@@ -141,7 +141,7 @@ func GetActiveKey(serv *server.Server, alg string, audience string) (*PrivateJSO
 }
 
 /*
-NewKey - Generates a new key depending on the algorithm that you specify in the parameter. Calling this function will
+New - Generates a new key depending on the algorithm that you specify in the parameter. Calling this function will
 immediately set the key as the current one, however this will not retroactively update previously issued key. If you are
 attempting to rotate/revoke keys, then you should use RotateKeys or RotateRevokeKeys.
 
@@ -150,7 +150,7 @@ Additionally, this function does not validate that its given audience exists, be
 TODO: Update alg to use protobuf enum
 TODO: Update this to remove alg check. HS256 tokens use client secret for signing
 */
-func NewKey(serv *server.Server, alg string, audience string) (*PrivateJSONWebKey, error) {
+func New(serv *server.Server, alg string, audience string) (*PrivateJSONWebKey, error) {
 	ret := new(PrivateJSONWebKey)
 	if alg == "RS256" {
 		privateKey, jwk, err := GenerateRSAKey(audience)
