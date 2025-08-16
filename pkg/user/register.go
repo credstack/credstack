@@ -4,15 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
+
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/header"
-	userModel "github.com/credstack/credstack/pkg/models/user"
 	"github.com/credstack/credstack/pkg/options"
 	"github.com/credstack/credstack/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
-	"regexp"
 )
 
 // ErrPasswordTooShort - Provides a named error to be returned when a user-provided password is too short
@@ -112,11 +112,10 @@ func RegisterUser(serv *server.Server, opts *options.CredentialOptions, email st
 
 		TODO: Validation for email address
 	*/
-	userHeader := header.NewHeader(email)
+	userHeader := header.New(email)
 
-	newUser := &userModel.User{
+	newUser := &User{
 		Header:     userHeader,
-		Sub:        userHeader.Identifier,
 		Username:   username,
 		Email:      email,
 		Credential: credential,
