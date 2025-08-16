@@ -2,8 +2,8 @@ package user
 
 import (
 	"fmt"
+
 	credstackError "github.com/credstack/credstack/pkg/errors"
-	"github.com/credstack/credstack/pkg/models/user"
 	"github.com/credstack/credstack/pkg/options"
 	"github.com/credstack/credstack/pkg/secret"
 )
@@ -15,11 +15,37 @@ var ErrUserCredentialInvalid = credstackError.NewError(401, "INVALID_USER_CREDEN
 var ErrFailedToHashCredential = credstackError.NewError(500, "FAILED_TO_HASH_CREDENTIAL", "user: failed to hash user credential")
 
 /*
+Credential - Represents the users hashed password and the parameters used to hash it. Hashing is performed
+*/
+type Credential struct {
+	// Key - The user's hashed password represented as a string
+	Key string `bson:"key" json:"key"`
+
+	// Salt - A randomly generated string used for introducing a unique value to the generated key
+	Salt string `bson:"salt" json:"salt"`
+
+	// Time - The cost parameter used by Argon when hashing passwords. Should be 1 usually
+	Time uint32 `bson:"time" json:"time"`
+
+	// Memory - The amount of memory to be used when hashing passwords
+	Memory uint32 `bson:"memory" json:"memory"`
+
+	// Threads - The number of go-routines (threads) to be used when hashing the user's password
+	Threads uint32 `bson:"threads" json:"threads"`
+
+	// KeyLength - The length of the Argon generated key
+	KeyLength uint32 `bson:"key_length" json:"key_length"`
+
+	// SaltLength - The length of the generated salt
+	SaltLength uint32 `bson:"salt_length" json:"salt_length"`
+}
+
+/*
 NewCredential - Creates and generates a new UserCredential using the secret provided in the parameter. Both the secret
 and the salt are stored as URL-Safe, base64 encoded strings to ensure that they can be safely stored in Mongo. Any
 errors that occur here are returned in the wrapped error: ErrFailedToHashCredential.
 */
-func NewCredential(credential string, opts *options.CredentialOptions) (*user.UserCredential, error) {
+func NewCredential(credential string, opts *options.CredentialOptions) (*Credential, error) {
 	/*
 		All logic for generating Argon2 Hashes are provided by the secrets package. A new cryptographically secure salt
 		is generated from this function call, however returned values are not base64 encoded or marshalled into the
@@ -34,7 +60,7 @@ func NewCredential(credential string, opts *options.CredentialOptions) (*user.Us
 		After our credentials are generated, we marshal them into the user.UserCredentials struct and return it to
 		the caller. Any secrets generated are base64 encoded here (URL Safe)
 	*/
-	return &user.UserCredential{
+	return &Credential{
 		Key:        secret.EncodeBase64(hash),
 		Salt:       secret.EncodeBase64(salt),
 		Time:       opts.Time,
@@ -50,7 +76,7 @@ CheckCredential - Validates the base64 encoded secret passed in the 'validate' p
 struct passed in the credential parameter. This should be a UserCredential struct returned from a call to GetUser. If
 the user credentials do not match, then ErrUserCredentialInvalid is returned. Otherwise, nil is returned
 */
-func CheckCredential(validate string, credential *user.UserCredential) error {
+func CheckCredential(validate string, credential *Credential) error {
 	/*
 		To start the validation process we first need to base64 decode the salt that was
 		stored in MongoDB. We use make to allocate us a byte array of the requested salt length
