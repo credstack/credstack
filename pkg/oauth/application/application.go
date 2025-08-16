@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/header"
 	applicationModel "github.com/credstack/credstack/pkg/models/application"
@@ -12,6 +13,20 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
+)
+
+const (
+	// GrantTypeClientCredentials - A constant string representing the client credentials grant type
+	GrantTypeClientCredentials string = "client_credentials"
+
+	// GrantTypeAuthorizationCode - A constant string representing the authorization code grant type
+	GrantTypeAuthorizationCode string = "authorization_code"
+
+	// GrantTypeRefreshToken - A constant string representing the refresh token grant type
+	GrantTypeRefreshToken string = "refresh_token"
+
+	// GrantTypePassword - A constant string representing the deprecated password grant type
+	GrantTypePassword string = "password"
 )
 
 // ErrInvalidClientCredentials - An error that gets returned when the client credentials sent in a token request do not match what was received from the database (during client credentials flow)
@@ -28,6 +43,38 @@ var ErrAppMissingIdentifier = credstackError.NewError(400, "APP_MISSING_ID", "ap
 
 // ErrAppDoesNotExist - Provides a named error for when you try and fetch an application that does not exist
 var ErrAppDoesNotExist = credstackError.NewError(404, "APP_DOES_NOT_EXIST", "application: Application does not exist under the specified client ID")
+
+/*
+Application - Represents the OAuth client that wants to issue tokens for an API
+*/
+type Application struct {
+	// Header - The header for the Application. Created at object birth
+	Header *header.Header `json:"header" bson:"header"`
+
+	// Name - The name of the application as defined by the user
+	Name string `bson:"name" json:"name"`
+
+	// IsPublic - Determines if the application is public. If this is set to true, then the application cannot use Client Credentials Flow
+	IsPublic bool `bson:"is_public" json:"is_public"`
+
+	// ClientId - The client ID for the application. Gets generated at birth
+	ClientId string `bson:"client_id" json:"client_id"`
+
+	// ClientSecret - The client secret for the application. Gets generated at birth
+	ClientSecret string `bson:"client_secret" json:"client_secret"`
+
+	// RedirectURI - The redirect URI for post-authentication. Defined by the user
+	RedirectURI string `bson:"redirect_uri" json:"redirect_uri"`
+
+	// TokenLifetime - An unsigned integer representing the amount of time in seconds that the token is valid for
+	TokenLifetime uint64 `bson:"token_lifetime" json:"token_lifetime"`
+
+	// GrantTypes - The grant types that the application is allowed to issue tokens under
+	GrantTypes []string `bson:"grant_types" json:"grant_types"`
+
+	// AllowedAudiences - A string slice representing which APIs are allowed to issue tokens for this application
+	AllowedAudiences []string `bson:"allowed_audiences" json:"allowed_audiences"`
+}
 
 /*
 NewApplication - Creates a new application with the provided grant types in the parameter. If an empty slice is provided
