@@ -52,7 +52,7 @@ type Api struct {
 }
 
 /*
-NewAPI - Creates a new API for use with credstack. While the application determines your use case for authentication,
+New - Creates a new API for use with credstack. While the application determines your use case for authentication,
 the API controls both what claims get inserted into generated tokens, but also what token types you utilize. Additionally,
 it controls if RBAC is enforced on the API (validation of scopes and roles). This gets disabled by default, to ensure
 the caller is fully aware of how the API authenticates users.
@@ -62,7 +62,7 @@ do not try and insert an API with the same domain as an existing one
 
 TODO: Update this to not generate a key everytime, only RS256 tokens need keys generated
 */
-func NewAPI(serv *server.Server, name string, audience string, tokenType string) error {
+func New(serv *server.Server, name string, audience string, tokenType string) error {
 	/*
 		We always want to check to make sure both of these are filled in as we need a domain to use in the audience
 		of our token
@@ -116,11 +116,11 @@ func NewAPI(serv *server.Server, name string, audience string, tokenType string)
 }
 
 /*
-GetAPI - Fetches an API document from the database and marshals it into a API protobuf. The domain parameter
+Get - Fetches an API document from the database and marshals it into a API protobuf. The domain parameter
 cannot be an empty string, but does not need to be a valid domain as this is used merely as an identifier. Named
 errors are propagated here and returned. If an error occurs, API is returned as nil
 */
-func GetAPI(serv *server.Server, audience string) (*Api, error) {
+func Get(serv *server.Server, audience string) (*Api, error) {
 	/*
 		We must have a valid domain here. You are unable to insert an API with an empty domain, so this
 		must be filled
@@ -155,11 +155,11 @@ func GetAPI(serv *server.Server, audience string) (*Api, error) {
 }
 
 /*
-ListAPI - Lists all user defined API's present in the database. Optionally, a limit can be specified here to limit the
+List - Lists all user defined API's present in the database. Optionally, a limit can be specified here to limit the
 amount of data returned at once. The maximum that can be returned in a single call is 10, and if a limit exceeds this, it
 will be reset to 10
 */
-func ListAPI(serv *server.Server, limit int) ([]*Api, error) {
+func List(serv *server.Server, limit int) ([]*Api, error) {
 	if limit > 10 {
 		limit = 10
 	}
@@ -190,12 +190,12 @@ func ListAPI(serv *server.Server, limit int) ([]*Api, error) {
 }
 
 /*
-UpdateAPI - Provides functionality for updating the API connected to the given domain. Only the
+Update - Provides functionality for updating the API connected to the given domain. Only the
 following fields can be updated here: Name, TokenType, EnforceRBAC, and Applications. To update
 any other fields, you must delete the existing API and then re-create it. The domain field is
 never mutable as this is used as the basis for header.Identifier
 */
-func UpdateAPI(serv *server.Server, audience string, patch *Api) error {
+func Update(serv *server.Server, audience string, patch *Api) error {
 	if audience == "" {
 		return ErrApiMissingIdentifier
 	}
@@ -236,11 +236,11 @@ func UpdateAPI(serv *server.Server, audience string, patch *Api) error {
 }
 
 /*
-DeleteAPI - Completely removes the API from Credstack. A valid, non-empty domain must be provided here
+Delete - Completely removes the API from Credstack. A valid, non-empty domain must be provided here
 to serve as the lookup key. If DeletedCount == 0 here, then the API is considered not to exist. Any other errors here
 are propagated through the error return type
 */
-func DeleteAPI(serv *server.Server, audience string) error {
+func Delete(serv *server.Server, audience string) error {
 	if audience == "" {
 		return ErrApiMissingIdentifier
 	}
