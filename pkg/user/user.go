@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	credstackError "github.com/credstack/credstack/pkg/errors"
+	"github.com/credstack/credstack/pkg/models/header"
 	userModel "github.com/credstack/credstack/pkg/models/user"
 	"github.com/credstack/credstack/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -14,6 +16,53 @@ import (
 
 // ErrUserDoesNotExist - Provides a named error for when operations fail due to the user account not existing
 var ErrUserDoesNotExist = credstackError.NewError(404, "USER_DOES_NOT_EXIST", "user: user does not exist under the specified email address")
+
+type User struct {
+	// Header - The header for the User. Created at object birth
+	Header *header.Header `json:"header" bson:"header"`
+
+	// Username - The username for the user. Required at registration but does not need to be unique
+	Username string `json:"username" bson:"username"`
+
+	// Email - The email for the user. Required at registration and must be unique
+	Email string `json:"email" bson:"email"`
+
+	// EmailVerified - A boolean variable for determining if the user has validated there email address
+	EmailVerified bool `json:"email_verified" bson:"email_verified"`
+
+	// GiveName - The first name for the user
+	GivenName string `json:"given_name" bson:"given_name"`
+
+	// MiddleName - The middle name for the user
+	MiddleName string `json:"middle_name" bson:"middle_name"`
+
+	// FamilyName - The last name for the user
+	FamilyName string `json:"family_name" bson:"family_name"`
+
+	// Gender - The self-assigned gender for the user
+	Gender string `json:"gender" bson:"gender"`
+
+	// BirthDate - The bith date for the user
+	BirthDate string `json:"birth_date" bson:"birth_date"`
+
+	// ZoneInfo - The timezone that the user resides in
+	ZoneInfo string `json:"zone_info" bson:"zone_info"`
+
+	// PhoneNumber - The user's phone number. Can be used for 2FA
+	PhoneNumber string `json:"phone_number" bson:"phone_number"`
+
+	// PhoneNumberVerified - A boolean variable for determining if the user has validated there phone number
+	PhoneNumberVerified bool `json:"phone_number_verified" bson:"phone_number_verified"`
+
+	// Address - The user's physical address which includes street name, town/city, state and country
+	Address string `json:"address" bson:"address"`
+
+	// Credential - The structure containing the users hashed password (and its parameters)
+	Credential *Credential `json:"credential" bson:"credential"`
+
+	// Scopes - A string slice containing scopes that have been directly assigned to the user
+	Scopes []string `json:"scopes" bson:"scopes"`
+}
 
 /*
 GetUser - Fetches a user from the database and returns it's protobuf model for it. If you are fetching a user
