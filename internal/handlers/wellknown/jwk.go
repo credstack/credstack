@@ -12,7 +12,7 @@ GetJWKHandler - Provides a Fiber handler for processing a GET request to /.well-
 not be called directly, and should only ever be passed to Fiber
 */
 func GetJWKHandler(c fiber.Ctx) error {
-	jwks, err := jwk.GetJWKS(server.HandlerCtx)
+	jwks, err := jwk.JWKS(server.HandlerCtx)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}

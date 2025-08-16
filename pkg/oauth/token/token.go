@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	tokenModel "github.com/credstack/credstack/pkg/models/token"
 	"github.com/credstack/credstack/pkg/oauth/jwk"
@@ -29,7 +30,7 @@ func generateToken(serv *server.Server, ticket *tokenModel.AuthenticationTicket,
 
 	switch ticket.Api.TokenType.String() {
 	case "RS256":
-		privateKey, err := jwk.GetActiveKey(serv, ticket.Api.TokenType.String(), ticket.Api.Audience)
+		privateKey, err := jwk.ActiveKey(serv, ticket.Api.TokenType.String(), ticket.Api.Audience)
 		if err != nil {
 			return nil, err
 		}

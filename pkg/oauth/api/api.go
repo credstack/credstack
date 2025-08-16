@@ -87,7 +87,7 @@ func New(serv *server.Server, name string, audience string, tokenType string) er
 	/*
 		We always need to generate a new key for the API to be able to use
 	*/
-	_, err := jwk.NewKey(serv, newApi.TokenType, newApi.Audience)
+	_, err := jwk.New(serv, newApi.TokenType, newApi.Audience)
 	if err != nil {
 		return err
 	}
