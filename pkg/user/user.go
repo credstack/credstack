@@ -61,6 +61,9 @@ type User struct {
 
 	// Scopes - A string slice containing scopes that have been directly assigned to the user
 	Scopes []string `json:"scopes" bson:"scopes"`
+
+	// Roles - A string slice containing roles that have been assigned to the user
+	Roles []string `json:"roles" bson:"roles"`
 }
 
 /*
