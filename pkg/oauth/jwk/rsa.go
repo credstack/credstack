@@ -5,13 +5,36 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
-	"github.com/credstack/credstack/pkg/header"
-	jwkModel "github.com/credstack/credstack/pkg/models/jwk"
-	"github.com/credstack/credstack/pkg/secret"
 	"math/big"
+
+	"github.com/credstack/credstack/pkg/header"
+	"github.com/credstack/credstack/pkg/secret"
 )
 
 const RSAKeySize int = 2048
+
+/*
+PrivateJSONWebKey - A structure representing a private encryption key used for signing tokens
+*/
+type PrivateJSONWebKey struct {
+	// Header - The header for the PrivateJSONWebKey. Created at object birth
+	Header *header.Header `json:"header" bson:"header"`
+
+	// Alg - Specifies the algorithm used to generate the key. Most commonly RSA
+	Alg string `json:"alg" bson:"alg"`
+
+	// KeyMaterial - The private key material used for signing tokens
+	KeyMaterial string `json:"key_material" bson:"key_material"`
+
+	// Size - The size of the key in bits
+	Size int64 `json:"size" bson:"size"`
+
+	// IsCurrent - If set to true, then this is the current key used for signing. If false, then the key is "revoked"
+	IsCurrent bool `json:"is_current" bson:"is_current"`
+
+	// Audience - The audience that this key is signing tokens for
+	Audience string `json:"audience" bson:"audience"`
+}
 
 /*
 GenerateRSAKey - Generates a 2048-bit RSA Key Pair. The size on this is not adjustable as we want to ensure that we can
@@ -22,7 +45,7 @@ Generally, this function is very slow as not only do we have to generate a 2048-
 the checksum of its public exponent. This **should** be ok, as this really only needs to get called on first startup, or
 whenever the user requests key rotation. Generating a new key with this function will automatically mark it as active
 */
-func GenerateRSAKey(audience string) (*jwkModel.PrivateJSONWebKey, *jwkModel.JSONWebKey, error) {
+func GenerateRSAKey(audience string) (*PrivateJSONWebKey, *JSONWebKey, error) {
 	/*
 		First we want to generate our key here. Since we don't need to conform to user provided size, we can always
 		use the 2048 as the size in bits.
@@ -42,13 +65,13 @@ func GenerateRSAKey(audience string) (*jwkModel.PrivateJSONWebKey, *jwkModel.JSO
 	/*
 		We always use the same KID as we want to be able to identify both using a single identifier
 	*/
-	keyHeader := header.NewHeader(privateKey.PublicKey.N.String())
+	keyHeader := header.New(privateKey.PublicKey.N.String())
 
 	/*
 		To ensure that we don't need to re-convert our RSAPrivateKey back to a JWK immediately after
 		generation, we can just have this function build us a JWK in addition to the private key.
 	*/
-	jwk := &jwkModel.JSONWebKey{
+	jwk := &JSONWebKey{
 		Use: "sig",
 		Kty: "RSA",
 		Alg: "RS256",
@@ -70,7 +93,7 @@ func GenerateRSAKey(audience string) (*jwkModel.PrivateJSONWebKey, *jwkModel.JSO
 		return nil, nil, fmt.Errorf("%v (%w)", ErrMarshalKey, err)
 	}
 
-	ret := &jwkModel.PrivateJSONWebKey{
+	ret := &PrivateJSONWebKey{
 		Alg:         "RS256",
 		Header:      keyHeader,
 		KeyMaterial: secret.EncodeBase64(encoded),
@@ -86,7 +109,7 @@ func GenerateRSAKey(audience string) (*jwkModel.PrivateJSONWebKey, *jwkModel.JSO
 ToRSAPrivateKey - Converts a private JSON Web Key into a rsa.PrivateKey struct so that it can be used with the crypto/rsa
 package. After the key is parsed, it is checked for mathematical correctness using key.Validate
 */
-func ToRSAPrivateKey(private *jwkModel.PrivateJSONWebKey) (*rsa.PrivateKey, error) {
+func ToRSAPrivateKey(private *PrivateJSONWebKey) (*rsa.PrivateKey, error) {
 	/*
 		Since our key is stored in base64 format in the database, we first must decode our resulting key. We always
 		want to return an error here as well if we fail to decode
@@ -123,7 +146,7 @@ func ToRSAPrivateKey(private *jwkModel.PrivateJSONWebKey) (*rsa.PrivateKey, erro
 ToRSAPublicKey - Converts a public JSON Web Key into a rsa.PublicKey struct so that it can be used with the crypto/rsa
 package. Any errors in this function are returned wrapped
 */
-func ToRSAPublicKey(public *jwkModel.JSONWebKey) (*rsa.PublicKey, error) {
+func ToRSAPublicKey(public *JSONWebKey) (*rsa.PublicKey, error) {
 	/*
 		We always store our public exponent and modulus as base64 encoded strings to preserve there precision so we
 		must decode them before we can use them

@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	credstackError "github.com/credstack/credstack/pkg/errors"
-	jwkModel "github.com/credstack/credstack/pkg/models/jwk"
 	"github.com/credstack/credstack/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -119,8 +118,8 @@ functions are provided within the package to convert this model into a valid RSA
 TODO: This does not support HS-256
 TODO: This may not be needed, validate as the rest of this package gets fleshed out
 */
-func GetActiveKey(serv *server.Server, alg string, audience string) (*jwkModel.PrivateJSONWebKey, error) {
-	var jwk jwkModel.PrivateJSONWebKey
+func GetActiveKey(serv *server.Server, alg string, audience string) (*PrivateJSONWebKey, error) {
+	var jwk PrivateJSONWebKey
 
 	/*
 		The header.identifier field always represents our Key Identifiers (kid) so we can always safely lookup our key
@@ -151,8 +150,8 @@ Additionally, this function does not validate that its given audience exists, be
 TODO: Update alg to use protobuf enum
 TODO: Update this to remove alg check. HS256 tokens use client secret for signing
 */
-func NewKey(serv *server.Server, alg string, audience string) (*jwkModel.PrivateJSONWebKey, error) {
-	ret := new(jwkModel.PrivateJSONWebKey)
+func NewKey(serv *server.Server, alg string, audience string) (*PrivateJSONWebKey, error) {
+	ret := new(PrivateJSONWebKey)
 	if alg == "RS256" {
 		privateKey, jwk, err := GenerateRSAKey(audience)
 		if err != nil {
