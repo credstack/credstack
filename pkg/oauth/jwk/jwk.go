@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	jwkModel "github.com/credstack/credstack/pkg/models/jwk"
 	"github.com/credstack/credstack/pkg/server"
@@ -15,6 +16,29 @@ var ErrGenerateKey = credstackError.NewError(500, "ERR_GENERATING_KEY", "jwk: Fa
 var ErrMarshalKey = credstackError.NewError(500, "ERR_MARSHALING_KEY", "jwk: Failed to marshal/unmarshal key")
 var ErrKeyNotExist = credstackError.NewError(404, "ERR_PRIV_KEY_NOT_EXIST", "jwk: Failed to find private key with the requested key ID")
 var ErrKeyIsNotValid = credstackError.NewError(500, "ERR_KEY_NOT_VALID", "jwk: The requested private or public key is not valid")
+
+/*
+JSONWebKey - Represents a JSON Web Key used for signing tokens
+*/
+type JSONWebKey struct {
+	// Kty - Defines the type of key this JWK represents
+	Kty string `json:"kty" bson:"kty"`
+
+	// Use - Defines the use of this JWK, usually sig
+	Use string `json:"use" bson:"use"`
+
+	// Kid - The unique identifier of the key
+	Kid string `json:"kid" bson:"kid"`
+
+	// Alg - Defines the algorithm that this JWK was generated using
+	Alg string `json:"alg" bson:"alg"`
+
+	// N - Public modulos for the key
+	N string `json:"n" bson:"n"`
+
+	// E - Public exponent for the key
+	E string `json:"e" bson:"e"`
+}
 
 /*
 GetJWKS - Fetches all JSON Web Keys stored in the database and returns them as a slice. Only RSA Keys are returned with
@@ -57,8 +81,8 @@ func GetJWKS(serv *server.Server) (*jwkModel.JSONWebKeySet, error) {
 GetJWK - Fetches the public JSON Web Key that matches the key identifier passed in the parameter. This just returns
 the model and other functions provided in this package can be used to convert it back to a valid rsa.PublicKey
 */
-func GetJWK(serv *server.Server, kid string) (*jwkModel.JSONWebKey, error) {
-	var jwk jwkModel.JSONWebKey
+func GetJWK(serv *server.Server, kid string) (*JSONWebKey, error) {
+	var jwk JSONWebKey
 
 	/*
 		The header.identifier field always represents our Key Identifiers (kid) so we can always safely lookup our key
