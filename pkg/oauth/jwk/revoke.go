@@ -61,7 +61,7 @@ func RotateKeys(serv *server.Server, alg string, audience string) error {
 	/*
 		Then we simply just generate our new key
 	*/
-	_, err = NewKey(serv, alg, audience)
+	_, err = New(serv, alg, audience)
 	if err != nil {
 		return err
 	}
