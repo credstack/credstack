@@ -54,6 +54,29 @@ type Token struct {
 }
 
 /*
+Response - Represents an HTTP response containing the credentials requested by the end user
+*/
+type Response struct {
+	// AccessToken - The access token that was issued
+	AccessToken string `json:"access_token" bson:"access_token"`
+
+	// IdToken - The id token that was issued
+	IdToken string `json:"id_token" bson:"id_token"` // omit if empty
+
+	// TokenType - The type of access token that has been returned
+	TokenType string `json:"token_type" bson:"token_type"`
+
+	// ExpiresIn - The amount of time (in seconds) that the access token expires in
+	ExpiresIn uint32 `json:"expires_in" bson:"expires_in"`
+
+	// RefreshToken - The refresh tokne that was issued
+	RefreshToken string `json:"refresh_token" bson:"refresh_token"` // omit if empty
+
+	// Scope - A list of permission scopes that are associated with the claims of the token
+	Scope string `json:"scope" bson:"scope"` // omit if empty
+}
+
+/*
 generateToken - Generates a token based on the Application and API that are passed in the parameter. Claims that are passed
 will be inserted into the generated token. Calling this function alone, does not store the tokens in the database and only
 generates the token. An instantiated server structure needs to be passed here to ensure that we can fetch the current
@@ -95,7 +118,7 @@ func generateToken(serv *server.Server, ticket *tokenModel.AuthenticationTicket,
 NewToken - Generates a token according to the algorithm provided by the API passed as a parameter. Any tokens generated
 with this function are stored in the database, and are automatically converted to a token response.
 */
-func NewToken(serv *server.Server, ticket *tokenModel.AuthenticationTicket, claims jwt.RegisteredClaims) (*tokenModel.TokenResponse, error) {
+func NewToken(serv *server.Server, ticket *tokenModel.AuthenticationTicket, claims jwt.RegisteredClaims) (*Response, error) {
 	token, err := generateToken(serv, ticket, claims)
 	if err != nil {
 		return nil, err
@@ -123,7 +146,7 @@ func NewToken(serv *server.Server, ticket *tokenModel.AuthenticationTicket, clai
 		return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 	}
 
-	resp := &tokenModel.TokenResponse{
+	resp := &Response{
 		AccessToken:  token.AccessToken,
 		TokenType:    "Bearer",
 		ExpiresIn:    token.ExpiresIn,
