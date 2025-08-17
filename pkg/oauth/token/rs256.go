@@ -25,7 +25,7 @@ func generateRS256(rsKey *jwk.PrivateJSONWebKey, claims jwt.RegisteredClaims, ex
 		that the token.SignedString function can actually use. This function is provided within the key package for
 		this explicit purpose
 	*/
-	privateKey, err := jwk.ToRSAPrivateKey(rsKey)
+	privateKey, err := rsKey.RSA()
 	if err != nil {
 		return nil, err
 	}
