@@ -2,10 +2,13 @@ package jwk
 
 import (
 	"context"
+	"crypto/rsa"
 	"errors"
 	"fmt"
+	"math/big"
 
 	credstackError "github.com/credstack/credstack/pkg/errors"
+	"github.com/credstack/credstack/pkg/secret"
 	"github.com/credstack/credstack/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -37,6 +40,52 @@ type JSONWebKey struct {
 
 	// E - Public exponent for the key
 	E string `json:"e" bson:"e"`
+}
+
+/*
+RSA - Converts a public JSON Web Key into a rsa.PublicKey struct so that it can be used with the crypto/rsa
+package. Any errors in this function are returned wrapped
+*/
+func (key *JSONWebKey) RSA() (*rsa.PublicKey, error) {
+	/*
+		We always store our public exponent and modulus as base64 encoded strings to preserve there precision so we
+		must decode them before we can use them
+	*/
+	modulusBytes := []byte(key.N)
+	decodedModulus, err := secret.DecodeBase64(modulusBytes, uint32(len(modulusBytes)))
+	if err != nil {
+		return nil, fmt.Errorf("%w (%v)", secret.ErrFailedToBaseDecode, err)
+	}
+
+	exponentBytes := []byte(key.E)
+	decodedExponent, err := secret.DecodeBase64(exponentBytes, uint32(len(exponentBytes)))
+	if err != nil {
+		return nil, fmt.Errorf("%w (%v)", secret.ErrFailedToBaseDecode, err)
+	}
+
+	/*
+		Then, once they are decoded, we have to convert them back to their respective types
+
+		Since the decoded exponent here is a big-endian byte array, we need to perform some bit shifting magic to be
+		able to convert this properly. Using strconv on a string representation of this won't work directly, and you
+		would get a parse error. Instead, we can shift each byte of the array by 8 bits (1-byte) and then add them
+		together to get our public exponent back
+	*/
+	modulus := new(big.Int).SetBytes(decodedModulus)
+	exponent := 0
+	for _, b := range decodedExponent {
+		exponent = (exponent << 8) + int(b)
+	}
+
+	/*
+		Finally, we can add them to the public key model and return them to the caller
+	*/
+	publicKey := rsa.PublicKey{
+		N: modulus,
+		E: exponent,
+	}
+
+	return &publicKey, nil
 }
 
 /*
