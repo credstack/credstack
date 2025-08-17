@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	tokenModel "github.com/credstack/credstack/pkg/models/token"
@@ -20,13 +21,46 @@ var ErrFailedToSignToken = credstackError.NewError(500, "ERR_FAILED_TO_SIGN", "t
 var ErrTokenCollision = credstackError.NewError(500, "ERR_TOKEN_COLLISION", "token: A duplicate access token was issued")
 
 /*
+Token - An internal representation of an issued token. This is generally not displayed to the user, but is instead used
+for tracking tokens internally in the database. TokenResponse is instead returned to the user
+*/
+type Token struct {
+	// Subject - The subject the token was issued for. Can be a user id or a client ID
+	Subject string `json:"sub" bson:"sub"`
+
+	// ClientId - The client ID of the application that issued the token
+	ClientId string `json:"client_id" bson:"client_id"`
+
+	// AccessToken - The access token that was issued
+	AccessToken string `json:"access_token" bson:"access_token"`
+
+	// RefreshToken - The refresh token that was issued
+	RefreshToken string `json:"refresh_token" bson:"refresh_token"`
+
+	// IdToken - The ID token that was issued
+	IdToken string `json:"id_token" bson:"id_token"`
+
+	// ExpiresIn - The time in seconds that the token expires in
+	ExpiresIn uint32 `json:"expires_in" bson:"expires_in"`
+
+	// ExpiresAt - A timestamp that represents the datetime in which the access token expires
+	ExpiresAt time.Time `json:"expires_at" bson:"expires_at"`
+
+	// RefreshExpiresAt - A timestamp that represents the datetime in which the refresh token expires
+	RefreshExpiresAt time.Time `json:"refresh_expires_at" bson:"refresh_expires_at"`
+
+	// Scope - Any permission scopes that were issued with the token
+	Scope string `json:"scope" bson:"scope"`
+}
+
+/*
 generateToken - Generates a token based on the Application and API that are passed in the parameter. Claims that are passed
 will be inserted into the generated token. Calling this function alone, does not store the tokens in the database and only
 generates the token. An instantiated server structure needs to be passed here to ensure that we can fetch the current
 active encryption key for token signing (RS256)
 */
-func generateToken(serv *server.Server, ticket *tokenModel.AuthenticationTicket, claims jwt.RegisteredClaims) (*tokenModel.Token, error) {
-	var token *tokenModel.Token
+func generateToken(serv *server.Server, ticket *tokenModel.AuthenticationTicket, claims jwt.RegisteredClaims) (*Token, error) {
+	var token *Token
 
 	switch ticket.Api.TokenType.String() {
 	case "RS256":
