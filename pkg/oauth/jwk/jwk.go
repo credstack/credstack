@@ -101,7 +101,7 @@ TODO: Update this to remove alg check. HS256 tokens use client secret for signin
 func New(serv *server.Server, alg string, audience string) (*PrivateJSONWebKey, error) {
 	ret := new(PrivateJSONWebKey)
 	if alg == "RS256" {
-		privateKey, jwk, err := GenerateRSAKey(audience)
+		privateKey, jwk, err := NewPrivateKey(audience)
 		if err != nil {
 			return nil, err
 		}

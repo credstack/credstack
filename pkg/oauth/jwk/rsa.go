@@ -74,15 +74,17 @@ func (key *PrivateJSONWebKey) RSA() (*rsa.PrivateKey, error) {
 }
 
 /*
-GenerateRSAKey - Generates a 2048-bit RSA Key Pair. The size on this is not adjustable as we want to ensure that we can
+NewPrivateKey - Generates a 2048-bit RSA Key Pair. The size on this is not adjustable as we want to ensure that we can
 generate this quickly. After the key is generated, it is validated to ensure that it can be used for signing tokens. Any
 errors here are propagated with the second return type
 
 Generally, this function is very slow as not only do we have to generate a 2048-bit private key, but we also need to get
 the checksum of its public exponent. This **should** be ok, as this really only needs to get called on first startup, or
 whenever the user requests key rotation. Generating a new key with this function will automatically mark it as active
+
+TODO: Only supports RSA for now, this should be updated to support other key types
 */
-func GenerateRSAKey(audience string) (*PrivateJSONWebKey, *JSONWebKey, error) {
+func NewPrivateKey(audience string) (*PrivateJSONWebKey, *JSONWebKey, error) {
 	/*
 		First we want to generate our key here. Since we don't need to conform to user provided size, we can always
 		use the 2048 as the size in bits.
