@@ -2,7 +2,8 @@ package flow
 
 import (
 	"crypto/subtle"
-	tokenModel "github.com/credstack/credstack/pkg/models/token"
+
+	"github.com/credstack/credstack/pkg/models/response"
 	"github.com/credstack/credstack/pkg/oauth/application"
 	"github.com/credstack/credstack/pkg/oauth/claim"
 	"github.com/credstack/credstack/pkg/oauth/token"
@@ -13,7 +14,7 @@ import (
 ClientCredentialsFlow - Attempts to issue a token under Client Credentials flow and begins any validation required for
 ensuring that the request received was valid.
 */
-func ClientCredentialsFlow(serv *server.Server, ticket *tokenModel.AuthenticationTicket, issuer string) (*tokenModel.TokenResponse, error) {
+func ClientCredentialsFlow(serv *server.Server, ticket *tokenModel.AuthenticationTicket, issuer string) (*response.TokenResponse, error) {
 
 	/*
 		Only confidential applications are able to issue tokens under client credentials flow. Similar to our credentials

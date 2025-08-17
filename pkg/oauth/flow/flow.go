@@ -1,14 +1,14 @@
 package flow
 
 import (
+	"slices"
+
 	credstackError "github.com/credstack/credstack/pkg/errors"
-	applicationModel "github.com/credstack/credstack/pkg/models/application"
 	"github.com/credstack/credstack/pkg/models/request"
-	tokenModel "github.com/credstack/credstack/pkg/models/token"
+	"github.com/credstack/credstack/pkg/models/response"
 	"github.com/credstack/credstack/pkg/oauth/api"
 	"github.com/credstack/credstack/pkg/oauth/application"
 	"github.com/credstack/credstack/pkg/server"
-	"slices"
 )
 
 // ErrUnauthorizedAudience - An error that gets returned when an application tries to issue tokens for an audience that it is not authorized too
@@ -89,7 +89,7 @@ IssueTokenForFlow - Responsible for issuing access tokens under a specific OAuth
 token requests and marshaling access tokens to a token.TokenResponse structure. Any errors that are returned from this
 function are wrapped with errors.CredstackError.
 */
-func IssueTokenForFlow(serv *server.Server, request *request.TokenRequest, issuer string) (*tokenModel.TokenResponse, error) {
+func IssueTokenForFlow(serv *server.Server, request *request.TokenRequest, issuer string) (*response.TokenResponse, error) {
 	if request.Audience == "" || request.GrantType == "" {
 		return nil, ErrInvalidTokenRequest
 	}
