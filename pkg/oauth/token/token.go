@@ -7,6 +7,7 @@ import (
 	"time"
 
 	credstackError "github.com/credstack/credstack/pkg/errors"
+	"github.com/credstack/credstack/pkg/models/response"
 	"github.com/credstack/credstack/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -48,6 +49,20 @@ type Token struct {
 
 	// Scope - Any permission scopes that were issued with the token
 	Scope string `json:"scope" bson:"scope"`
+}
+
+/*
+Response - Takes a token model and converts it to a token response for API callers to consume
+*/
+func (token *Token) Response() *response.TokenResponse {
+	return &response.TokenResponse{
+		AccessToken:  token.AccessToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    token.ExpiresIn,
+		IdToken:      token.IdToken,
+		RefreshToken: token.RefreshToken,
+		Scope:        token.Scope,
+	}
 }
 
 /*
