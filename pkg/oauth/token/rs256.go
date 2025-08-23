@@ -9,12 +9,12 @@ import (
 )
 
 /*
-generateRS256 - Generates arbitrary RS256 tokens with the claims that are passed as an argument to this function. This
+RS256 - Generates arbitrary RS256 tokens with the claims that are passed as an argument to this function. This
 function doesn't provide logic for storing the token, and is completely unaware of OAuth authentication flows
 
 TODO: ExpiresIn is a bit arbitrary here, this can be pulled this from the claims
 */
-func generateRS256(rsKey *jwk.PrivateJSONWebKey, claims jwt.RegisteredClaims, expiresIn uint32) (*Token, error) {
+func RS256(rsKey *jwk.PrivateJSONWebKey, claims jwt.RegisteredClaims, expiresIn uint32) (*Token, error) {
 	generatedJwt := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	generatedJwt.Header["kid"] = rsKey.Header.Identifier
 

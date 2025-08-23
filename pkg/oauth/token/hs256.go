@@ -9,14 +9,14 @@ import (
 )
 
 /*
-generateHS256 - Generates arbitrary HS256 tokens with the claims that are passed as an argument to the function. It is
+HS256 - Generates arbitrary HS256 tokens with the claims that are passed as an argument to the function. It is
 expected that a base64 encoded secret string (like the ones generated from secret.RandString) is used as the secret here.
 When used with ClientCredentials flow, the client secret is expected here. As a result, the KID field is not added to the
 header with this function either as both the issuing and validating party must both know the client secret
 
 TODO: ExpiresIn is a bit arbitrary here, this can be pulled this from the claims
 */
-func generateHS256(clientSecret string, claims jwt.RegisteredClaims, expiresIn uint32) (*Token, error) {
+func HS256(clientSecret string, claims jwt.RegisteredClaims, expiresIn uint32) (*Token, error) {
 	generatedJwt := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	/*
