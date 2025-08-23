@@ -2,6 +2,8 @@ package api
 
 import (
 	"context"
+	"strconv"
+
 	"github.com/credstack/credstack/internal/handlers/auth"
 	"github.com/credstack/credstack/internal/handlers/management"
 	"github.com/credstack/credstack/internal/handlers/oauth"
@@ -9,7 +11,6 @@ import (
 	"github.com/credstack/credstack/internal/middleware"
 	"github.com/credstack/credstack/pkg/server"
 	"github.com/gofiber/fiber/v3"
-	"strconv"
 )
 
 // App - A global variable that provides interaction with the Fiber Application
