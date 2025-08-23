@@ -17,5 +17,5 @@ func GetJWKHandler(c fiber.Ctx) error {
 		return middleware.HandleError(c, err)
 	}
 
-	return middleware.MarshalProtobuf(c, jwks)
+	return c.JSON(jwks)
 }
