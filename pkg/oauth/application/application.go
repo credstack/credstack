@@ -2,13 +2,18 @@ package application
 
 import (
 	"context"
+	"crypto/subtle"
 	"errors"
 	"fmt"
+	"slices"
 
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/header"
+	"github.com/credstack/credstack/pkg/models/request"
+	"github.com/credstack/credstack/pkg/oauth/claim"
 	"github.com/credstack/credstack/pkg/secret"
 	"github.com/credstack/credstack/pkg/server"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -43,6 +48,12 @@ var ErrAppMissingIdentifier = credstackError.NewError(400, "APP_MISSING_ID", "ap
 // ErrAppDoesNotExist - Provides a named error for when you try and fetch an application that does not exist
 var ErrAppDoesNotExist = credstackError.NewError(404, "APP_DOES_NOT_EXIST", "application: Application does not exist under the specified client ID")
 
+// ErrUnauthorizedGrantType - An error that gets returned when an application tries to issue tokens for a grant type that it is not authorized too
+var ErrUnauthorizedGrantType = credstackError.NewError(403, "ERR_UNAUTHORIZED_GRANT_TYPE", "token: Invalid grant type for the specified application")
+
+// ErrUnauthorizedAudience - An error that gets returned when an application tries to issue tokens for an audience that it is not authorized too
+var ErrUnauthorizedAudience = credstackError.NewError(403, "ERR_UNAUTHORIZED_AUDIENCE", "token: Unable to issue token for the specified audience. Application is not authorized too")
+
 /*
 Application - Represents the OAuth client that wants to issue tokens for an API
 */
@@ -73,6 +84,53 @@ type Application struct {
 
 	// AllowedAudiences - A string slice representing which APIs are allowed to issue tokens for this application
 	AllowedAudiences []string `bson:"allowed_audiences" json:"allowed_audiences"`
+}
+
+/*
+ValidateAuthFlow - Ensures that the application is authorized to return an authentication token based on the provided
+token request. A 'nil' return value indicates success
+*/
+func (application *Application) ValidateAuthFlow(request *request.TokenRequest) error {
+	if !slices.Contains(application.GrantTypes, request.GrantType) {
+		return ErrUnauthorizedGrantType
+	}
+
+	if !slices.Contains(application.AllowedAudiences, request.Audience) {
+		return ErrUnauthorizedAudience
+	}
+
+	return nil
+}
+
+/*
+ClientCredentials - Attempts to issue a token under Client Credentials flow and begins any validation required for
+ensuring that the request received was valid.
+
+TODO: When tenant's are implemented, issuer needs to be removed as a parameter here
+*/
+func (application *Application) ClientCredentials(request *request.TokenRequest, issuer string) (*jwt.RegisteredClaims, error) {
+	if application.IsPublic {
+		return nil, ErrVisibilityIssue
+	}
+
+	/*
+		We use subtle.ConstantTimeCompare here to ensure that we are protected from side channel attacks on the
+		server itself. Ideally, any credential validation that requires a direct comparison would use ConstantTimeCompare.
+
+		Any value returned by this function other than 1, indicates a failure
+	*/
+	if subtle.ConstantTimeCompare([]byte(application.ClientSecret), []byte(request.ClientSecret)) != 1 {
+		return nil, ErrInvalidClientCredentials
+	}
+
+	claims := claim.NewClaimsWithSubject(
+		issuer,
+		request.Audience, // this might cause issues later; this should really be pulled from the API model so that the user doesn't have to use it in the request
+		application.ClientId,
+		application.TokenLifetime,
+	)
+
+	return &claims, nil
 }
 
 /*
