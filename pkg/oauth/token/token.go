@@ -7,10 +7,7 @@ import (
 	"time"
 
 	credstackError "github.com/credstack/credstack/pkg/errors"
-	"github.com/credstack/credstack/pkg/models/response"
-	"github.com/credstack/credstack/pkg/oauth/api"
 	"github.com/credstack/credstack/pkg/server"
-	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -54,45 +51,22 @@ type Token struct {
 }
 
 /*
-NewToken - Generates a token according to the algorithm provided by the API passed as a parameter. Any tokens generated
-with this function are stored in the database, and are automatically converted to a token response.
+NewToken - Provides logic for storing tokens of a specific type in the database. This does not generate tokens as this
+logic is provided through a method on the API struct
 */
-func NewToken(serv *server.Server, api *api.Api, claims jwt.RegisteredClaims) (*response.TokenResponse, error) {
-	token, err := generateToken(serv, api, claims)
-	if err != nil {
-		return nil, err
-	}
-
-	/*
-		Were currently just storing the plain old token response here, which may pose some issues down the road specifically
-		if we want to implement functionality for revoking tokens for a specific user. This will fit the token revocation
-		endpoint spec as defined in RFC 7009 fairly well though, as we really just need the access token we want to
-		revoke here.
-
-		Keep in mind, JWTs are stateless. So "revoking" a token, really just means that the token will not be reported
-		as active by the token introspection endpoint
-	*/
-	_, err = serv.Database().Collection("token").InsertOne(context.Background(), token)
+func NewToken(serv *server.Server, token *Token) error {
+	_, err := serv.Database().Collection("token").InsertOne(context.Background(), token)
 	if err != nil {
 		var writeError mongo.WriteException
 		if errors.As(err, &writeError) {
 			if writeError.HasErrorCode(11000) { // 11000 is the error code for a WriteError. This should be a const
-				return nil, ErrTokenCollision // this should almost never occur, but we check for it regardless
+				return ErrTokenCollision // this should almost never occur, but we check for it regardless
 			}
 		}
 
 		// always return a wrapped internal database error here
-		return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 	}
 
-	resp := &response.TokenResponse{
-		AccessToken:  token.AccessToken,
-		TokenType:    "Bearer",
-		ExpiresIn:    token.ExpiresIn,
-		IdToken:      "",
-		RefreshToken: "",
-		Scope:        "",
-	}
-
-	return resp, nil
+	return nil
 }
