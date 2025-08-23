@@ -57,7 +57,7 @@ type User struct {
 	Address string `json:"address" bson:"address"`
 
 	// Credential - The structure containing the users hashed password (and its parameters)
-	Credential *Credential `json:"credential" bson:"credential"`
+	Credential *Credential `json:"credential,omitempty" bson:"credential"`
 
 	// Scopes - A string slice containing scopes that have been directly assigned to the user
 	Scopes []string `json:"scopes" bson:"scopes"`
