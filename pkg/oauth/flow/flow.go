@@ -52,10 +52,15 @@ func IssueTokenForFlow(serv *server.Server, request *request.TokenRequest, issue
 		return nil, err
 	}
 
-	resp, err := token.NewToken(serv, requestedApi, *claims)
+	generatedToken, err := requestedApi.GenerateToken(serv, app, *claims)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	err = token.NewToken(serv, generatedToken)
+	if err != nil {
+		return nil, err
+	}
+
+	return generatedToken.Response(), nil
 }
