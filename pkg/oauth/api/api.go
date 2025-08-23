@@ -61,8 +61,6 @@ generates the token. An instantiated server structure needs to be passed here to
 active encryption key for token signing (RS256)
 */
 func (api *Api) GenerateToken(serv *server.Server, application *application.Application, claims jwt.RegisteredClaims) (*token.Token, error) {
-	var generatedToken *token.Token
-
 	switch api.TokenType {
 	case "RS256":
 		privateKey, err := jwk.ActiveKey(serv, api.TokenType, api.Audience)
@@ -75,21 +73,17 @@ func (api *Api) GenerateToken(serv *server.Server, application *application.Appl
 			return nil, err
 		}
 
-		generatedToken = tok
+		return tok, nil
 	case "HS256":
 		tok, err := token.HS256(application.ClientSecret, claims, uint32(application.TokenLifetime))
 		if err != nil {
 			return nil, err
 		}
 
-		generatedToken = tok
-	}
-
-	if generatedToken == nil {
+		return tok, nil
+	default:
 		return nil, fmt.Errorf("%w (%v)", token.ErrFailedToSignToken, "Invalid Signing Algorithm")
 	}
-
-	return generatedToken, nil
 }
 
 /*
