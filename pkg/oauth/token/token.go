@@ -8,8 +8,7 @@ import (
 
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/models/response"
-	tokenModel "github.com/credstack/credstack/pkg/models/token"
-	"github.com/credstack/credstack/pkg/oauth/jwk"
+	"github.com/credstack/credstack/pkg/oauth/api"
 	"github.com/credstack/credstack/pkg/server"
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -55,49 +54,11 @@ type Token struct {
 }
 
 /*
-generateToken - Generates a token based on the Application and API that are passed in the parameter. Claims that are passed
-will be inserted into the generated token. Calling this function alone, does not store the tokens in the database and only
-generates the token. An instantiated server structure needs to be passed here to ensure that we can fetch the current
-active encryption key for token signing (RS256)
-*/
-func generateToken(serv *server.Server, ticket *tokenModel.AuthenticationTicket, claims jwt.RegisteredClaims) (*Token, error) {
-	var token *Token
-
-	switch ticket.Api.TokenType.String() {
-	case "RS256":
-		privateKey, err := jwk.ActiveKey(serv, ticket.Api.TokenType.String(), ticket.Api.Audience)
-		if err != nil {
-			return nil, err
-		}
-
-		tok, err := generateRS256(privateKey, claims, uint32(ticket.Application.TokenLifetime))
-		if err != nil {
-			return nil, err
-		}
-
-		token = tok
-	case "HS256":
-		tok, err := generateHS256(ticket.Application.ClientSecret, claims, uint32(ticket.Application.TokenLifetime))
-		if err != nil {
-			return nil, err
-		}
-
-		token = tok
-	}
-
-	if token == nil {
-		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, "Invalid Signing Algorithm")
-	}
-
-	return token, nil
-}
-
-/*
 NewToken - Generates a token according to the algorithm provided by the API passed as a parameter. Any tokens generated
 with this function are stored in the database, and are automatically converted to a token response.
 */
-func NewToken(serv *server.Server, ticket *tokenModel.AuthenticationTicket, claims jwt.RegisteredClaims) (*Response, error) {
-	token, err := generateToken(serv, ticket, claims)
+func NewToken(serv *server.Server, api *api.Api, claims jwt.RegisteredClaims) (*response.TokenResponse, error) {
+	token, err := generateToken(serv, api, claims)
 	if err != nil {
 		return nil, err
 	}

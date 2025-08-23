@@ -7,8 +7,11 @@ import (
 
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/header"
+	"github.com/credstack/credstack/pkg/oauth/application"
 	"github.com/credstack/credstack/pkg/oauth/jwk"
+	"github.com/credstack/credstack/pkg/oauth/token"
 	"github.com/credstack/credstack/pkg/server"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -49,6 +52,44 @@ type Api struct {
 
 	// EnforceRBAC - If set to true, then the API will evaluate scopes and roles during validation (and will insert them as claims in the token)
 	EnforceRBAC bool `json:"enforce_rbac" bson:"enforce_rbac"`
+}
+
+/*
+GenerateToken - Generates a token based on the Application and API that are passed in the parameter. Claims that are passed
+will be inserted into the generated token. Calling this function alone, does not store the tokens in the database and only
+generates the token. An instantiated server structure needs to be passed here to ensure that we can fetch the current
+active encryption key for token signing (RS256)
+*/
+func (api *Api) GenerateToken(serv *server.Server, application *application.Application, claims jwt.RegisteredClaims) (*token.Token, error) {
+	var generatedToken *token.Token
+
+	switch api.TokenType {
+	case "RS256":
+		privateKey, err := jwk.ActiveKey(serv, api.TokenType, api.Audience)
+		if err != nil {
+			return nil, err
+		}
+
+		tok, err := token.RS256(privateKey, claims, uint32(application.TokenLifetime))
+		if err != nil {
+			return nil, err
+		}
+
+		generatedToken = tok
+	case "HS256":
+		tok, err := token.HS256(application.ClientSecret, claims, uint32(application.TokenLifetime))
+		if err != nil {
+			return nil, err
+		}
+
+		generatedToken = tok
+	}
+
+	if generatedToken == nil {
+		return nil, fmt.Errorf("%w (%v)", token.ErrFailedToSignToken, "Invalid Signing Algorithm")
+	}
+
+	return generatedToken, nil
 }
 
 /*
