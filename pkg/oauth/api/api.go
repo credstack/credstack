@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/header"
@@ -17,6 +18,7 @@ import (
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
+// TODO: These should probably be a type alias called TokenType
 const (
 	// TokenTypeHS256 - A constant string representing the HS256 token signing method
 	TokenTypeHS256 string = "HS256"
@@ -24,6 +26,9 @@ const (
 	// TokenTypeRS256 - A constant string representing the RS256 token signing method
 	TokenTypeRS256 string = "RS256"
 )
+
+// TokenTypes - Provides a slice of possible values for token types
+var TokenTypes = []string{TokenTypeHS256, TokenTypeRS256}
 
 // ErrApiAlreadyExists - Provides a named error for when you try to insert an API with a domain that already exists
 var ErrApiAlreadyExists = credstackError.NewError(409, "API_ALREADY_EXIST", "api: API already exists under the specified domain")
@@ -104,6 +109,13 @@ func New(serv *server.Server, name string, audience string, tokenType string) er
 	*/
 	if name == "" || audience == "" {
 		return ErrApiMissingIdentifier
+	}
+
+	/*
+		We always set the token type to HS256 if the user does not provide a valid one
+	*/
+	if !slices.Contains(TokenTypes, tokenType) {
+		tokenType = "HS256" // default token type
 	}
 
 	/*
