@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+
 	credstackErrors "github.com/credstack/credstack/pkg/errors" // this needs to be fixed
 	"github.com/gofiber/fiber/v3"
 )
