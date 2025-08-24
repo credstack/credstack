@@ -1,12 +1,12 @@
 package management
 
 import (
+	"strconv"
+
 	"github.com/credstack/credstack/internal/middleware"
-	userModel "github.com/credstack/credstack/pkg/models/user"
 	"github.com/credstack/credstack/pkg/server"
 	"github.com/credstack/credstack/pkg/user"
 	"github.com/gofiber/fiber/v3"
-	"strconv"
 )
 
 /*
@@ -23,20 +23,20 @@ func GetUserHandler(c fiber.Ctx) error {
 			return middleware.HandleError(c, err)
 		}
 
-		users, err := user.ListUser(server.HandlerCtx, limit, false)
+		users, err := user.List(server.HandlerCtx, limit, false)
 		if err != nil {
 			return middleware.HandleError(c, err)
 		}
 
-		return middleware.MarshalProtobufList(c, users)
+		return c.JSON(users)
 	}
 
-	requestedUser, err := user.GetUser(server.HandlerCtx, email, false)
+	requestedUser, err := user.Get(server.HandlerCtx, email, false)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
 
-	return middleware.MarshalProtobuf(c, requestedUser)
+	return c.JSON(requestedUser)
 }
 
 /*
@@ -48,14 +48,14 @@ TODO: Authentication handler needs to happen here
 func PatchUserHandler(c fiber.Ctx) error {
 	email := c.Query("email")
 
-	var model userModel.User
+	var model user.User
 
 	err := middleware.BindJSON(c, &model)
 	if err != nil {
 		return err
 	}
 
-	err = user.UpdateUser(server.HandlerCtx, email, &model)
+	err = user.Update(server.HandlerCtx, email, &model)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
@@ -72,7 +72,7 @@ TODO: Authentication handler needs to happen here
 func DeleteUserHandler(c fiber.Ctx) error {
 	email := c.Query("email")
 
-	err := user.DeleteUser(server.HandlerCtx, email)
+	err := user.Delete(server.HandlerCtx, email)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}

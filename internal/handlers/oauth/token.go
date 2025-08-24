@@ -25,5 +25,5 @@ func GetTokenHandler(c fiber.Ctx) error {
 		return middleware.HandleError(c, err)
 	}
 
-	return middleware.MarshalProtobuf(c, resp)
+	return c.JSON(resp)
 }

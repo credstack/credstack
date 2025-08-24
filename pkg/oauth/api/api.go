@@ -4,15 +4,31 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
+
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/header"
-	"github.com/credstack/credstack/pkg/models/api"
+	"github.com/credstack/credstack/pkg/oauth/application"
 	"github.com/credstack/credstack/pkg/oauth/jwk"
+	"github.com/credstack/credstack/pkg/oauth/token"
 	"github.com/credstack/credstack/pkg/server"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
 )
+
+// TODO: These should probably be a type alias called TokenType
+const (
+	// TokenTypeHS256 - A constant string representing the HS256 token signing method
+	TokenTypeHS256 string = "HS256"
+
+	// TokenTypeRS256 - A constant string representing the RS256 token signing method
+	TokenTypeRS256 string = "RS256"
+)
+
+// TokenTypes - Provides a slice of possible values for token types
+var TokenTypes = []string{TokenTypeHS256, TokenTypeRS256}
 
 // ErrApiAlreadyExists - Provides a named error for when you try to insert an API with a domain that already exists
 var ErrApiAlreadyExists = credstackError.NewError(409, "API_ALREADY_EXIST", "api: API already exists under the specified domain")
@@ -24,7 +40,59 @@ var ErrApiDoesNotExist = credstackError.NewError(404, "API_DOES_NOT_EXIST", "api
 var ErrApiMissingIdentifier = credstackError.NewError(400, "API_MISSING_ID", "api: API is missing a domain identifier or a name")
 
 /*
-NewAPI - Creates a new API for use with credstack. While the application determines your use case for authentication,
+Api - Represents the OAuth resource server and contains metadata for validating tokens
+*/
+type Api struct {
+	// header - The header for the API. Created at object birth
+	Header *header.Header `json:"header" bson:"header"`
+
+	// Name - The name of the API as defined by the user
+	Name string `json:"name" bson:"name"`
+
+	// Audience - A arbitrary domain used in the audience of issued tokens. Does not need to resolve to anything
+	Audience string `json:"audience" bson:"audience"`
+
+	// TokenType - The type of tokens that the API should validate
+	TokenType string `json:"token_type" bson:"token_type"`
+
+	// EnforceRBAC - If set to true, then the API will evaluate scopes and roles during validation (and will insert them as claims in the token)
+	EnforceRBAC bool `json:"enforce_rbac" bson:"enforce_rbac"`
+}
+
+/*
+GenerateToken - Generates a token based on the Application and API that are passed in the parameter. Claims that are passed
+will be inserted into the generated token. Calling this function alone, does not store the tokens in the database and only
+generates the token. An instantiated server structure needs to be passed here to ensure that we can fetch the current
+active encryption key for token signing (RS256)
+*/
+func (api *Api) GenerateToken(serv *server.Server, application *application.Application, claims jwt.RegisteredClaims) (*token.Token, error) {
+	switch api.TokenType {
+	case "RS256":
+		privateKey, err := jwk.ActiveKey(serv, api.TokenType, api.Audience)
+		if err != nil {
+			return nil, err
+		}
+
+		tok, err := token.RS256(privateKey, claims, uint32(application.TokenLifetime))
+		if err != nil {
+			return nil, err
+		}
+
+		return tok, nil
+	case "HS256":
+		tok, err := token.HS256(application.ClientSecret, claims, uint32(application.TokenLifetime))
+		if err != nil {
+			return nil, err
+		}
+
+		return tok, nil
+	default:
+		return nil, fmt.Errorf("%w (%v)", token.ErrFailedToSignToken, "Invalid Signing Algorithm")
+	}
+}
+
+/*
+New - Creates a new API for use with credstack. While the application determines your use case for authentication,
 the API controls both what claims get inserted into generated tokens, but also what token types you utilize. Additionally,
 it controls if RBAC is enforced on the API (validation of scopes and roles). This gets disabled by default, to ensure
 the caller is fully aware of how the API authenticates users.
@@ -34,7 +102,7 @@ do not try and insert an API with the same domain as an existing one
 
 TODO: Update this to not generate a key everytime, only RS256 tokens need keys generated
 */
-func NewAPI(serv *server.Server, name string, audience string, tokenType api.TokenType) error {
+func New(serv *server.Server, name string, audience string, tokenType string) error {
 	/*
 		We always want to check to make sure both of these are filled in as we need a domain to use in the audience
 		of our token
@@ -44,22 +112,29 @@ func NewAPI(serv *server.Server, name string, audience string, tokenType api.Tok
 	}
 
 	/*
+		We always set the token type to HS256 if the user does not provide a valid one
+	*/
+	if !slices.Contains(TokenTypes, tokenType) {
+		tokenType = "HS256" // default token type
+	}
+
+	/*
 		Not too much validation really needs to happen on the parameters for this function as both name
 		and domain are arbitrary. The domain is really just used as the 'audience' claim in the generated
 		tokens. Additionally, we have an enum defined for our tokenType which enforces validation for it
 	*/
-	newApi := &api.API{
-		Header:      header.NewHeader(audience),
+	newApi := &Api{
+		Header:      header.New(audience),
 		Name:        name,
 		Audience:    audience,
 		TokenType:   tokenType,
-		EnforceRbac: false,
+		EnforceRBAC: false,
 	}
 
 	/*
 		We always need to generate a new key for the API to be able to use
 	*/
-	_, err := jwk.NewKey(serv, newApi.TokenType.String(), newApi.Audience)
+	_, err := jwk.New(serv, newApi.TokenType, newApi.Audience)
 	if err != nil {
 		return err
 	}
@@ -88,11 +163,11 @@ func NewAPI(serv *server.Server, name string, audience string, tokenType api.Tok
 }
 
 /*
-GetAPI - Fetches an API document from the database and marshals it into a API protobuf. The domain parameter
+Get - Fetches an API document from the database and marshals it into a API protobuf. The domain parameter
 cannot be an empty string, but does not need to be a valid domain as this is used merely as an identifier. Named
 errors are propagated here and returned. If an error occurs, API is returned as nil
 */
-func GetAPI(serv *server.Server, audience string) (*api.API, error) {
+func Get(serv *server.Server, audience string) (*Api, error) {
 	/*
 		We must have a valid domain here. You are unable to insert an API with an empty domain, so this
 		must be filled
@@ -106,7 +181,7 @@ func GetAPI(serv *server.Server, audience string) (*api.API, error) {
 		bson.M{"audience": audience},
 	)
 
-	var ret api.API
+	var ret Api
 
 	/*
 		We want to check for any errors in the decode process as we want to ensure that we catch
@@ -127,11 +202,11 @@ func GetAPI(serv *server.Server, audience string) (*api.API, error) {
 }
 
 /*
-ListAPI - Lists all user defined API's present in the database. Optionally, a limit can be specified here to limit the
+List - Lists all user defined API's present in the database. Optionally, a limit can be specified here to limit the
 amount of data returned at once. The maximum that can be returned in a single call is 10, and if a limit exceeds this, it
 will be reset to 10
 */
-func ListAPI(serv *server.Server, limit int) ([]*api.API, error) {
+func List(serv *server.Server, limit int) ([]*Api, error) {
 	if limit > 10 {
 		limit = 10
 	}
@@ -145,7 +220,7 @@ func ListAPI(serv *server.Server, limit int) ([]*api.API, error) {
 		return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 	}
 
-	ret := make([]*api.API, 0, limit)
+	ret := make([]*Api, 0, limit)
 
 	err = result.All(context.Background(), &ret)
 	if err != nil {
@@ -162,12 +237,12 @@ func ListAPI(serv *server.Server, limit int) ([]*api.API, error) {
 }
 
 /*
-UpdateAPI - Provides functionality for updating the API connected to the given domain. Only the
+Update - Provides functionality for updating the API connected to the given domain. Only the
 following fields can be updated here: Name, TokenType, EnforceRBAC, and Applications. To update
 any other fields, you must delete the existing API and then re-create it. The domain field is
 never mutable as this is used as the basis for header.Identifier
 */
-func UpdateAPI(serv *server.Server, audience string, patch *api.API) error {
+func Update(serv *server.Server, audience string, patch *Api) error {
 	if audience == "" {
 		return ErrApiMissingIdentifier
 	}
@@ -177,10 +252,10 @@ func UpdateAPI(serv *server.Server, audience string, patch *api.API) error {
 		provided to mongo.UpdateOne. Only specified fields are supported in this function, so not all are included
 		here
 	*/
-	buildApiPatch := func(patch *api.API) bson.M {
+	buildApiPatch := func(patch *Api) bson.M {
 		update := make(bson.M)
 
-		update["enforce_rbac"] = patch.EnforceRbac
+		update["enforce_rbac"] = patch.EnforceRBAC
 		update["token_type"] = patch.TokenType
 
 		if patch.Name != "" {
@@ -208,11 +283,11 @@ func UpdateAPI(serv *server.Server, audience string, patch *api.API) error {
 }
 
 /*
-DeleteAPI - Completely removes the API from Credstack. A valid, non-empty domain must be provided here
+Delete - Completely removes the API from Credstack. A valid, non-empty domain must be provided here
 to serve as the lookup key. If DeletedCount == 0 here, then the API is considered not to exist. Any other errors here
 are propagated through the error return type
 */
-func DeleteAPI(serv *server.Server, audience string) error {
+func Delete(serv *server.Server, audience string) error {
 	if audience == "" {
 		return ErrApiMissingIdentifier
 	}

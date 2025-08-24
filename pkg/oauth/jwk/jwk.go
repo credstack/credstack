@@ -2,10 +2,13 @@ package jwk
 
 import (
 	"context"
+	"crypto/rsa"
 	"errors"
 	"fmt"
+	"math/big"
+
 	credstackError "github.com/credstack/credstack/pkg/errors"
-	jwkModel "github.com/credstack/credstack/pkg/models/jwk"
+	"github.com/credstack/credstack/pkg/secret"
 	"github.com/credstack/credstack/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -17,48 +20,114 @@ var ErrKeyNotExist = credstackError.NewError(404, "ERR_PRIV_KEY_NOT_EXIST", "jwk
 var ErrKeyIsNotValid = credstackError.NewError(500, "ERR_KEY_NOT_VALID", "jwk: The requested private or public key is not valid")
 
 /*
-GetJWKS - Fetches all JSON Web Keys stored in the database and returns them as a slice. Only RSA Keys are returned with
-this function call, as this is intended to be used with the .well-known/jwks.json endpoint, and HSA secrets should not
-be exposed publicly as they are symmetrical
-
-TODO: Maybe rethink this to return only keys by a specific audience
+JSONWebKey - Represents a JSON Web Key used for signing tokens
 */
-func GetJWKS(serv *server.Server) (*jwkModel.JSONWebKeySet, error) {
-	jwks := new(jwkModel.JSONWebKeySet)
+type JSONWebKey struct {
+	// Kty - Defines the type of key this JWK represents
+	Kty string `json:"kty" bson:"kty"`
 
-	/*
-		This function call is actually fairly simple, as all we really need to do here is list out the entire collection.
-	*/
-	cursor, err := serv.Database().Collection("jwk").Find(context.Background(), bson.M{"kty": "RSA"})
-	if err != nil {
-		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
-			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
-		}
-	}
+	// Use - Defines the use of this JWK, usually sig
+	Use string `json:"use" bson:"use"`
 
-	/*
-		Then we simply just decode all the results into our slice and then return it.
-	*/
-	err = cursor.All(context.Background(), &jwks.Keys) // check here for proper errors
-	if err != nil {
-		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
-			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
-		}
+	// Kid - The unique identifier of the key
+	Kid string `json:"kid" bson:"kid"`
 
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrKeyNotExist
-		}
-	}
+	// Alg - Defines the algorithm that this JWK was generated using
+	Alg string `json:"alg" bson:"alg"`
 
-	return jwks, nil
+	// N - Public modulos for the key
+	N string `json:"n" bson:"n"`
+
+	// E - Public exponent for the key
+	E string `json:"e" bson:"e"`
 }
 
 /*
-GetJWK - Fetches the public JSON Web Key that matches the key identifier passed in the parameter. This just returns
+RSA - Converts a public JSON Web Key into a rsa.PublicKey struct so that it can be used with the crypto/rsa
+package. Any errors in this function are returned wrapped
+*/
+func (key *JSONWebKey) RSA() (*rsa.PublicKey, error) {
+	/*
+		We always store our public exponent and modulus as base64 encoded strings to preserve there precision so we
+		must decode them before we can use them
+	*/
+	modulusBytes := []byte(key.N)
+	decodedModulus, err := secret.DecodeBase64(modulusBytes, uint32(len(modulusBytes)))
+	if err != nil {
+		return nil, fmt.Errorf("%w (%v)", secret.ErrFailedToBaseDecode, err)
+	}
+
+	exponentBytes := []byte(key.E)
+	decodedExponent, err := secret.DecodeBase64(exponentBytes, uint32(len(exponentBytes)))
+	if err != nil {
+		return nil, fmt.Errorf("%w (%v)", secret.ErrFailedToBaseDecode, err)
+	}
+
+	/*
+		Then, once they are decoded, we have to convert them back to their respective types
+
+		Since the decoded exponent here is a big-endian byte array, we need to perform some bit shifting magic to be
+		able to convert this properly. Using strconv on a string representation of this won't work directly, and you
+		would get a parse error. Instead, we can shift each byte of the array by 8 bits (1-byte) and then add them
+		together to get our public exponent back
+	*/
+	modulus := new(big.Int).SetBytes(decodedModulus)
+	exponent := 0
+	for _, b := range decodedExponent {
+		exponent = (exponent << 8) + int(b)
+	}
+
+	/*
+		Finally, we can add them to the public key model and return them to the caller
+	*/
+	publicKey := rsa.PublicKey{
+		N: modulus,
+		E: exponent,
+	}
+
+	return &publicKey, nil
+}
+
+/*
+New - Generates a new key depending on the algorithm that you specify in the parameter. Calling this function will
+immediately set the key as the current one, however this will not retroactively update previously issued key. If you are
+attempting to rotate/revoke keys, then you should use RotateKeys or RotateRevokeKeys.
+
+Additionally, this function does not validate that its given audience exists, before it issues a key for it.
+
+TODO: Update alg to use protobuf enum
+TODO: Update this to remove alg check. HS256 tokens use client secret for signing
+*/
+func New(serv *server.Server, alg string, audience string) (*PrivateJSONWebKey, error) {
+	ret := new(PrivateJSONWebKey)
+	if alg == "RS256" {
+		privateKey, jwk, err := NewPrivateKey(audience)
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = serv.Database().Collection("key").InsertOne(context.Background(), privateKey)
+		if err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+
+		_, err = serv.Database().Collection("jwk").InsertOne(context.Background(), jwk)
+		if err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+
+		ret = privateKey
+	}
+
+	return ret, nil
+}
+
+/*
+Get - Fetches the public JSON Web Key that matches the key identifier passed in the parameter. This just returns
 the model and other functions provided in this package can be used to convert it back to a valid rsa.PublicKey
 */
-func GetJWK(serv *server.Server, kid string) (*jwkModel.JSONWebKey, error) {
-	var jwk jwkModel.JSONWebKey
+func Get(serv *server.Server, kid string) (*JSONWebKey, error) {
+	var jwk JSONWebKey
 
 	/*
 		The header.identifier field always represents our Key Identifiers (kid) so we can always safely lookup our key
@@ -80,15 +149,15 @@ func GetJWK(serv *server.Server, kid string) (*jwkModel.JSONWebKey, error) {
 }
 
 /*
-GetActiveKey - Fetches the latest active private key according to the algorithm that is passed in the parameter. The same
+ActiveKey - Fetches the latest active private key according to the algorithm that is passed in the parameter. The same
 model (key.PrivateJSONWebKey) is used for both RS256 and HS256 keys, so the same function can be used for either. Additional
 functions are provided within the package to convert this model into a valid RSA private key to use
 
 TODO: This does not support HS-256
 TODO: This may not be needed, validate as the rest of this package gets fleshed out
 */
-func GetActiveKey(serv *server.Server, alg string, audience string) (*jwkModel.PrivateJSONWebKey, error) {
-	var jwk jwkModel.PrivateJSONWebKey
+func ActiveKey(serv *server.Server, alg string, audience string) (*PrivateJSONWebKey, error) {
+	var jwk PrivateJSONWebKey
 
 	/*
 		The header.identifier field always represents our Key Identifiers (kid) so we can always safely lookup our key
@@ -107,38 +176,4 @@ func GetActiveKey(serv *server.Server, alg string, audience string) (*jwkModel.P
 	}
 
 	return &jwk, nil
-}
-
-/*
-NewKey - Generates a new key depending on the algorithm that you specify in the parameter. Calling this function will
-immediately set the key as the current one, however this will not retroactively update previously issued key. If you are
-attempting to rotate/revoke keys, then you should use RotateKeys or RotateRevokeKeys.
-
-Additionally, this function does not validate that its given audience exists, before it issues a key for it.
-
-TODO: Update alg to use protobuf enum
-TODO: Update this to remove alg check. HS256 tokens use client secret for signing
-*/
-func NewKey(serv *server.Server, alg string, audience string) (*jwkModel.PrivateJSONWebKey, error) {
-	ret := new(jwkModel.PrivateJSONWebKey)
-	if alg == "RS256" {
-		privateKey, jwk, err := GenerateRSAKey(audience)
-		if err != nil {
-			return nil, err
-		}
-
-		_, err = serv.Database().Collection("key").InsertOne(context.Background(), privateKey)
-		if err != nil {
-			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
-		}
-
-		_, err = serv.Database().Collection("jwk").InsertOne(context.Background(), jwk)
-		if err != nil {
-			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
-		}
-
-		ret = privateKey
-	}
-
-	return ret, nil
 }

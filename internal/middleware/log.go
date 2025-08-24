@@ -1,14 +1,15 @@
 package middleware
 
 import (
+	"os"
+
 	"github.com/credstack/credstack/pkg/server"
 	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
-	"os"
 )
 
 /*
-LogMiddleware - Logs all requests before they hit its respsective middleware handler
+LogMiddleware - Logs all requests before they hit its respective middleware handler
 */
 func LogMiddleware(c fiber.Ctx) error {
 	/*

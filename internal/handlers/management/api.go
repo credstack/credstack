@@ -1,12 +1,12 @@
 package management
 
 import (
+	"strconv"
+
 	"github.com/credstack/credstack/internal/middleware"
-	apiModel "github.com/credstack/credstack/pkg/models/api"
 	"github.com/credstack/credstack/pkg/oauth/api"
 	"github.com/credstack/credstack/pkg/server"
 	"github.com/gofiber/fiber/v3"
-	"strconv"
 )
 
 /*
@@ -23,20 +23,20 @@ func GetAPIHandler(c fiber.Ctx) error {
 			return middleware.HandleError(c, err)
 		}
 
-		apis, err := api.ListAPI(server.HandlerCtx, limit)
+		apis, err := api.List(server.HandlerCtx, limit)
 		if err != nil {
 			return middleware.HandleError(c, err)
 		}
 
-		return middleware.MarshalProtobufList(c, apis)
+		return c.JSON(apis)
 	}
 
-	requestedApi, err := api.GetAPI(server.HandlerCtx, audience)
+	requestedApi, err := api.Get(server.HandlerCtx, audience)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
 
-	return middleware.MarshalProtobuf(c, requestedApi)
+	return c.JSON(requestedApi)
 }
 
 /*
@@ -48,14 +48,14 @@ TODO: Underlying functions need domain validation in place
 TODO: Underlying functions need to be updated here so that we can assign applications at birth
 */
 func PostAPIHandler(c fiber.Ctx) error {
-	var model apiModel.API
+	var model api.Api
 
 	err := middleware.BindJSON(c, &model)
 	if err != nil {
 		return err
 	}
 
-	err = api.NewAPI(server.HandlerCtx, model.Name, model.Audience, model.TokenType)
+	err = api.New(server.HandlerCtx, model.Name, model.Audience, model.TokenType)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
@@ -72,14 +72,14 @@ TODO: Authentication handler needs to happen here
 func PatchAPIHandler(c fiber.Ctx) error {
 	audience := c.Query("audience")
 
-	var model apiModel.API
+	var model api.Api
 
 	err := middleware.BindJSON(c, &model)
 	if err != nil {
 		return err
 	}
 
-	err = api.UpdateAPI(server.HandlerCtx, audience, &model)
+	err = api.Update(server.HandlerCtx, audience, &model)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
@@ -96,7 +96,7 @@ TODO: Authentication handler needs to happen here
 func DeleteAPIHandler(c fiber.Ctx) error {
 	audience := c.Query("audience")
 
-	err := api.DeleteAPI(server.HandlerCtx, audience)
+	err := api.Delete(server.HandlerCtx, audience)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}

@@ -23,7 +23,7 @@ func RegisterUserHandler(c fiber.Ctx) error {
 		return err
 	}
 
-	err = user.RegisterUser(
+	err = user.Register(
 		server.HandlerCtx,
 		options.Credential().FromConfig(),
 		registerRequest.Email,
@@ -35,5 +35,5 @@ func RegisterUserHandler(c fiber.Ctx) error {
 		return middleware.HandleError(c, err)
 	}
 
-	return c.Status(200).JSON(&fiber.Map{"message": "User successfully registered"})
+	return c.Status(200).JSON(&fiber.Map{"message": "User successfully registered"}) // this should get its own response
 }

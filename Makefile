@@ -13,10 +13,6 @@ config:
 api:
 	$(GC) build cmd/api $(GFLAGS) -o dist/credstack-api
 
-# protobuf - Generates protocol buffers and injects desired struct tags
-protobuf:
-	./scripts/generate_pb.sh $(pwd)/credstack/proto $(pwd)/credstack/pkg/models
-
 # docker - Builds a docker image and tags it with the latest accessible git tag
 docker:
 	docker build . -t credstack-api:$(LATEST_TAG)

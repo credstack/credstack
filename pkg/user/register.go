@@ -4,15 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
+
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/header"
-	userModel "github.com/credstack/credstack/pkg/models/user"
 	"github.com/credstack/credstack/pkg/options"
 	"github.com/credstack/credstack/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
-	"regexp"
 )
 
 // ErrPasswordTooShort - Provides a named error to be returned when a user-provided password is too short
@@ -34,11 +34,11 @@ var ErrEmailAddressInvalid = credstackError.NewError(400, "EMAIL_ADDRESS_INVALID
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
 
 /*
-RegisterUser - Core logic for registering new users with credstack. Performs full validation on any of the user data
+Register - Core logic for registering new users with credstack. Performs full validation on any of the user data
 provided here. New users must have a unique email address and this will be validated here. Any errors propagated through
 this function call is returned. This is generally only named errors defined in this package.
 */
-func RegisterUser(serv *server.Server, opts *options.CredentialOptions, email string, username string, password string) error {
+func Register(serv *server.Server, opts *options.CredentialOptions, email string, username string, password string) error {
 	/*
 		Originally, I was going to place this logic in NewCredential, however we don't want to consume a DB call
 		if the information provided here is invalid (Bad Request)
@@ -112,11 +112,10 @@ func RegisterUser(serv *server.Server, opts *options.CredentialOptions, email st
 
 		TODO: Validation for email address
 	*/
-	userHeader := header.NewHeader(email)
+	userHeader := header.New(email)
 
-	newUser := &userModel.User{
+	newUser := &User{
 		Header:     userHeader,
-		Sub:        userHeader.Identifier,
 		Username:   username,
 		Email:      email,
 		Credential: credential,

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DeveloperToolsToolWindowSettingsV1" lastSelectedContentNodeId="jwt-encoder-decoder" pluginVersion="7.1.0">
+    <developerToolsConfigurations>
+      <developerToolConfiguration developerToolId="jwt-encoder-decoder" id="6d0c98a2-c263-43d3-98ac-273f1dbaebfe" name="Workbench">
+        <properties>
+          <property key="headerText" type="INPUT" value="kotlin.String|{&#10;  &quot;typ&quot;: &quot;JWT&quot;,&#10;  &quot;alg&quot;: &quot;HS256&quot;&#10;}" />
+          <property key="payloadText" type="INPUT" value="kotlin.String|{&#10;  &quot;jti&quot;: &quot;96492d59-0ad5-4c00-892d-590ad5ac00f3&quot;,&#10;  &quot;sub&quot;: &quot;0123456789&quot;,&#10;  &quot;name&quot;: &quot;John Doe&quot;,&#10;  &quot;iat&quot;: 1681040515&#10;}" />
+        </properties>
+      </developerToolConfiguration>
+    </developerToolsConfigurations>
+  </component>
+</project>

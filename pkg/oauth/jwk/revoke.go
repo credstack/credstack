@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -60,7 +61,7 @@ func RotateKeys(serv *server.Server, alg string, audience string) error {
 	/*
 		Then we simply just generate our new key
 	*/
-	_, err = NewKey(serv, alg, audience)
+	_, err = New(serv, alg, audience)
 	if err != nil {
 		return err
 	}

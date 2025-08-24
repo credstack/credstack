@@ -1,12 +1,12 @@
 package management
 
 import (
+	"strconv"
+
 	"github.com/credstack/credstack/internal/middleware"
-	applicationModel "github.com/credstack/credstack/pkg/models/application"
 	"github.com/credstack/credstack/pkg/oauth/application"
 	"github.com/credstack/credstack/pkg/server"
 	"github.com/gofiber/fiber/v3"
-	"strconv"
 )
 
 /*
@@ -23,20 +23,20 @@ func GetApplicationHandler(c fiber.Ctx) error {
 			return middleware.HandleError(c, err)
 		}
 
-		apps, err := application.ListApplication(server.HandlerCtx, limit, true)
+		apps, err := application.List(server.HandlerCtx, limit, true)
 		if err != nil {
 			return middleware.HandleError(c, err)
 		}
 
-		return middleware.MarshalProtobufList(c, apps)
+		return c.JSON(apps)
 	}
 
-	app, err := application.GetApplication(server.HandlerCtx, clientId, true)
+	app, err := application.Get(server.HandlerCtx, clientId, true)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
 
-	return middleware.MarshalProtobuf(c, app)
+	return c.JSON(app)
 }
 
 /*
@@ -46,14 +46,14 @@ not be called directly, and should only ever be passed to fiber
 TODO: Authentication handler needs to happen here
 */
 func PostApplicationHandler(c fiber.Ctx) error {
-	var model applicationModel.Application
+	var model application.Application
 
 	err := middleware.BindJSON(c, &model)
 	if err != nil {
 		return err
 	}
 
-	clientId, err := application.NewApplication(server.HandlerCtx, model.Name, model.IsPublic, model.GrantType...)
+	clientId, err := application.New(server.HandlerCtx, model.Name, model.IsPublic, model.GrantTypes...)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
@@ -70,14 +70,14 @@ TODO: Authentication handler needs to happen here
 func PatchApplicationHandler(c fiber.Ctx) error {
 	clientId := c.Query("client_id")
 
-	var model applicationModel.Application
+	var model application.Application
 
 	err := middleware.BindJSON(c, &model)
 	if err != nil {
 		return err
 	}
 
-	err = application.UpdateApplication(server.HandlerCtx, clientId, &model)
+	err = application.Update(server.HandlerCtx, clientId, &model)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
@@ -94,7 +94,7 @@ TODO: Authentication handler needs to happen here
 func DeleteApplicationHandler(c fiber.Ctx) error {
 	clientId := c.Query("client_id")
 
-	err := application.DeleteApplication(server.HandlerCtx, clientId)
+	err := application.Delete(server.HandlerCtx, clientId)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}

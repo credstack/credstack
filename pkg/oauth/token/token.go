@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	credstackError "github.com/credstack/credstack/pkg/errors"
-	tokenModel "github.com/credstack/credstack/pkg/models/token"
-	"github.com/credstack/credstack/pkg/oauth/jwk"
+	"github.com/credstack/credstack/pkg/models/response"
 	"github.com/credstack/credstack/pkg/server"
-	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -19,83 +19,69 @@ var ErrFailedToSignToken = credstackError.NewError(500, "ERR_FAILED_TO_SIGN", "t
 var ErrTokenCollision = credstackError.NewError(500, "ERR_TOKEN_COLLISION", "token: A duplicate access token was issued")
 
 /*
-generateToken - Generates a token based on the Application and API that are passed in the parameter. Claims that are passed
-will be inserted into the generated token. Calling this function alone, does not store the tokens in the database and only
-generates the token. An instantiated server structure needs to be passed here to ensure that we can fetch the current
-active encryption key for token signing (RS256)
+Token - An internal representation of an issued token. This is generally not displayed to the user, but is instead used
+for tracking tokens internally in the database. TokenResponse is instead returned to the user
 */
-func generateToken(serv *server.Server, ticket *tokenModel.AuthenticationTicket, claims jwt.RegisteredClaims) (*tokenModel.Token, error) {
-	var token *tokenModel.Token
+type Token struct {
+	// Subject - The subject the token was issued for. Can be a user id or a client ID
+	Subject string `json:"sub" bson:"sub"`
 
-	switch ticket.Api.TokenType.String() {
-	case "RS256":
-		privateKey, err := jwk.GetActiveKey(serv, ticket.Api.TokenType.String(), ticket.Api.Audience)
-		if err != nil {
-			return nil, err
-		}
+	// ClientId - The client ID of the application that issued the token
+	ClientId string `json:"client_id" bson:"client_id"`
 
-		tok, err := generateRS256(privateKey, claims, uint32(ticket.Application.TokenLifetime))
-		if err != nil {
-			return nil, err
-		}
+	// AccessToken - The access token that was issued
+	AccessToken string `json:"access_token" bson:"access_token"`
 
-		token = tok
-	case "HS256":
-		tok, err := generateHS256(ticket.Application.ClientSecret, claims, uint32(ticket.Application.TokenLifetime))
-		if err != nil {
-			return nil, err
-		}
+	// RefreshToken - The refresh token that was issued
+	RefreshToken string `json:"refresh_token" bson:"refresh_token"`
 
-		token = tok
-	}
+	// IdToken - The ID token that was issued
+	IdToken string `json:"id_token" bson:"id_token"`
 
-	if token == nil {
-		return nil, fmt.Errorf("%w (%v)", ErrFailedToSignToken, "Invalid Signing Algorithm")
-	}
+	// ExpiresIn - The time in seconds that the token expires in
+	ExpiresIn uint32 `json:"expires_in" bson:"expires_in"`
 
-	return token, nil
+	// ExpiresAt - A timestamp that represents the datetime in which the access token expires
+	ExpiresAt time.Time `json:"expires_at" bson:"expires_at"`
+
+	// RefreshExpiresAt - A timestamp that represents the datetime in which the refresh token expires
+	RefreshExpiresAt time.Time `json:"refresh_expires_at" bson:"refresh_expires_at"`
+
+	// Scope - Any permission scopes that were issued with the token
+	Scope string `json:"scope" bson:"scope"`
 }
 
 /*
-NewToken - Generates a token according to the algorithm provided by the API passed as a parameter. Any tokens generated
-with this function are stored in the database, and are automatically converted to a token response.
+Response - Takes a token model and converts it to a token response for API callers to consume
 */
-func NewToken(serv *server.Server, ticket *tokenModel.AuthenticationTicket, claims jwt.RegisteredClaims) (*tokenModel.TokenResponse, error) {
-	token, err := generateToken(serv, ticket, claims)
-	if err != nil {
-		return nil, err
+func (token *Token) Response() *response.TokenResponse {
+	return &response.TokenResponse{
+		AccessToken:  token.AccessToken,
+		TokenType:    "Bearer",
+		ExpiresIn:    token.ExpiresIn,
+		IdToken:      token.IdToken,
+		RefreshToken: token.RefreshToken,
+		Scope:        token.Scope,
 	}
+}
 
-	/*
-		Were currently just storing the plain old token response here, which may pose some issues down the road specifically
-		if we want to implement functionality for revoking tokens for a specific user. This will fit the token revocation
-		endpoint spec as defined in RFC 7009 fairly well though, as we really just need the access token we want to
-		revoke here.
-
-		Keep in mind, JWTs are stateless. So "revoking" a token, really just means that the token will not be reported
-		as active by the token introspection endpoint
-	*/
-	_, err = serv.Database().Collection("token").InsertOne(context.Background(), token)
+/*
+NewToken - Provides logic for storing tokens of a specific type in the database. This does not generate tokens as this
+logic is provided through a method on the API struct
+*/
+func NewToken(serv *server.Server, token *Token) error {
+	_, err := serv.Database().Collection("token").InsertOne(context.Background(), token)
 	if err != nil {
 		var writeError mongo.WriteException
 		if errors.As(err, &writeError) {
 			if writeError.HasErrorCode(11000) { // 11000 is the error code for a WriteError. This should be a const
-				return nil, ErrTokenCollision // this should almost never occur, but we check for it regardless
+				return ErrTokenCollision // this should almost never occur, but we check for it regardless
 			}
 		}
 
 		// always return a wrapped internal database error here
-		return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 	}
 
-	resp := &tokenModel.TokenResponse{
-		AccessToken:  token.AccessToken,
-		TokenType:    "Bearer",
-		ExpiresIn:    token.ExpiresIn,
-		IdToken:      "",
-		RefreshToken: "",
-		Scope:        "",
-	}
-
-	return resp, nil
+	return nil
 }
