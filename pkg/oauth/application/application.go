@@ -33,6 +33,9 @@ const (
 	GrantTypePassword string = "password"
 )
 
+// GrantTypes - All possible grant types that a caller can use for creating new applications
+var GrantTypes = []string{GrantTypeClientCredentials, GrantTypeAuthorizationCode, GrantTypeRefreshToken, GrantTypePassword}
+
 // ErrInvalidClientCredentials - An error that gets returned when the client credentials sent in a token request do not match what was received from the database (during client credentials flow)
 var ErrInvalidClientCredentials = credstackError.NewError(401, "ERR_INVALID_CLIENT_CREDENTIALS", "token: Unable to issue token. Invalid client credentials were supplied")
 
@@ -150,6 +153,15 @@ func New(serv *server.Server, name string, isPublic bool, grantTypes ...string) 
 	*/
 	if len(grantTypes) == 0 {
 		grantTypes = append(grantTypes, GrantTypeAuthorizationCode)
+	}
+
+	/*
+		This is pretty shit code, but I am strapped for time right now and want to get this finished
+	*/
+	for _, grantType := range grantTypes {
+		if !slices.Contains(GrantTypes, grantType) {
+			return "", ErrUnauthorizedGrantType
+		}
 	}
 
 	/*
