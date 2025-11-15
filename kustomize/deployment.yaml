@@ -14,6 +14,9 @@ spec:
       containers:
         - name: credstack-api
           image: credstack/credstack-api:v1.3.3-beta
+          envFrom:
+            - secretRef:
+                name: credstack-api-secrets # this will need to be created manually by the user
           resources:
             limits:
               memory: "128Mi"
