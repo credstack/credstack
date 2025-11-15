@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+labels:
+  - includeSelectors: true
+    pairs:
+      app: credstack
+resources:
+  - deployment.yaml
+  - service.yaml
+configMapGenerator:
+  - name: credstack-config
+    literals:
+      - CREDSTACK_MONGO_HOSTNAME=localhost
+      - CREDSTACK_MONGO_PORT=27017
+      - CREDSTACK_MONGO_USERNAME=admin
+      - CREDSTACK_MONGO_PASSWORD=admin
+      - CREDSTACK_MONGO_AUTHENTICATION_DATABASE=admin
+      - CREDSTACK_MONGO_DEFAULT_DATABASE=credstack
+      - CREDSTACK_MONGO_USE_AUTHENTICATION=true
