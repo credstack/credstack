@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: credstack
+spec:
+  selector:
+    matchLabels:
+      app: credstack
+  template:
+    metadata:
+      labels:
+        app: credstack
+    spec:
+      containers:
+        - name: credstack-api
+          image: credstack/credstack-api:v1.3.3-beta
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          ports:
+            - containerPort: 8080
