@@ -10,7 +10,7 @@ resources:
 configMapGenerator:
   - name: credstack-config
     literals:
-      - CREDSTACK_MONGO_HOSTNAME=localhost
+      - CREDSTACK_MONGO_HOSTNAME=mongo-svc.default.svc.cluster.local
       - CREDSTACK_MONGO_PORT=27017
       - CREDSTACK_MONGO_DEFAULT_DATABASE=credstack
       - CREDSTACK_MONGO_USE_AUTHENTICATION=true
