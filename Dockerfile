@@ -8,7 +8,7 @@ RUN apk --no-cache add ca-certificates git
 # Describes the OS/Architecture we want to build for and instructs the conmpiler to build static binaries
 ENV CGO_ENABLED=0 \
     GOOS=linux \
-    GOARCH=amd64 \
+    GOARCH=amd64
 
 WORKDIR /app
 
