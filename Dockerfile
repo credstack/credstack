@@ -22,7 +22,7 @@ COPY . .
 RUN go mod download
 
 # Strip symbols and debugging information
-RUN go build -ldflags="-s -w" -o app
+RUN go build -o app -ldflags="-s -w" ./cmd/api
 
 FROM gcr.io/distroless/static-debian12
 
