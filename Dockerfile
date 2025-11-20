@@ -1,14 +1,14 @@
 # To build this with secrets: (sudo) docker build --secret id=sshkey,src=/path/to/id_rsa -t credstack-api:latest .
 # To build normally: (sudo) docker build . -t credstack-api:latest
 
-FROM golang:1.24.2-alpine AS builder
+FROM golang:1.25.1-alpine AS builder
 
 RUN apk --no-cache add ca-certificates git
 
 # Describes the OS/Architecture we want to build for and instructs the conmpiler to build static binaries
 ENV CGO_ENABLED=0 \
     GOOS=linux \
-    GOARCH=amd64 \
+    GOARCH=amd64
 
 WORKDIR /app
 
@@ -22,7 +22,7 @@ COPY . .
 RUN go mod download
 
 # Strip symbols and debugging information
-RUN go build -ldflags="-s -w" -o app
+RUN go build -o app -ldflags="-s -w" ./cmd/api
 
 FROM gcr.io/distroless/static-debian12
 
