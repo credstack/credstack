@@ -7,6 +7,18 @@ labels:
 resources:
   - deployment.yaml
   - service.yaml
+
+helmCharts:
+  - name: mongodb
+    repo: oci://registry-1.docker.io/bitnamicharts/mongodb
+    version: v18.1.9
+    namespace: credstack
+    valuesInline:
+      architecture: "standalone"
+      auth:
+        enabled: true
+        usernames: ["mongo_credstack_api"]
+        databases: ["credstack"]
 configMapGenerator:
   - name: credstack-config
     literals:
