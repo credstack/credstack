@@ -10,7 +10,7 @@ resources:
 
 helmCharts:
   - name: mongodb
-    repo: oci://registry-1.docker.io/bitnamicharts/mongodb
+    repo: oci://registry-1.docker.io/bitnamicharts
     version: v18.1.9
     namespace: credstack
     valuesInline:
