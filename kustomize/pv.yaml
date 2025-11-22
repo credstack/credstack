@@ -20,15 +20,3 @@ spec:
           operator: In
           values:
           - local
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mongo-pvc
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi
-  volumeName: mongo-pv
