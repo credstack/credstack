@@ -2,7 +2,10 @@ package api
 
 import (
 	"context"
+	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 
 	"github.com/credstack/credstack/internal/handlers/auth"
 	"github.com/credstack/credstack/internal/handlers/management"
@@ -12,9 +15,6 @@ import (
 	"github.com/credstack/credstack/internal/server"
 	"github.com/gofiber/fiber/v3"
 )
-
-// App - A global variable that provides interaction with the Fiber Application
-var App *fiber.App
 
 type Api struct {
 	// fiberConfig - Fiber's configuration values
@@ -28,59 +28,79 @@ type Api struct {
 }
 
 /*
-AddRoutes - Add's routes to the App global that is provided
+AddRoutes - Add's routes to the api.app global that is provided
 */
 func (api *Api) AddRoutes() {
 	/*
 		Application Routes - /management/application
 	*/
-	App.Get("/management/application", middleware.LogMiddleware, management.GetApplicationHandler)
-	App.Post("/management/application", middleware.LogMiddleware, management.PostApplicationHandler)
-	App.Patch("/management/application", middleware.LogMiddleware, management.PatchApplicationHandler)
-	App.Delete("/management/application", middleware.LogMiddleware, management.DeleteApplicationHandler)
+	api.app.Get("/management/application", middleware.LogMiddleware, management.GetApplicationHandler)
+	api.app.Post("/management/application", middleware.LogMiddleware, management.PostApplicationHandler)
+	api.app.Patch("/management/application", middleware.LogMiddleware, management.PatchApplicationHandler)
+	api.app.Delete("/management/application", middleware.LogMiddleware, management.DeleteApplicationHandler)
 
 	/*
 		API Routes - /management/api
 	*/
-	App.Get("/management/api", middleware.LogMiddleware, management.GetAPIHandler)
-	App.Post("/management/api", middleware.LogMiddleware, management.PostAPIHandler)
-	App.Patch("/management/api", middleware.LogMiddleware, management.PatchAPIHandler)
-	App.Delete("/management/api", middleware.LogMiddleware, management.DeleteAPIHandler)
+	api.app.Get("/management/api", middleware.LogMiddleware, management.GetAPIHandler)
+	api.app.Post("/management/api", middleware.LogMiddleware, management.PostAPIHandler)
+	api.app.Patch("/management/api", middleware.LogMiddleware, management.PatchAPIHandler)
+	api.app.Delete("/management/api", middleware.LogMiddleware, management.DeleteAPIHandler)
 
 	/*
 		User Routes - /management/user
 	*/
-	App.Get("/management/user", middleware.LogMiddleware, management.GetUserHandler)
-	App.Patch("/management/user", middleware.LogMiddleware, management.PatchUserHandler)
-	App.Delete("/management/user", middleware.LogMiddleware, management.DeleteUserHandler)
+	api.app.Get("/management/user", middleware.LogMiddleware, management.GetUserHandler)
+	api.app.Patch("/management/user", middleware.LogMiddleware, management.PatchUserHandler)
+	api.app.Delete("/management/user", middleware.LogMiddleware, management.DeleteUserHandler)
 
 	/*
 		Internal Authentication - /auth/*
 	*/
-	App.Post("/auth/register", middleware.LogMiddleware, auth.RegisterUserHandler)
+	api.app.Post("/auth/register", middleware.LogMiddleware, auth.RegisterUserHandler)
 
 	/*
 		OAuth Handlers - /oauth2/*
 	*/
 
-	App.Get("/oauth/token", middleware.LogMiddleware, oauth.GetTokenHandler)
+	api.app.Get("/oauth/token", middleware.LogMiddleware, oauth.GetTokenHandler)
 	/*
 		Well Known Handlers
 	*/
-	App.Get("/.well-known/jwks.json", middleware.LogMiddleware, wellknown.GetJWKHandler)
+	api.app.Get("/.well-known/jwks.json", middleware.LogMiddleware, wellknown.GetJWKHandler)
 }
 
 /*
 Start - Connects to MongoDB and starts the API
 */
-func (api *Api) Start(port int) error {
-	/*
-		Once our database is connected we can properly start our API
-	*/
-	server.HandlerCtx.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(port))
-	err := App.Listen(":"+strconv.Itoa(port), *api.listenConfig)
+func (api *Api) Start(ctx context.Context, port int) error {
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
+
+	err := server.HandlerCtx.Start() // this needs to go.
 	if err != nil {
-		return err // log here
+		return err
+	}
+
+	go func() {
+		err := api.app.Listen(":"+strconv.Itoa(port), *api.listenConfig)
+		if err != nil {
+			// Handle Error
+		}
+
+		server.HandlerCtx.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(port))
+	}()
+
+	<-quit
+
+	err = api.Stop(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = server.HandlerCtx.Stop()
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -97,7 +117,7 @@ func (api *Api) Stop(ctx context.Context) error {
 		finish. Additionally, we don't want new requests coming in as we are shutting
 		down the server
 	*/
-	err := App.ShutdownWithContext(ctx)
+	err := api.app.ShutdownWithContext(ctx)
 	if err != nil {
 		return err // log here
 	}
@@ -106,7 +126,7 @@ func (api *Api) Stop(ctx context.Context) error {
 }
 
 /*
-New - Constructs a new fiber.App with recommended configurations
+New - Constructs a new fiber.api.app with recommended configurations
 */
 func New() *Api {
 	// these should eventually be exposed to the user

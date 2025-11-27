@@ -8,14 +8,11 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/credstack/credstack/internal/api"
 	"github.com/credstack/credstack/internal/server"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -35,39 +32,11 @@ var rootCmd = &cobra.Command{
 		server.HandlerCtx = server.FromConfig()
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		quit := make(chan os.Signal, 1)
-		signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
-
-		go func() {
-			api.App = api.New()
-
-			err := server.HandlerCtx.Start()
-			if err != nil {
-				fmt.Println("Failed to initialize API: ", err)
-				os.Exit(1)
-			}
-
-			err = api.Start(viper.GetInt("port"))
-			if err != nil {
-				fmt.Println("Failed to start API:", err)
-				os.Exit(1)
-			}
-		}()
-
-		<-quit
-
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 
-		err := api.Stop(ctx)
+		err := api.New().Start(ctx, viper.GetInt("port"))
 		if err != nil {
-			fmt.Println("Failed to stop API:", err)
-			os.Exit(1)
-		}
-
-		err = server.HandlerCtx.Stop()
-		if err != nil {
-			fmt.Println("Failed to close server:", err)
 			os.Exit(1)
 		}
 	},
