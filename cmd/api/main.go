@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/credstack/credstack/internal/api"
-	"github.com/credstack/credstack/internal/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -28,9 +27,6 @@ var rootCmd = &cobra.Command{
 	Use:   "credstack-api",
 	Short: "",
 	Long:  `RESTful API for CredStack IDP`,
-	PreRun: func(cmd *cobra.Command, args []string) {
-		server.HandlerCtx = server.FromConfig()
-	},
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
