@@ -7,11 +7,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/credstack/credstack/internal/handlers/auth"
 	"github.com/credstack/credstack/internal/handlers/management"
-	"github.com/credstack/credstack/internal/handlers/oauth"
-	"github.com/credstack/credstack/internal/handlers/wellknown"
-	"github.com/credstack/credstack/internal/middleware"
 	"github.com/credstack/credstack/internal/server"
 	"github.com/gofiber/fiber/v3"
 )
@@ -30,47 +26,10 @@ type Api struct {
 	server *server.Server
 }
 
-/*
-AddRoutes - Add's routes to the api.app global that is provided
-*/
-func (api *Api) AddRoutes() {
-	/*
-		Application Routes - /management/application
-	*/
-	api.app.Get("/management/application", middleware.LogMiddleware, management.GetApplicationHandler)
-	api.app.Post("/management/application", middleware.LogMiddleware, management.PostApplicationHandler)
-	api.app.Patch("/management/application", middleware.LogMiddleware, management.PatchApplicationHandler)
-	api.app.Delete("/management/application", middleware.LogMiddleware, management.DeleteApplicationHandler)
-
-	/*
-		API Routes - /management/api
-	*/
-	api.app.Get("/management/api", middleware.LogMiddleware, management.GetAPIHandler)
-	api.app.Post("/management/api", middleware.LogMiddleware, management.PostAPIHandler)
-	api.app.Patch("/management/api", middleware.LogMiddleware, management.PatchAPIHandler)
-	api.app.Delete("/management/api", middleware.LogMiddleware, management.DeleteAPIHandler)
-
-	/*
-		User Routes - /management/user
-	*/
-	api.app.Get("/management/user", middleware.LogMiddleware, management.GetUserHandler)
-	api.app.Patch("/management/user", middleware.LogMiddleware, management.PatchUserHandler)
-	api.app.Delete("/management/user", middleware.LogMiddleware, management.DeleteUserHandler)
-
-	/*
-		Internal Authentication - /auth/*
-	*/
-	api.app.Post("/auth/register", middleware.LogMiddleware, auth.RegisterUserHandler)
-
-	/*
-		OAuth Handlers - /oauth2/*
-	*/
-
-	api.app.Get("/oauth/token", middleware.LogMiddleware, oauth.GetTokenHandler)
-	/*
-		Well Known Handlers
-	*/
-	api.app.Get("/.well-known/jwks.json", middleware.LogMiddleware, wellknown.GetJWKHandler)
+func (api *Api) RegisterHandlers() {
+	management.NewUserService(api.server, api.app).RegisterHandlers()
+	management.NewApiService(api.server, api.app).RegisterHandlers()
+	management.NewApplicationService(api.server, api.app).RegisterHandlers()
 }
 
 /*
@@ -86,6 +45,7 @@ func (api *Api) Start(ctx context.Context, port int) error {
 	}
 
 	go func() {
+		api.RegisterHandlers()
 		err := api.app.Listen(":"+strconv.Itoa(port), *api.listenConfig)
 		if err != nil {
 			// Handle Error
@@ -144,14 +104,15 @@ func New() *Api {
 		DisableStartupMessage: true,
 		EnablePrefork:         false, // this makes log entries duplicate; need better support for multiple processes
 		ListenerNetwork:       "tcp4",
+		EnablePrintRoutes:     true,
 	}
 
 	api := &Api{
 		fiberConfig:  config,
 		listenConfig: &listenConfig,
 		app:          fiber.New(*config),
+		server:       server.FromConfig(),
 	}
-	api.AddRoutes() // todo: Fix this; Code smell
 
 	return api
 }
