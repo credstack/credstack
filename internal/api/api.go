@@ -20,6 +20,9 @@ type Api struct {
 	// fiberConfig - Fiber's configuration values
 	fiberConfig *fiber.Config
 
+	// listenConfig - Fiber's listener configuration values
+	listenConfig *fiber.ListenConfig
+
 	// app - An instance of a Fiber Application
 	app *fiber.App
 }
@@ -72,20 +75,10 @@ Start - Connects to MongoDB and starts the API
 */
 func (api *Api) Start(port int) error {
 	/*
-		Realistically, these should probably be exposed to the user for them to modify,
-		however they are hardcoded for now to ensure that these will ensure the most performance
-	*/
-	listenConfig := fiber.ListenConfig{
-		DisableStartupMessage: true,
-		EnablePrefork:         false, // this makes log entries duplicate
-		ListenerNetwork:       "tcp4",
-	}
-
-	/*
 		Once our database is connected we can properly start our API
 	*/
 	server.HandlerCtx.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(port))
-	err := App.Listen(":"+strconv.Itoa(port), listenConfig)
+	err := App.Listen(":"+strconv.Itoa(port), *api.listenConfig)
 	if err != nil {
 		return err // log here
 	}
@@ -124,9 +117,16 @@ func New() *Api {
 		AppName:       "CredStack API",
 	}
 
+	listenConfig := fiber.ListenConfig{
+		DisableStartupMessage: true,
+		EnablePrefork:         false, // this makes log entries duplicate; need better support for multiple processes
+		ListenerNetwork:       "tcp4",
+	}
+
 	api := &Api{
-		fiberConfig: config,
-		app:         fiber.New(*config),
+		fiberConfig:  config,
+		listenConfig: &listenConfig,
+		app:          fiber.New(*config),
 	}
 	api.AddRoutes() // todo: Fix this; Code smell
 
