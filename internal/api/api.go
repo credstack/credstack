@@ -37,6 +37,25 @@ func (api *Api) RegisterHandlers() {
 }
 
 /*
+Stop - Gracefully terminates the API, closes database connections and flushes existing logs to sync
+*/
+func (api *Api) Stop(ctx context.Context) error {
+	api.server.Log().LogShutdownEvent("API", "Shutting down API. New requests will not be allowed")
+
+	/*
+		First we shut down the API to ensure that any currently processing requests
+		finish. Additionally, we don't want new requests coming in as we are shutting
+		down the server
+	*/
+	err := api.app.ShutdownWithContext(ctx)
+	if err != nil {
+		return err // log here
+	}
+
+	return nil
+}
+
+/*
 Start - Connects to MongoDB and starts the API
 */
 func (api *Api) Start(ctx context.Context, port int) error {
@@ -68,25 +87,6 @@ func (api *Api) Start(ctx context.Context, port int) error {
 	err = api.server.Stop()
 	if err != nil {
 		return err
-	}
-
-	return nil
-}
-
-/*
-Stop - Gracefully terminates the API, closes database connections and flushes existing logs to sync
-*/
-func (api *Api) Stop(ctx context.Context) error {
-	api.server.Log().LogShutdownEvent("API", "Shutting down API. New requests will not be allowed")
-
-	/*
-		First we shut down the API to ensure that any currently processing requests
-		finish. Additionally, we don't want new requests coming in as we are shutting
-		down the server
-	*/
-	err := api.app.ShutdownWithContext(ctx)
-	if err != nil {
-		return err // log here
 	}
 
 	return nil
