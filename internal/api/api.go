@@ -16,10 +16,18 @@ import (
 // App - A global variable that provides interaction with the Fiber Application
 var App *fiber.App
 
+type Api struct {
+	// fiberConfig - Fiber's configuration values
+	fiberConfig *fiber.Config
+
+	// app - An instance of a Fiber Application
+	app *fiber.App
+}
+
 /*
 AddRoutes - Add's routes to the App global that is provided
 */
-func AddRoutes() {
+func (api *Api) AddRoutes() {
 	/*
 		Application Routes - /management/application
 	*/
@@ -60,28 +68,9 @@ func AddRoutes() {
 }
 
 /*
-New - Constructs a new fiber.App with recommended configurations
-*/
-func New() *fiber.App {
-	/*
-		Realistically, these should probably be exposed to the user for them to modify,
-		however they are hardcoded for now to ensure that these will ensure the most performance
-	*/
-	config := fiber.Config{
-		CaseSensitive: true,
-		StrictRouting: true,
-		AppName:       "CredStack API",
-	}
-
-	app := fiber.New(config)
-
-	return app
-}
-
-/*
 Start - Connects to MongoDB and starts the API
 */
-func Start(port int) error {
+func (api *Api) Start(port int) error {
 	/*
 		Realistically, these should probably be exposed to the user for them to modify,
 		however they are hardcoded for now to ensure that these will ensure the most performance
@@ -107,7 +96,7 @@ func Start(port int) error {
 /*
 Stop - Gracefully terminates the API, closes database connections and flushes existing logs to sync
 */
-func Stop(ctx context.Context) error {
+func (api *Api) Stop(ctx context.Context) error {
 	server.HandlerCtx.Log().LogShutdownEvent("API", "Shutting down API. New requests will not be allowed")
 
 	/*
@@ -121,4 +110,25 @@ func Stop(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+/*
+New - Constructs a new fiber.App with recommended configurations
+*/
+func New() *Api {
+	// these should eventually be exposed to the user
+
+	config := &fiber.Config{
+		CaseSensitive: true,
+		StrictRouting: true,
+		AppName:       "CredStack API",
+	}
+
+	api := &Api{
+		fiberConfig: config,
+		app:         fiber.New(*config),
+	}
+	api.AddRoutes() // todo: Fix this; Code smell
+
+	return api
 }
