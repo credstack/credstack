@@ -17,7 +17,7 @@ spec:
       terminationGracePeriodSeconds: 10
       containers:
       - name: mongo
-        image: ""
+        image: "mongo:latest"
         ports:
         - containerPorts: 27017
           name: mongo
