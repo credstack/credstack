@@ -19,6 +19,10 @@ type UserService struct {
 	group fiber.Router
 }
 
+func (svc *UserService) Group() fiber.Router {
+	return svc.group
+}
+
 /*
 RegisterHandlers - Registers required handlers with the associated Fiber router
 */

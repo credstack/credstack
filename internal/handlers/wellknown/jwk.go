@@ -15,6 +15,10 @@ type WellKnownService struct {
 	group fiber.Router
 }
 
+func (svc *WellKnownService) Group() fiber.Router {
+	return svc.group
+}
+
 func (svc *WellKnownService) RegisterHandlers() {
 	svc.group.Get("/jwks.json", svc.GetJWKHandler)
 }

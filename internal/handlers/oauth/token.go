@@ -17,6 +17,10 @@ type OAuthService struct {
 	group fiber.Router
 }
 
+func (svc *OAuthService) Group() fiber.Router {
+	return svc.group
+}
+
 func (svc *OAuthService) RegisterHandlers() {
 	svc.group.Get("/token", svc.GetTokenHandler)
 }

@@ -17,6 +17,10 @@ type ApplicationService struct {
 	group fiber.Router
 }
 
+func (svc *ApplicationService) Group() fiber.Router {
+	return svc.group
+}
+
 func (svc *ApplicationService) RegisterHandlers() {
 	svc.group.Get("", svc.GetApplicationHandler)
 	svc.group.Post("", svc.PostApplicationHandler)

@@ -17,6 +17,10 @@ type ApiService struct {
 	group fiber.Router
 }
 
+func (svc *ApiService) Group() fiber.Router {
+	return svc.group
+}
+
 func (svc *ApiService) RegisterHandlers() {
 	svc.group.Get("", svc.GetAPIHandler)
 	svc.group.Post("", svc.PostAPIHandler)
