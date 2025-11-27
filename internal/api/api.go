@@ -8,6 +8,8 @@ import (
 	"syscall"
 
 	"github.com/credstack/credstack/internal/handlers/management"
+	"github.com/credstack/credstack/internal/handlers/oauth"
+	"github.com/credstack/credstack/internal/handlers/wellknown"
 	"github.com/credstack/credstack/internal/server"
 	"github.com/gofiber/fiber/v3"
 )
@@ -30,6 +32,8 @@ func (api *Api) RegisterHandlers() {
 	management.NewUserService(api.server, api.app).RegisterHandlers()
 	management.NewApiService(api.server, api.app).RegisterHandlers()
 	management.NewApplicationService(api.server, api.app).RegisterHandlers()
+	oauth.NewOAuthService(api.server, api.app).RegisterHandlers()
+	wellknown.NewWellKnownService(api.server, api.app).RegisterHandlers()
 }
 
 /*
