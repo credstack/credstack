@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/credstack/credstack/internal/server"
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/header"
 	"github.com/credstack/credstack/pkg/models/request"
 	"github.com/credstack/credstack/pkg/oauth/claim"
 	"github.com/credstack/credstack/pkg/secret"
-	"github.com/credstack/credstack/pkg/server"
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"

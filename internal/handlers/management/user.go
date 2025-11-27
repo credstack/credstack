@@ -4,7 +4,7 @@ import (
 	"strconv"
 
 	"github.com/credstack/credstack/internal/middleware"
-	"github.com/credstack/credstack/pkg/server"
+	"github.com/credstack/credstack/internal/server"
 	"github.com/credstack/credstack/pkg/user"
 	"github.com/gofiber/fiber/v3"
 )

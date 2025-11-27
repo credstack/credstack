@@ -2,8 +2,8 @@ package wellknown
 
 import (
 	"github.com/credstack/credstack/internal/middleware"
+	"github.com/credstack/credstack/internal/server"
 	"github.com/credstack/credstack/pkg/oauth/jwk"
-	"github.com/credstack/credstack/pkg/server"
 	"github.com/gofiber/fiber/v3"
 )
 

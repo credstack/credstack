@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/credstack/credstack/internal/api"
-	"github.com/credstack/credstack/pkg/server"
+	"github.com/credstack/credstack/internal/server"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

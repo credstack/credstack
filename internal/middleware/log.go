@@ -3,7 +3,7 @@ package middleware
 import (
 	"os"
 
-	"github.com/credstack/credstack/pkg/server"
+	"github.com/credstack/credstack/internal/server"
 	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )

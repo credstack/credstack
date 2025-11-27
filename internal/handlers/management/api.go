@@ -4,8 +4,8 @@ import (
 	"strconv"
 
 	"github.com/credstack/credstack/internal/middleware"
+	"github.com/credstack/credstack/internal/server"
 	"github.com/credstack/credstack/pkg/oauth/api"
-	"github.com/credstack/credstack/pkg/server"
 	"github.com/gofiber/fiber/v3"
 )
 

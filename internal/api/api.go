@@ -9,7 +9,7 @@ import (
 	"github.com/credstack/credstack/internal/handlers/oauth"
 	"github.com/credstack/credstack/internal/handlers/wellknown"
 	"github.com/credstack/credstack/internal/middleware"
-	"github.com/credstack/credstack/pkg/server"
+	"github.com/credstack/credstack/internal/server"
 	"github.com/gofiber/fiber/v3"
 )
 
