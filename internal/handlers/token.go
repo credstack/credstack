@@ -1,4 +1,4 @@
-package oauth
+package handlers
 
 import (
 	"github.com/credstack/credstack/internal/middleware"

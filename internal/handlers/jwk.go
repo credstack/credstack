@@ -1,4 +1,4 @@
-package wellknown
+package handlers
 
 import (
 	"github.com/credstack/credstack/internal/middleware"
