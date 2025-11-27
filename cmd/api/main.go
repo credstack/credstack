@@ -40,7 +40,6 @@ var rootCmd = &cobra.Command{
 
 		go func() {
 			api.App = api.New()
-			api.AddRoutes()
 
 			err := server.HandlerCtx.Start()
 			if err != nil {
