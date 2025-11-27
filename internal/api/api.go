@@ -106,7 +106,6 @@ func New() *Api {
 		DisableStartupMessage: true,
 		EnablePrefork:         false, // this makes log entries duplicate; need better support for multiple processes
 		ListenerNetwork:       "tcp4",
-		EnablePrintRoutes:     true,
 	}
 
 	api := &Api{
