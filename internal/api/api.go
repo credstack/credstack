@@ -25,6 +25,9 @@ type Api struct {
 
 	// app - An instance of a Fiber Application
 	app *fiber.App
+
+	// server - Dependencies required by all API handlers
+	server *server.Server
 }
 
 /*
@@ -77,7 +80,7 @@ func (api *Api) Start(ctx context.Context, port int) error {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
 
-	err := server.HandlerCtx.Start() // this needs to go.
+	err := api.server.Start() // this needs to go.
 	if err != nil {
 		return err
 	}
@@ -88,7 +91,7 @@ func (api *Api) Start(ctx context.Context, port int) error {
 			// Handle Error
 		}
 
-		server.HandlerCtx.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(port))
+		api.server.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(port))
 	}()
 
 	<-quit
@@ -98,7 +101,7 @@ func (api *Api) Start(ctx context.Context, port int) error {
 		return err
 	}
 
-	err = server.HandlerCtx.Stop()
+	err = api.server.Stop()
 	if err != nil {
 		return err
 	}
@@ -110,7 +113,7 @@ func (api *Api) Start(ctx context.Context, port int) error {
 Stop - Gracefully terminates the API, closes database connections and flushes existing logs to sync
 */
 func (api *Api) Stop(ctx context.Context) error {
-	server.HandlerCtx.Log().LogShutdownEvent("API", "Shutting down API. New requests will not be allowed")
+	api.server.Log().LogShutdownEvent("API", "Shutting down API. New requests will not be allowed")
 
 	/*
 		First we shut down the API to ensure that any currently processing requests

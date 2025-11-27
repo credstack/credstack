@@ -2,10 +2,6 @@ package server
 
 import "github.com/credstack/credstack/pkg/options"
 
-// HandlerCtx - An instantiated Server structure that gets passed to API handlers.
-// Subjected to move. This is a band-aid for poorly designed code :)
-var HandlerCtx *Server
-
 /*
 Server - Provides an abstraction of any commonly used resources that services would need
 to interact with. Also provides lifecycle control for these objects
