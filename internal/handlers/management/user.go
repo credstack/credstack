@@ -9,13 +9,30 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
+type UserService struct {
+	// server - Dependencies required by all API handlers
+	server *server.Server
+
+	// group - The Fiber API group for this service
+	group fiber.Router
+}
+
+/*
+RegisterHandlers - Registers required handlers with the associated Fiber router
+*/
+func (svc *UserService) RegisterHandlers() {
+	svc.group.Get("", svc.GetUserHandler)
+	svc.group.Patch("", svc.PatchUserHandler)
+	svc.group.Delete("", svc.DeleteUserHandler)
+}
+
 /*
 GetUserHandler - Provides a Fiber handler for processing a get request to /management/user. This should
 not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func GetUserHandler(c fiber.Ctx) error {
+func (svc *UserService) GetUserHandler(c fiber.Ctx) error {
 	email := c.Query("email")
 	if email == "" {
 		limit, err := strconv.Atoi(c.Query("limit", "10"))
@@ -23,7 +40,7 @@ func GetUserHandler(c fiber.Ctx) error {
 			return middleware.HandleError(c, err)
 		}
 
-		users, err := user.List(server.HandlerCtx, limit, false)
+		users, err := user.List(svc.server, limit, false)
 		if err != nil {
 			return middleware.HandleError(c, err)
 		}
@@ -31,7 +48,7 @@ func GetUserHandler(c fiber.Ctx) error {
 		return c.JSON(users)
 	}
 
-	requestedUser, err := user.Get(server.HandlerCtx, email, false)
+	requestedUser, err := user.Get(svc.server, email, false)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
@@ -45,7 +62,7 @@ not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func PatchUserHandler(c fiber.Ctx) error {
+func (svc *UserService) PatchUserHandler(c fiber.Ctx) error {
 	email := c.Query("email")
 
 	var model user.User
@@ -55,7 +72,7 @@ func PatchUserHandler(c fiber.Ctx) error {
 		return err
 	}
 
-	err = user.Update(server.HandlerCtx, email, &model)
+	err = user.Update(svc.server, email, &model)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
@@ -69,13 +86,20 @@ not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func DeleteUserHandler(c fiber.Ctx) error {
+func (svc *UserService) DeleteUserHandler(c fiber.Ctx) error {
 	email := c.Query("email")
 
-	err := user.Delete(server.HandlerCtx, email)
+	err := user.Delete(svc.server, email)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
 
 	return c.Status(200).JSON(fiber.Map{"message": "Successfully deleted user"})
+}
+
+func NewUserService(server *server.Server, app *fiber.App) *UserService {
+	return &UserService{
+		server: server,
+		group:  app.Group("/user"),
+	}
 }
