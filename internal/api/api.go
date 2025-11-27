@@ -7,9 +7,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/credstack/credstack/internal/handlers/management"
-	"github.com/credstack/credstack/internal/handlers/oauth"
-	"github.com/credstack/credstack/internal/handlers/wellknown"
+	"github.com/credstack/credstack/internal/handlers"
 	"github.com/credstack/credstack/internal/server"
 	"github.com/gofiber/fiber/v3"
 )
@@ -29,11 +27,11 @@ type Api struct {
 }
 
 func (api *Api) RegisterHandlers() {
-	management.NewUserService(api.server, api.app).RegisterHandlers()
-	management.NewApiService(api.server, api.app).RegisterHandlers()
-	management.NewApplicationService(api.server, api.app).RegisterHandlers()
-	oauth.NewOAuthService(api.server, api.app).RegisterHandlers()
-	wellknown.NewWellKnownService(api.server, api.app).RegisterHandlers()
+	handlers.NewUserService(api.server, api.app).RegisterHandlers()
+	handlers.NewApiService(api.server, api.app).RegisterHandlers()
+	handlers.NewApplicationService(api.server, api.app).RegisterHandlers()
+	handlers.NewOAuthService(api.server, api.app).RegisterHandlers()
+	handlers.NewWellKnownService(api.server, api.app).RegisterHandlers()
 }
 
 /*
