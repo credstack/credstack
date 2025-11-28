@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/credstack/credstack/internal/api"
+	"github.com/credstack/credstack/pkg/options"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -31,7 +32,7 @@ var rootCmd = &cobra.Command{
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 
-		err := api.New().Start(ctx, viper.GetInt("port"))
+		err := api.New(options.Api().FromConfig()).Start(ctx)
 		if err != nil {
 			os.Exit(1)
 		}
@@ -50,7 +51,9 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.credstack/config.json)")
 
-	rootCmd.Flags().IntP("port", "p", 8080, "The default port that the API is going to listen for requests at")
+	rootCmd.Flags().IntP("api.port", "p", 8080, "The default port that the API is going to listen for requests at")
+	rootCmd.Flags().Bool("api.debug", false, "Enables debug mode for the API and disables various options in Fiber. See the docs for more details")
+	rootCmd.Flags().Bool("api.prefork", false, "Allows the API to serve requests on multiple processes")
 	rootCmd.Flags().StringP("issuer", "i", "https://credstack.issuer.change.me", "The issuer to insert into the claims of issued JWT tokens")
 
 	/*

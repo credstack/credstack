@@ -9,15 +9,13 @@ import (
 
 	"github.com/credstack/credstack/internal/handlers"
 	"github.com/credstack/credstack/internal/server"
+	"github.com/credstack/credstack/pkg/options"
 	"github.com/gofiber/fiber/v3"
 )
 
 type Api struct {
-	// fiberConfig - Fiber's configuration values
-	fiberConfig *fiber.Config
-
-	// listenConfig - Fiber's listener configuration values
-	listenConfig *fiber.ListenConfig
+	// options - Universal options for the API
+	options *options.ApiOptions
 
 	// app - An instance of a Fiber Application
 	app *fiber.App
@@ -56,7 +54,7 @@ func (api *Api) Stop(ctx context.Context) error {
 /*
 Start - Connects to MongoDB and starts the API
 */
-func (api *Api) Start(ctx context.Context, port int) error {
+func (api *Api) Start(ctx context.Context) error {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
 
@@ -65,11 +63,14 @@ func (api *Api) Start(ctx context.Context, port int) error {
 		return err
 	}
 
+	fiberConfig, listenConfig := api.options.ToFiber()
+	api.app = fiber.New(fiberConfig)
+
 	go func() {
-		api.server.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(port))
+		api.server.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(api.options.Port))
 
 		api.RegisterHandlers()
-		err := api.app.Listen(":"+strconv.Itoa(port), *api.listenConfig)
+		err := api.app.Listen(":"+strconv.Itoa(api.options.Port), listenConfig)
 		if err != nil {
 			// Handle Error
 		}
@@ -94,26 +95,11 @@ func (api *Api) Start(ctx context.Context, port int) error {
 /*
 New - Constructs a new fiber.api.app with recommended configurations
 */
-func New() *Api {
-	// these should eventually be exposed to the user
-
-	config := &fiber.Config{
-		CaseSensitive: true,
-		StrictRouting: true,
-		AppName:       "CredStack API",
-	}
-
-	listenConfig := fiber.ListenConfig{
-		DisableStartupMessage: true,
-		EnablePrefork:         false, // this makes log entries duplicate; need better support for multiple processes
-		ListenerNetwork:       "tcp4",
-	}
+func New(options *options.ApiOptions) *Api {
 
 	api := &Api{
-		fiberConfig:  config,
-		listenConfig: &listenConfig,
-		app:          fiber.New(*config),
-		server:       server.FromConfig(),
+		options: options,
+		server:  server.FromConfig(),
 	}
 
 	return api
