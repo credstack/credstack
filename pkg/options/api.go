@@ -92,7 +92,7 @@ func (opts *ApiOptions) ToFiber() (fiber.Config, fiber.ListenConfig) {
 	listenConfig := fiber.ListenConfig{
 		DisableStartupMessage: true,
 		EnablePrefork:         opts.Prefork,
-		ListenerNetwork:       fiber.NetworkTCP,
+		ListenerNetwork:       fiber.NetworkTCP4,
 	}
 
 	if opts.Debug {
