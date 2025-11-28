@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/spf13/viper"
 )
 
 type ApiOptions struct {
@@ -17,6 +18,29 @@ type ApiOptions struct {
 	Prefork bool
 
 	// Will eventually support TLS options
+}
+
+/*
+Api - Returns an ApiOptions structure with some sensible defaults
+*/
+func Api() *ApiOptions {
+	return &ApiOptions{
+		Port:    8080,
+		Debug:   false,
+		Prefork: false, // TODO: set this to true when logging is updated to store PID
+	}
+}
+
+/*
+FromConfig - Fills in all fields present in the ApiOptions structure with configuration values passed
+from viper
+*/
+func (opts *ApiOptions) FromConfig() *ApiOptions {
+	return &ApiOptions{
+		Port:    viper.GetInt("api.port"),
+		Debug:   viper.GetBool("api.debug"),
+		Prefork: viper.GetBool("api.prefork"),
+	}
 }
 
 /*
