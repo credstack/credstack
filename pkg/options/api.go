@@ -1,5 +1,11 @@
 package options
 
+import (
+	"time"
+
+	"github.com/gofiber/fiber/v3"
+)
+
 type ApiOptions struct {
 	// Port - The port number that the API should listen for requests on
 	Port int
@@ -46,4 +52,34 @@ func (opts *ApiOptions) SetPrefork(value bool) *ApiOptions {
 	opts.Prefork = value
 
 	return opts
+}
+
+/*
+ToFiber - Returns a fiber.Config and fiber.ListenConfig structure for the Api structure
+to consume
+*/
+func (opts *ApiOptions) ToFiber() (fiber.Config, fiber.ListenConfig) {
+	config := fiber.Config{
+		CaseSensitive:    true,
+		StrictRouting:    true,
+		DisableKeepalive: true,
+	}
+
+	listenConfig := fiber.ListenConfig{
+		DisableStartupMessage: true,
+		EnablePrefork:         opts.Prefork,
+		ListenerNetwork:       fiber.NetworkTCP,
+	}
+
+	if opts.Debug {
+		config.CaseSensitive = false
+		config.StrictRouting = false
+		config.IdleTimeout = 10 * time.Minute
+		config.TrustProxy = true
+
+		listenConfig.EnablePrefork = false
+		listenConfig.EnablePrintRoutes = true
+	}
+
+	return config, listenConfig
 }
