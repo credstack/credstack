@@ -66,13 +66,14 @@ func (api *Api) Start(ctx context.Context, port int) error {
 	}
 
 	go func() {
+		api.server.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(port))
+
 		api.RegisterHandlers()
 		err := api.app.Listen(":"+strconv.Itoa(port), *api.listenConfig)
 		if err != nil {
 			// Handle Error
 		}
 
-		api.server.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(port))
 	}()
 
 	<-quit
