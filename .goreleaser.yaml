@@ -24,16 +24,9 @@ builds:
       - CGO_ENABLED=0
 
 archives:
-  - id: source
-    formats: ["zip", "tar.gz"]
+  - id: binaries
+    format: 'binary'
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    files:
-      - "**/*.go"
-      - "**/*.md"
-      - "*.md"
-      - go.mod
-      - go.sum
-      - LICENSE
 
 changelog:
   sort: asc
