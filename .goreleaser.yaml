@@ -43,6 +43,7 @@ changelog:
       - "^test:"
       - "^chore:"
       - "^build:"
+      - "^style:"
 
 release:
   footer: >-
