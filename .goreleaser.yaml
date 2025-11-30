@@ -26,7 +26,7 @@ builds:
 archives:
   - id: source
     formats: ["zip", "tar.gz"]
-    name_template: "{{ .ProjectName }}_{{ .Version }}"
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - "**/*.go"
       - "**/*.md"
