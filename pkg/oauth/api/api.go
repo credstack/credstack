@@ -31,13 +31,13 @@ const (
 var TokenTypes = []string{TokenTypeHS256, TokenTypeRS256}
 
 // ErrServerAlreadyExists - Provides a named error for when you try to insert an API with a domain that already exists
-var ErrServerAlreadyExists = credstackError.NewError(409, "API_ALREADY_EXIST", "api: API already exists under the specified domain")
+var ErrServerAlreadyExists = credstackError.NewError(409, "SERVER_ALREADY_EXIST", "resource_server: Resource Server already exists under the specified domain")
 
 // ErrServerDoesNotExist - Provides a named error for when you try and fetch an API with a domain that does not exist
-var ErrServerDoesNotExist = credstackError.NewError(404, "API_DOES_NOT_EXIST", "api: API does not exist under the specified domain")
+var ErrServerDoesNotExist = credstackError.NewError(404, "SERVER_DOES_NOT_EXIST", "resource_server: Resource Server does not exist under the specified domain")
 
 // ErrServerMissingId - Provides a named error for when you try and insert or fetch an API with no domain or name
-var ErrServerMissingId = credstackError.NewError(400, "API_MISSING_ID", "api: API is missing a domain identifier or a name")
+var ErrServerMissingId = credstackError.NewError(400, "SERVER_MISSING_ID", "resource_server: Resource Server is missing a domain identifier or a name")
 
 /*
 ResourceServer - Represents the OAuth resource server and contains metadata for validating tokens
@@ -65,7 +65,7 @@ will be inserted into the generated token. Calling this function alone, does not
 generates the token. An instantiated server structure needs to be passed here to ensure that we can fetch the current
 active encryption key for token signing (RS256)
 */
-func (api *ResourceServer) GenerateToken(serv *server.Server, application *application.Application, claims jwt.RegisteredClaims) (*token.Token, error) {
+func (api *ResourceServer) GenerateToken(serv *server.Server, application *application.Client, claims jwt.RegisteredClaims) (*token.Token, error) {
 	switch api.TokenType {
 	case "RS256":
 		privateKey, err := jwk.ActiveKey(serv, api.TokenType, api.Audience)
