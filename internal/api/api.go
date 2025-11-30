@@ -11,6 +11,7 @@ import (
 	"github.com/credstack/credstack/internal/server"
 	"github.com/credstack/credstack/pkg/options"
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/pprof"
 )
 
 type Api struct {
@@ -30,6 +31,12 @@ func (api *Api) RegisterHandlers() {
 	handlers.NewApplicationService(api.server, api.app).RegisterHandlers()
 	handlers.NewOAuthService(api.server, api.app).RegisterHandlers()
 	handlers.NewWellKnownService(api.server, api.app).RegisterHandlers()
+
+	if api.options.Debug {
+		api.app.Use(
+			pprof.New(),
+		)
+	}
 }
 
 /*
