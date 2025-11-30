@@ -50,5 +50,3 @@ release:
     ---
 
     This is a beta release. Use at your own risk.\n
-    Release provides the library only and does not provide the API or the CLI.\n
-    \nReleased by [GoReleaser](https://github.com/goreleaser/goreleaser).
