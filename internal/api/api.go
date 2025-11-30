@@ -48,6 +48,11 @@ func (api *Api) Stop(ctx context.Context) error {
 		return err // log here
 	}
 
+	err = api.server.Stop()
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -86,11 +91,6 @@ func (api *Api) Start(ctx context.Context) error {
 		// need to clean up here
 		return err
 	case <-quit:
-		err = api.server.Stop()
-		if err != nil {
-			return err
-		}
-
 		err = api.Stop(ctx)
 		if err != nil {
 			return err
