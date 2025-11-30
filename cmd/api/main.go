@@ -8,14 +8,11 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/credstack/credstack/internal/api"
-	"github.com/credstack/credstack/pkg/server"
-
+	"github.com/credstack/credstack/pkg/options"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -31,44 +28,12 @@ var rootCmd = &cobra.Command{
 	Use:   "credstack-api",
 	Short: "",
 	Long:  `RESTful API for CredStack IDP`,
-	PreRun: func(cmd *cobra.Command, args []string) {
-		server.HandlerCtx = server.FromConfig()
-	},
 	Run: func(cmd *cobra.Command, args []string) {
-		quit := make(chan os.Signal, 1)
-		signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
-
-		go func() {
-			api.App = api.New()
-			api.AddRoutes()
-
-			err := server.HandlerCtx.Start()
-			if err != nil {
-				fmt.Println("Failed to initialize API: ", err)
-				os.Exit(1)
-			}
-
-			err = api.Start(viper.GetInt("port"))
-			if err != nil {
-				fmt.Println("Failed to start API:", err)
-				os.Exit(1)
-			}
-		}()
-
-		<-quit
-
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 
-		err := api.Stop(ctx)
+		err := api.New(options.Api().FromConfig()).Start(ctx)
 		if err != nil {
-			fmt.Println("Failed to stop API:", err)
-			os.Exit(1)
-		}
-
-		err = server.HandlerCtx.Stop()
-		if err != nil {
-			fmt.Println("Failed to close server:", err)
 			os.Exit(1)
 		}
 	},
@@ -86,7 +51,9 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.credstack/config.json)")
 
-	rootCmd.Flags().IntP("port", "p", 8080, "The default port that the API is going to listen for requests at")
+	rootCmd.Flags().IntP("api.port", "p", 8080, "The default port that the API is going to listen for requests at")
+	rootCmd.Flags().Bool("api.debug", false, "Enables debug mode for the API and disables various options in Fiber. See the docs for more details")
+	rootCmd.Flags().Bool("api.prefork", false, "Allows the API to serve requests on multiple processes")
 	rootCmd.Flags().StringP("issuer", "i", "https://credstack.issuer.change.me", "The issuer to insert into the claims of issued JWT tokens")
 
 	/*

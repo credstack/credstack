@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/credstack/credstack/internal/server"
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/models/response"
-	"github.com/credstack/credstack/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
