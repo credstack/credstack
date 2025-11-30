@@ -1,4 +1,4 @@
-package application
+package client
 
 import (
 	"context"
@@ -43,13 +43,13 @@ var ErrInvalidClientCredentials = credstackError.NewError(401, "ERR_INVALID_CLIE
 var ErrVisibilityIssue = credstackError.NewError(400, "ERR_VISIBILITY_ERROR", "token: Failed to issue token for application. Public clients cannot use client credentials flow")
 
 // ErrClientIDCollision - Provides a named error for when a new application is created with the same client ID
-var ErrClientIDCollision = credstackError.NewError(500, "APP_CLIENT_ID_COLLISION", "application: A collision was detected while creating a new application")
+var ErrClientIDCollision = credstackError.NewError(500, "CLIENT_ID_COLLISION", "oauth_client: A collision was detected while creating a new application")
 
-// ErrAppMissingIdentifier - Provides a named error for when you try and fetch an application with no client id
-var ErrAppMissingIdentifier = credstackError.NewError(400, "APP_MISSING_ID", "application: Application is missing a Client ID")
+// ErrClientMissingIdentifier - Provides a named error for when you try and fetch an application with no client id
+var ErrClientMissingIdentifier = credstackError.NewError(400, "CLIENT_MISSING_ID", "oauth_client: Client is missing a Client ID")
 
-// ErrAppDoesNotExist - Provides a named error for when you try and fetch an application that does not exist
-var ErrAppDoesNotExist = credstackError.NewError(404, "APP_DOES_NOT_EXIST", "application: Application does not exist under the specified client ID")
+// ErrClientDoesNotExist - Provides a named error for when you try and fetch an application that does not exist
+var ErrClientDoesNotExist = credstackError.NewError(404, "CLIENT_DOES_NOT_EXIST", "oauth_client: Client does not exist under the specified client ID")
 
 // ErrUnauthorizedGrantType - An error that gets returned when an application tries to issue tokens for a grant type that it is not authorized too
 var ErrUnauthorizedGrantType = credstackError.NewError(403, "ERR_UNAUTHORIZED_GRANT_TYPE", "token: Invalid grant type for the specified application")
@@ -58,22 +58,22 @@ var ErrUnauthorizedGrantType = credstackError.NewError(403, "ERR_UNAUTHORIZED_GR
 var ErrUnauthorizedAudience = credstackError.NewError(403, "ERR_UNAUTHORIZED_AUDIENCE", "token: Unable to issue token for the specified audience. Application is not authorized too")
 
 /*
-Application - Represents the OAuth client that wants to issue tokens for an API
+Client - Represents the OAuth client that wants to issue tokens for an API
 */
-type Application struct {
-	// Header - The header for the Application. Created at object birth
+type Client struct {
+	// Header - The header for the Client. Created at object birth
 	Header *header.Header `json:"header" bson:"header"`
 
-	// Name - The name of the application as defined by the user
+	// Name - The name of the Client as defined by the user
 	Name string `bson:"name" json:"name"`
 
-	// IsPublic - Determines if the application is public. If this is set to true, then the application cannot use Client Credentials Flow
+	// IsPublic - Determines if the Client is public. If this is set to true, then the Client cannot ue Client Credentials Flow
 	IsPublic bool `bson:"is_public" json:"is_public"`
 
-	// ClientId - The client ID for the application. Gets generated at birth
+	// ClientId - The client ID for the Client. Gets generated at birth
 	ClientId string `bson:"client_id" json:"client_id"`
 
-	// ClientSecret - The client secret for the application. Gets generated at birth
+	// ClientSecret - The client secret for the Client. Gets generated at birth
 	ClientSecret string `bson:"client_secret" json:"client_secret"`
 
 	// RedirectURI - The redirect URI for post-authentication. Defined by the user
@@ -82,10 +82,10 @@ type Application struct {
 	// TokenLifetime - An unsigned integer representing the amount of time in seconds that the token is valid for
 	TokenLifetime uint64 `bson:"token_lifetime" json:"token_lifetime"`
 
-	// GrantTypes - The grant types that the application is allowed to issue tokens under
+	// GrantTypes - The grant types that the Client is allowed to issue tokens under
 	GrantTypes []string `bson:"grant_types" json:"grant_types"`
 
-	// AllowedAudiences - A string slice representing which APIs are allowed to issue tokens for this application
+	// AllowedAudiences - A string slice representing which ResourceServers are allowed to issue tokens for this Client
 	AllowedAudiences []string `bson:"allowed_audiences" json:"allowed_audiences"`
 }
 
@@ -93,12 +93,12 @@ type Application struct {
 ValidateAuthFlow - Ensures that the application is authorized to return an authentication token based on the provided
 token request. A 'nil' return value indicates success
 */
-func (application *Application) ValidateAuthFlow(request *request.TokenRequest) error {
-	if !slices.Contains(application.GrantTypes, request.GrantType) {
+func (client *Client) ValidateAuthFlow(request *request.TokenRequest) error {
+	if !slices.Contains(client.GrantTypes, request.GrantType) {
 		return ErrUnauthorizedGrantType
 	}
 
-	if !slices.Contains(application.AllowedAudiences, request.Audience) {
+	if !slices.Contains(client.AllowedAudiences, request.Audience) {
 		return ErrUnauthorizedAudience
 	}
 
@@ -111,8 +111,8 @@ ensuring that the request received was valid.
 
 TODO: When tenant's are implemented, issuer needs to be removed as a parameter here
 */
-func (application *Application) ClientCredentials(request *request.TokenRequest, issuer string) (*jwt.RegisteredClaims, error) {
-	if application.IsPublic {
+func (client *Client) ClientCredentials(request *request.TokenRequest, issuer string) (*jwt.RegisteredClaims, error) {
+	if client.IsPublic {
 		return nil, ErrVisibilityIssue
 	}
 
@@ -122,15 +122,15 @@ func (application *Application) ClientCredentials(request *request.TokenRequest,
 
 		Any value returned by this function other than 1, indicates a failure
 	*/
-	if subtle.ConstantTimeCompare([]byte(application.ClientSecret), []byte(request.ClientSecret)) != 1 {
+	if subtle.ConstantTimeCompare([]byte(client.ClientSecret), []byte(request.ClientSecret)) != 1 {
 		return nil, ErrInvalidClientCredentials
 	}
 
 	claims := claim.NewClaimsWithSubject(
 		issuer,
 		request.Audience, // this might cause issues later; this should really be pulled from the API model so that the user doesn't have to use it in the request
-		application.ClientId,
-		application.TokenLifetime,
+		client.ClientId,
+		client.TokenLifetime,
 	)
 
 	return &claims, nil
@@ -190,7 +190,7 @@ func New(serv *server.Server, name string, isPublic bool, grantTypes ...string) 
 
 		TODO: URL Validation for redirect URI
 	*/
-	newApplication := &Application{
+	newApplication := &Client{
 		Header:           header.New(clientId),
 		Name:             name,
 		IsPublic:         isPublic,
@@ -231,7 +231,7 @@ List - Lists all applications present in the database. Optionally, a limit can b
 amount of data returned at once. The maximum that can be returned in a single call is 10, and if a limit exceeds this, it
 will be reset to 10
 */
-func List(serv *server.Server, limit int, withCredentials bool) ([]*Application, error) {
+func List(serv *server.Server, limit int, withCredentials bool) ([]*Client, error) {
 	if limit > 10 {
 		limit = 10
 	}
@@ -250,7 +250,7 @@ func List(serv *server.Server, limit int, withCredentials bool) ([]*Application,
 		return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 	}
 
-	ret := make([]*Application, 0, limit)
+	ret := make([]*Client, 0, limit)
 
 	err = result.All(context.Background(), &ret)
 	if err != nil {
@@ -259,7 +259,7 @@ func List(serv *server.Server, limit int, withCredentials bool) ([]*Application,
 		}
 
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrAppDoesNotExist
+			return nil, ErrClientDoesNotExist
 		}
 	}
 
@@ -272,9 +272,9 @@ its credentials, then set withCredentials to false. Projection is used on this t
 the database. If the app does not exist under the client_id, then ErrAppDoesNotExist is returned. If you try and fetch
 an application with an empty client_id, then ErrAppMissingIdentifier is returned.
 */
-func Get(serv *server.Server, clientId string, withCredentials bool) (*Application, error) {
+func Get(serv *server.Server, clientId string, withCredentials bool) (*Client, error) {
 	if clientId == "" {
-		return nil, ErrAppMissingIdentifier
+		return nil, ErrClientMissingIdentifier
 	}
 	/*
 		We always use projection here to ensure that the credential field does not even
@@ -295,7 +295,7 @@ func Get(serv *server.Server, clientId string, withCredentials bool) (*Applicati
 		findOpts,
 	)
 
-	var ret Application
+	var ret Client
 
 	/*
 		Finally, we decode our results into our model. We also validate any errors we get here
@@ -308,7 +308,7 @@ func Get(serv *server.Server, clientId string, withCredentials bool) (*Applicati
 		}
 
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrAppDoesNotExist
+			return nil, ErrClientDoesNotExist
 		}
 	}
 
@@ -320,9 +320,9 @@ Update - Provides functionality for updating a select number of fields of the ap
 must be provided as an argument for this function call. Fields to update can be passed in the patch parameter. The
 following fields can be updated: RedirectURI, TokenLifetime, GrantType.
 */
-func Update(serv *server.Server, clientId string, patch *Application) error {
+func Update(serv *server.Server, clientId string, patch *Client) error {
 	if clientId == "" {
-		return ErrAppMissingIdentifier
+		return ErrClientMissingIdentifier
 	}
 
 	/*
@@ -330,7 +330,7 @@ func Update(serv *server.Server, clientId string, patch *Application) error {
 		provided to mongo.UpdateOne. Only specified fields are supported in this function, so not all are included
 		here
 	*/
-	buildAppPatch := func(patch *Application) bson.M {
+	buildAppPatch := func(patch *Client) bson.M {
 		update := make(bson.M)
 
 		if patch.Name != "" {
@@ -371,7 +371,7 @@ func Update(serv *server.Server, clientId string, patch *Application) error {
 	}
 
 	if result.MatchedCount == 0 {
-		return ErrAppDoesNotExist
+		return ErrClientDoesNotExist
 	}
 
 	return nil
@@ -385,7 +385,7 @@ nil
 */
 func Delete(serv *server.Server, clientId string) error {
 	if clientId == "" {
-		return ErrAppMissingIdentifier
+		return ErrClientMissingIdentifier
 	}
 
 	result, err := serv.Database().Collection("application").DeleteOne(
@@ -398,7 +398,7 @@ func Delete(serv *server.Server, clientId string) error {
 	}
 
 	if result.DeletedCount == 0 {
-		return ErrAppDoesNotExist
+		return ErrClientDoesNotExist
 	}
 
 	return nil

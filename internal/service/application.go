@@ -5,11 +5,11 @@ import (
 
 	"github.com/credstack/credstack/internal/middleware"
 	"github.com/credstack/credstack/internal/server"
-	"github.com/credstack/credstack/pkg/oauth/application"
+	"github.com/credstack/credstack/pkg/oauth/client"
 	"github.com/gofiber/fiber/v3"
 )
 
-type ApplicationService struct {
+type ClientService struct {
 	// server - Dependencies required by all API handlers
 	server *server.Server
 
@@ -17,24 +17,24 @@ type ApplicationService struct {
 	group fiber.Router
 }
 
-func (svc *ApplicationService) Group() fiber.Router {
+func (svc *ClientService) Group() fiber.Router {
 	return svc.group
 }
 
-func (svc *ApplicationService) RegisterHandlers() {
-	svc.group.Get("", svc.GetApplicationHandler)
-	svc.group.Post("", svc.PostApplicationHandler)
-	svc.group.Patch("", svc.PatchApplicationHandler)
-	svc.group.Delete("", svc.DeleteApplicationHandler)
+func (svc *ClientService) RegisterHandlers() {
+	svc.group.Get("", svc.GetClientHandler)
+	svc.group.Post("", svc.PostClientHandler)
+	svc.group.Patch("", svc.PatchClientHandler)
+	svc.group.Delete("", svc.DeleteClientHandler)
 }
 
 /*
-GetApplicationHandler - Provides a Fiber handler for processing a get request to /management/application. This should
+GetClientHandler - Provides a Fiber handler for processing a get request to /client. This should
 not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ApplicationService) GetApplicationHandler(c fiber.Ctx) error {
+func (svc *ClientService) GetClientHandler(c fiber.Ctx) error {
 	clientId := c.Query("client_id")
 	if clientId == "" {
 		limit, err := strconv.Atoi(c.Query("limit", "10"))
@@ -42,7 +42,7 @@ func (svc *ApplicationService) GetApplicationHandler(c fiber.Ctx) error {
 			return middleware.HandleError(c, err)
 		}
 
-		apps, err := application.List(svc.server, limit, true)
+		apps, err := client.List(svc.server, limit, true)
 		if err != nil {
 			return middleware.HandleError(c, err)
 		}
@@ -50,7 +50,7 @@ func (svc *ApplicationService) GetApplicationHandler(c fiber.Ctx) error {
 		return c.JSON(apps)
 	}
 
-	app, err := application.Get(svc.server, clientId, true)
+	app, err := client.Get(svc.server, clientId, true)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
@@ -59,20 +59,20 @@ func (svc *ApplicationService) GetApplicationHandler(c fiber.Ctx) error {
 }
 
 /*
-PostApplicationHandler - Provides a fiber handler for processing a POST request to /management/application This should
+PostClientHandler - Provides a fiber handler for processing a POST request to /client This should
 not be called directly, and should only ever be passed to fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ApplicationService) PostApplicationHandler(c fiber.Ctx) error {
-	var model application.Application
+func (svc *ClientService) PostClientHandler(c fiber.Ctx) error {
+	var model client.Client
 
 	err := middleware.BindJSON(c, &model)
 	if err != nil {
 		return err
 	}
 
-	clientId, err := application.New(svc.server, model.Name, model.IsPublic, model.GrantTypes...)
+	clientId, err := client.New(svc.server, model.Name, model.IsPublic, model.GrantTypes...)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
@@ -81,22 +81,22 @@ func (svc *ApplicationService) PostApplicationHandler(c fiber.Ctx) error {
 }
 
 /*
-PatchApplicationHandler - Provides a fiber handler for processing a PATCH request to /management/application This should
+PatchClientHandler - Provides a fiber handler for processing a PATCH request to /client This should
 not be called directly, and should only ever be passed to fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ApplicationService) PatchApplicationHandler(c fiber.Ctx) error {
+func (svc *ClientService) PatchClientHandler(c fiber.Ctx) error {
 	clientId := c.Query("client_id")
 
-	var model application.Application
+	var model client.Client
 
 	err := middleware.BindJSON(c, &model)
 	if err != nil {
 		return err
 	}
 
-	err = application.Update(svc.server, clientId, &model)
+	err = client.Update(svc.server, clientId, &model)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
@@ -105,15 +105,15 @@ func (svc *ApplicationService) PatchApplicationHandler(c fiber.Ctx) error {
 }
 
 /*
-DeleteApplicationHandler - Provides a fiber handler for processing a DELETE request to /management/application This should
+DeleteClientHandler - Provides a fiber handler for processing a DELETE request to /client This should
 not be called directly, and should only ever be passed to fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ApplicationService) DeleteApplicationHandler(c fiber.Ctx) error {
+func (svc *ClientService) DeleteClientHandler(c fiber.Ctx) error {
 	clientId := c.Query("client_id")
 
-	err := application.Delete(svc.server, clientId)
+	err := client.Delete(svc.server, clientId)
 	if err != nil {
 		return middleware.HandleError(c, err)
 	}
@@ -121,9 +121,9 @@ func (svc *ApplicationService) DeleteApplicationHandler(c fiber.Ctx) error {
 	return c.Status(200).JSON(&fiber.Map{"message": "Deleted application successfully"})
 }
 
-func NewApplicationService(server *server.Server, app *fiber.App) *ApplicationService {
-	return &ApplicationService{
+func NewClientService(server *server.Server, app *fiber.App) *ClientService {
+	return &ClientService{
 		server: server,
-		group:  app.Group("/application"),
+		group:  app.Group("/client"),
 	}
 }
