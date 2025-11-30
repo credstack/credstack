@@ -5,6 +5,7 @@ on:
   push:
     branches-ignore:
       - "ci/**" # always ignore branches that contain only changes to releases/CI-CD
+      - "docs/**"
     tags:
       - "*"
 
