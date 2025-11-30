@@ -2,10 +2,11 @@ package options
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
-	"time"
 )
 
 type DatabaseOptions struct {

@@ -5,8 +5,8 @@ import (
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/models/request"
 	"github.com/credstack/credstack/pkg/models/response"
-	"github.com/credstack/credstack/pkg/oauth/api"
-	"github.com/credstack/credstack/pkg/oauth/application"
+	"github.com/credstack/credstack/pkg/oauth/client"
+	"github.com/credstack/credstack/pkg/oauth/resourceserver"
 	"github.com/credstack/credstack/pkg/oauth/token"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -30,7 +30,7 @@ func IssueTokenForFlow(serv *server.Server, request *request.TokenRequest, issue
 		return nil, ErrInvalidTokenRequest
 	}
 
-	app, err := application.Get(serv, request.ClientId, true)
+	app, err := client.Get(serv, request.ClientId, true)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func IssueTokenForFlow(serv *server.Server, request *request.TokenRequest, issue
 	var claims *jwt.RegisteredClaims
 
 	switch request.GrantType {
-	case application.GrantTypeClientCredentials:
+	case client.GrantTypeClientCredentials:
 		claims, err = app.ClientCredentials(request, issuer)
 		if err != nil {
 			return nil, err
@@ -47,7 +47,7 @@ func IssueTokenForFlow(serv *server.Server, request *request.TokenRequest, issue
 		return nil, ErrInvalidGrantType
 	}
 
-	requestedApi, err := api.Get(serv, request.Audience)
+	requestedApi, err := resourceserver.Get(serv, request.Audience)
 	if err != nil {
 		return nil, err
 	}
