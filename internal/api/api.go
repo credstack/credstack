@@ -88,7 +88,6 @@ func (api *Api) Start(ctx context.Context) error {
 
 	select {
 	case err := <-errChan:
-		// need to clean up here
 		return err
 	case <-quit:
 		err = api.Stop(ctx)
