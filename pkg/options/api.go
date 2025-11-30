@@ -79,20 +79,13 @@ func (opts *ApiOptions) SetPrefork(value bool) *ApiOptions {
 }
 
 /*
-ToFiber - Returns a fiber.Config and fiber.ListenConfig structure for the Api structure
-to consume
+FiberConfig - Returns a fiber.Config  structure for the Api structure to consume
 */
-func (opts *ApiOptions) ToFiber() (fiber.Config, fiber.ListenConfig) {
+func (opts *ApiOptions) FiberConfig() fiber.Config {
 	config := fiber.Config{
 		CaseSensitive:    true,
 		StrictRouting:    true,
 		DisableKeepalive: true,
-	}
-
-	listenConfig := fiber.ListenConfig{
-		DisableStartupMessage: true,
-		EnablePrefork:         opts.Prefork,
-		ListenerNetwork:       fiber.NetworkTCP4,
 	}
 
 	if opts.Debug {
@@ -100,10 +93,25 @@ func (opts *ApiOptions) ToFiber() (fiber.Config, fiber.ListenConfig) {
 		config.StrictRouting = false
 		config.IdleTimeout = 10 * time.Minute
 		config.TrustProxy = true
+	}
 
+	return config
+}
+
+/*
+ListenerConfig - Returns a fiber.ListenConfig structure for the Api structure to consume
+*/
+func (opts *ApiOptions) ListenerConfig() fiber.ListenConfig {
+	listenConfig := fiber.ListenConfig{
+		DisableStartupMessage: true,
+		EnablePrefork:         opts.Prefork,
+		ListenerNetwork:       fiber.NetworkTCP4,
+	}
+
+	if opts.Debug {
 		listenConfig.EnablePrefork = false
 		listenConfig.EnablePrintRoutes = true
 	}
 
-	return config, listenConfig
+	return listenConfig
 }
