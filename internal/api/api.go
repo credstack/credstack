@@ -55,9 +55,6 @@ func (api *Api) Stop(ctx context.Context) error {
 Start - Connects to MongoDB and starts the API
 */
 func (api *Api) Start(ctx context.Context) error {
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
-
 	err := api.server.Start() // this needs to go.
 	if err != nil {
 		return err
@@ -68,6 +65,8 @@ func (api *Api) Start(ctx context.Context) error {
 	api.RegisterHandlers()
 
 	errChan := make(chan error, 1)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
 	go func() {
 		select {
 		case <-ctx.Done():
