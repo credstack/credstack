@@ -3,11 +3,8 @@ run-name: "credstack-lib: Release ${{github.ref_name}}"
 
 on:
   push:
-    branches-ignore:
-      - "ci/**" # always ignore branches that contain only changes to releases/CI-CD
-      - "docs/**"
     tags:
-      - "*"
+      - "v*"
 
 permissions:
   contents: write
