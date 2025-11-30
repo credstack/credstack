@@ -12,6 +12,7 @@ import (
 	"github.com/credstack/credstack/pkg/options"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/pprof"
+	"github.com/gofiber/fiber/v3/middleware/recover"
 )
 
 type Api struct {
@@ -31,12 +32,6 @@ func (api *Api) RegisterHandlers() {
 	handlers.NewApplicationService(api.server, api.app).RegisterHandlers()
 	handlers.NewOAuthService(api.server, api.app).RegisterHandlers()
 	handlers.NewWellKnownService(api.server, api.app).RegisterHandlers()
-
-	if api.options.Debug {
-		api.app.Use(
-			pprof.New(),
-		)
-	}
 }
 
 /*
@@ -72,8 +67,6 @@ func (api *Api) Start(ctx context.Context) error {
 		return err
 	}
 
-	fiberConfig, listenConfig := api.options.ToFiber()
-	api.app = fiber.New(fiberConfig)
 	api.RegisterHandlers()
 
 	errChan := make(chan error, 1)
@@ -85,7 +78,7 @@ func (api *Api) Start(ctx context.Context) error {
 			return
 		default:
 			api.server.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(api.options.Port))
-			err := api.app.Listen(":"+strconv.Itoa(api.options.Port), listenConfig)
+			err := api.app.Listen(":"+strconv.Itoa(api.options.Port), api.options.ListenerConfig())
 			if err != nil {
 				errChan <- err
 				return
@@ -110,10 +103,24 @@ func (api *Api) Start(ctx context.Context) error {
 New - Constructs a new fiber.api.app with recommended configurations
 */
 func New(options *options.ApiOptions) *Api {
+	app := fiber.New(options.FiberConfig())
+
+	// recovery middleware is always added to ensure that the API does not crash due to a stray panic
+	app.Use(
+		recover.New(),
+	)
+
+	// only register pprof if options.debug == true
+	if options.Debug {
+		app.Use(
+			pprof.New(),
+		)
+	}
 
 	api := &Api{
 		options: options,
 		server:  server.FromConfig(),
+		app:     app,
 	}
 
 	return api
