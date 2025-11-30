@@ -1,4 +1,4 @@
-package api
+package resourceserver
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/credstack/credstack/internal/server"
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/header"
-	"github.com/credstack/credstack/pkg/oauth/application"
+	"github.com/credstack/credstack/pkg/oauth/client"
 	"github.com/credstack/credstack/pkg/oauth/jwk"
 	"github.com/credstack/credstack/pkg/oauth/token"
 	"github.com/golang-jwt/jwt/v5"
@@ -65,7 +65,7 @@ will be inserted into the generated token. Calling this function alone, does not
 generates the token. An instantiated server structure needs to be passed here to ensure that we can fetch the current
 active encryption key for token signing (RS256)
 */
-func (api *ResourceServer) GenerateToken(serv *server.Server, application *application.Client, claims jwt.RegisteredClaims) (*token.Token, error) {
+func (api *ResourceServer) GenerateToken(serv *server.Server, application *client.Client, claims jwt.RegisteredClaims) (*token.Token, error) {
 	switch api.TokenType {
 	case "RS256":
 		privateKey, err := jwk.ActiveKey(serv, api.TokenType, api.Audience)
