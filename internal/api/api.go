@@ -28,8 +28,8 @@ type Api struct {
 
 func (api *Api) RegisterHandlers() {
 	service.NewUserService(api.server, api.app).RegisterHandlers()
-	service.NewApiService(api.server, api.app).RegisterHandlers()
-	service.NewApplicationService(api.server, api.app).RegisterHandlers()
+	service.NewClientService(api.server, api.app).RegisterHandlers()
+	service.NewResourceServerService(api.server, api.app).RegisterHandlers()
 	service.NewOAuthService(api.server, api.app).RegisterHandlers()
 	service.NewWellKnownService(api.server, api.app).RegisterHandlers()
 }
