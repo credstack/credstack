@@ -65,28 +65,37 @@ func (api *Api) Start(ctx context.Context) error {
 
 	fiberConfig, listenConfig := api.options.ToFiber()
 	api.app = fiber.New(fiberConfig)
+	api.RegisterHandlers()
 
+	errChan := make(chan error, 1)
 	go func() {
-		api.server.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(api.options.Port))
-
-		api.RegisterHandlers()
-		err := api.app.Listen(":"+strconv.Itoa(api.options.Port), listenConfig)
-		if err != nil {
-			// Handle Error
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			api.server.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(api.options.Port))
+			err := api.app.Listen(":"+strconv.Itoa(api.options.Port), listenConfig)
+			if err != nil {
+				errChan <- err
+				return
+			}
 		}
-
 	}()
 
-	<-quit
-
-	err = api.Stop(ctx)
-	if err != nil {
+	select {
+	case err := <-errChan:
+		// need to clean up here
 		return err
-	}
+	case <-quit:
+		err = api.server.Stop()
+		if err != nil {
+			return err
+		}
 
-	err = api.server.Stop()
-	if err != nil {
-		return err
+		err = api.Stop(ctx)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
