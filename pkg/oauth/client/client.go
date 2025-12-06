@@ -207,7 +207,7 @@ func New(serv *server.Server, name string, isPublic bool, grantTypes ...string) 
 		created on both the client ID and header.Identifier fields. Realistically, this should **never** be returned
 		as the client ID used is cryptographically secure. Nonetheless, we want to check for the error regardless
 	*/
-	_, err = serv.Database().Collection("application").InsertOne(context.Background(), newApplication)
+	_, err = serv.Database().Collection("client").InsertOne(context.Background(), newApplication)
 	if err != nil {
 		var writeError mongo.WriteException
 		if errors.As(err, &writeError) {
@@ -241,7 +241,7 @@ func List(serv *server.Server, limit int, withCredentials bool) ([]*Client, erro
 		findOpts = findOpts.SetProjection(bson.M{"client_secret": 0})
 	}
 
-	result, err := serv.Database().Collection("application").Find(
+	result, err := serv.Database().Collection("client").Find(
 		context.Background(),
 		bson.M{},
 		findOpts,
@@ -289,7 +289,7 @@ func Get(serv *server.Server, clientId string, withCredentials bool) (*Client, e
 		We always pass **some** find options here, but defaults are used if the caller
 		does not set withCredentials to false
 	*/
-	result := serv.Database().Collection("application").FindOne(
+	result := serv.Database().Collection("client").FindOne(
 		context.Background(),
 		bson.M{"client_id": clientId},
 		findOpts,
@@ -360,7 +360,7 @@ func Update(serv *server.Server, clientId string, patch *Client) error {
 		return update
 	}
 
-	result, err := serv.Database().Collection("application").UpdateOne(
+	result, err := serv.Database().Collection("client").UpdateOne(
 		context.Background(),
 		bson.M{"client_id": clientId},
 		bson.M{"$set": buildAppPatch(patch)},
@@ -388,7 +388,7 @@ func Delete(serv *server.Server, clientId string) error {
 		return ErrClientMissingIdentifier
 	}
 
-	result, err := serv.Database().Collection("application").DeleteOne(
+	result, err := serv.Database().Collection("client").DeleteOne(
 		context.Background(),
 		bson.M{"client_id": clientId},
 	)

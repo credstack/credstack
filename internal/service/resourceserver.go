@@ -22,19 +22,19 @@ func (svc *ResourceServerService) Group() fiber.Router {
 }
 
 func (svc *ResourceServerService) RegisterHandlers() {
-	svc.group.Get("", svc.GetAPIHandler)
-	svc.group.Post("", svc.PostAPIHandler)
-	svc.group.Patch("", svc.PatchAPIHandler)
-	svc.group.Delete("", svc.DeleteAPIHandler)
+	svc.group.Get("", svc.GetResourceServerHandler)
+	svc.group.Post("", svc.PostResourceServerHandler)
+	svc.group.Patch("", svc.PatchResourceServerHandler)
+	svc.group.Delete("", svc.DeleteResourceServerHandler)
 }
 
 /*
-GetAPIHandler - Provides a Fiber handler for processing a GET request to /management/api. This should
+GetResourceServerHandler - Provides a Fiber handler for processing a GET request to /management/api. This should
 not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ResourceServerService) GetAPIHandler(c fiber.Ctx) error {
+func (svc *ResourceServerService) GetResourceServerHandler(c fiber.Ctx) error {
 	audience := c.Query("audience")
 	if audience == "" {
 		limit, err := strconv.Atoi(c.Query("limit", "10"))
@@ -59,14 +59,14 @@ func (svc *ResourceServerService) GetAPIHandler(c fiber.Ctx) error {
 }
 
 /*
-PostAPIHandler - Provides a Fiber handler for processing a POST request to /management/api. This should
+PostResourceServerHandler - Provides a Fiber handler for processing a POST request to /management/api. This should
 not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 TODO: Underlying functions need domain validation in place
 TODO: Underlying functions need to be updated here so that we can assign applications at birth
 */
-func (svc *ResourceServerService) PostAPIHandler(c fiber.Ctx) error {
+func (svc *ResourceServerService) PostResourceServerHandler(c fiber.Ctx) error {
 	var model resourceserver.ResourceServer
 
 	err := middleware.BindJSON(c, &model)
@@ -83,12 +83,12 @@ func (svc *ResourceServerService) PostAPIHandler(c fiber.Ctx) error {
 }
 
 /*
-PatchAPIHandler - Provides a Fiber handler for processing a PATCH request to /management/api. This should
+PatchResourceServerHandler - Provides a Fiber handler for processing a PATCH request to /management/api. This should
 not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ResourceServerService) PatchAPIHandler(c fiber.Ctx) error {
+func (svc *ResourceServerService) PatchResourceServerHandler(c fiber.Ctx) error {
 	audience := c.Query("audience")
 
 	var model resourceserver.ResourceServer
@@ -107,12 +107,12 @@ func (svc *ResourceServerService) PatchAPIHandler(c fiber.Ctx) error {
 }
 
 /*
-DeleteAPIHandler - Provides a Fiber handler for processing a DELETE request to /management/api. This should
+DeleteResourceServerHandler - Provides a Fiber handler for processing a DELETE request to /management/api. This should
 not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ResourceServerService) DeleteAPIHandler(c fiber.Ctx) error {
+func (svc *ResourceServerService) DeleteResourceServerHandler(c fiber.Ctx) error {
 	audience := c.Query("audience")
 
 	err := resourceserver.Delete(svc.server, audience)
