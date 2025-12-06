@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/options"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -94,7 +95,7 @@ func (database *Database) Disconnect() error {
 }
 
 /*
-Init - Initializes MongoDB with default collections and indexes where they are needed. The Init function anticipates
+PreFlight - Initializes MongoDB with default collections and indexes where they are needed. The Init function anticipates
 that the default database already exists and that authentication has been established on it. Automation for this
 is not provided.
 
@@ -107,7 +108,7 @@ A map is returned representing the errors that were encountered during the initi
 represents the name of the collection and the value is the error that occurred. If an error occurs during initialization
 then the current iteration of the loop is continued and initialization is continued
 */
-func (database *Database) Init() map[string]error {
+func (database *Database) PreFlight() map[string]error {
 	/*
 		indexingMap - Here we are defining a map representing the collections
 		that need to be created, along with any indexes that need to be created

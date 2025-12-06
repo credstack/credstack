@@ -17,6 +17,9 @@ type ApiOptions struct {
 	// Prefork - Allows the API to run on multiple processes to increase performance
 	Prefork bool
 
+	// SkipPreflight - If set to true, then preflight checks are not conducted on API start
+	SkipPreflight bool
+
 	// Will eventually support TLS options
 }
 
@@ -25,9 +28,10 @@ Api - Returns an ApiOptions structure with some sensible defaults
 */
 func Api() *ApiOptions {
 	return &ApiOptions{
-		Port:    8080,
-		Debug:   false,
-		Prefork: false, // TODO: set this to true when logging is updated to store PID
+		Port:          8080,
+		Debug:         false,
+		Prefork:       false, // TODO: set this to true when logging is updated to store PID
+		SkipPreflight: false,
 	}
 }
 
@@ -37,9 +41,10 @@ from viper
 */
 func (opts *ApiOptions) FromConfig() *ApiOptions {
 	return &ApiOptions{
-		Port:    viper.GetInt("api.port"),
-		Debug:   viper.GetBool("api.debug"),
-		Prefork: viper.GetBool("api.prefork"),
+		Port:          viper.GetInt("api.port"),
+		Debug:         viper.GetBool("api.debug"),
+		Prefork:       viper.GetBool("api.prefork"),
+		SkipPreflight: viper.GetBool("api.skip_preflight"),
 	}
 }
 
@@ -74,6 +79,15 @@ sensitive environments. If Debug is set to true, then this value is ignored.
 */
 func (opts *ApiOptions) SetPrefork(value bool) *ApiOptions {
 	opts.Prefork = value
+
+	return opts
+}
+
+/*
+SetSkipPreflight - If set to true, then preflight checks are skipped on API execution
+*/
+func (opts *ApiOptions) SetSkipPreflight(value bool) *ApiOptions {
+	opts.SkipPreflight = value
 
 	return opts
 }
