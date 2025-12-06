@@ -205,8 +205,8 @@ func (opts *DatabaseOptions) DefaultCollections() []string {
 		"user",
 		"role",
 		"scope",
-		"api",
-		"application",
+		"client",
+		"resource_server",
 		"token",
 		"key",
 		"jwk",
@@ -220,13 +220,13 @@ defined for these
 */
 func (opts *DatabaseOptions) IndexingMap() map[string]bson.D {
 	return map[string]bson.D{
-		"user":        {{Key: "email", Value: 1}, {Key: "header.identifier", Value: 1}},
-		"role":        {{Key: "header.identifier", Value: 1}},
-		"scope":       {{Key: "header.identifier", Value: 1}},
-		"application": {{Key: "client_id", Value: 1}, {Key: "header.identifier", Value: 1}},
-		"api":         {{Key: "header.identifier", Value: 1}},
-		"token":       {{Key: "token", Value: 1}},
-		"key":         {{Key: "header.identifier", Value: 1}},
-		"jwk":         {{Key: "kid", Value: 1}},
+		"user":            {{Key: "email", Value: 1}, {Key: "header.identifier", Value: 1}},
+		"role":            {{Key: "header.identifier", Value: 1}},
+		"scope":           {{Key: "header.identifier", Value: 1}},
+		"client":          {{Key: "client_id", Value: 1}, {Key: "header.identifier", Value: 1}},
+		"resource_server": {{Key: "header.identifier", Value: 1}},
+		"token":           {{Key: "token", Value: 1}},
+		"key":             {{Key: "header.identifier", Value: 1}},
+		"jwk":             {{Key: "kid", Value: 1}},
 	}
 }

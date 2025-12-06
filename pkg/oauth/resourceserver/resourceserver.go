@@ -143,7 +143,7 @@ func New(serv *server.Server, name string, audience string, tokenType string) er
 		After we build our model, we can consume a single database call to insert our new model. We have unique indexes
 		created on both the domain and header.Identifier fields.
 	*/
-	_, err = serv.Database().Collection("api").InsertOne(context.Background(), newApi)
+	_, err = serv.Database().Collection("resource_server").InsertOne(context.Background(), newApi)
 	if err != nil {
 		var writeError mongo.WriteException
 		if errors.As(err, &writeError) {
@@ -176,7 +176,7 @@ func Get(serv *server.Server, audience string) (*ResourceServer, error) {
 		return nil, ErrServerMissingId
 	}
 
-	result := serv.Database().Collection("api").FindOne(
+	result := serv.Database().Collection("resource_server").FindOne(
 		context.Background(),
 		bson.M{"audience": audience},
 	)
@@ -211,7 +211,7 @@ func List(serv *server.Server, limit int) ([]*ResourceServer, error) {
 		limit = 10
 	}
 
-	result, err := serv.Database().Collection("api").Find(
+	result, err := serv.Database().Collection("resource_server").Find(
 		context.Background(),
 		bson.M{},
 		mongoOpts.Find().SetBatchSize(int32(limit)),
@@ -265,7 +265,7 @@ func Update(serv *server.Server, audience string, patch *ResourceServer) error {
 		return update
 	}
 
-	result, err := serv.Database().Collection("api").UpdateOne(
+	result, err := serv.Database().Collection("resource_server").UpdateOne(
 		context.Background(),
 		bson.M{"audience": audience},
 		bson.M{"$set": buildApiPatch(patch)},
@@ -292,7 +292,7 @@ func Delete(serv *server.Server, audience string) error {
 		return ErrServerMissingId
 	}
 
-	result, err := serv.Database().Collection("api").DeleteOne(
+	result, err := serv.Database().Collection("resource_server").DeleteOne(
 		context.Background(),
 		bson.M{"audience": audience},
 	)
