@@ -92,9 +92,15 @@ func (api *Api) Start(ctx context.Context) error {
 		return err
 	}
 
-	err = api.preFlight()
-	if err != nil {
-		return err
+	if api.options.SkipPreflight == false {
+		api.server.Log().LogStartupEvent("PreflightCheck", "Starting preflight checks")
+
+		err = api.preFlight()
+		if err != nil {
+			return err
+		}
+
+		api.server.Log().LogStartupEvent("PreflightCheck", "Preflight checks finished")
 	}
 
 	api.RegisterHandlers()
