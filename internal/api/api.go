@@ -101,6 +101,8 @@ func (api *Api) Start(ctx context.Context) error {
 		}
 
 		api.server.Log().LogStartupEvent("PreflightCheck", "Preflight checks finished")
+	} else {
+		api.server.Log().LogStartupEvent("PreflightCheck", "Preflight checks skipped. Set api.skip_preflight == false to enforce pre-flight checks")
 	}
 
 	api.RegisterHandlers()

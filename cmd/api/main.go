@@ -54,6 +54,7 @@ func init() {
 	rootCmd.Flags().IntP("api.port", "p", 8080, "The default port that the API is going to listen for requests at")
 	rootCmd.Flags().Bool("api.debug", false, "Enables debug mode for the API and disables various options in Fiber. See the docs for more details")
 	rootCmd.Flags().Bool("api.prefork", false, "Allows the API to serve requests on multiple processes")
+	rootCmd.Flags().Bool("api.skip_preflight", false, "If set to true, then skip API pre-flight checks")
 	rootCmd.Flags().StringP("issuer", "i", "https://credstack.issuer.change.me", "The issuer to insert into the claims of issued JWT tokens")
 
 	/*

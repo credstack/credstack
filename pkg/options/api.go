@@ -28,9 +28,10 @@ Api - Returns an ApiOptions structure with some sensible defaults
 */
 func Api() *ApiOptions {
 	return &ApiOptions{
-		Port:    8080,
-		Debug:   false,
-		Prefork: false, // TODO: set this to true when logging is updated to store PID
+		Port:          8080,
+		Debug:         false,
+		Prefork:       false, // TODO: set this to true when logging is updated to store PID
+		SkipPreflight: false,
 	}
 }
 
@@ -40,9 +41,10 @@ from viper
 */
 func (opts *ApiOptions) FromConfig() *ApiOptions {
 	return &ApiOptions{
-		Port:    viper.GetInt("api.port"),
-		Debug:   viper.GetBool("api.debug"),
-		Prefork: viper.GetBool("api.prefork"),
+		Port:          viper.GetInt("api.port"),
+		Debug:         viper.GetBool("api.debug"),
+		Prefork:       viper.GetBool("api.prefork"),
+		SkipPreflight: viper.GetBool("api.skip_preflight"),
 	}
 }
 
