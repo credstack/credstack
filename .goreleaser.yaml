@@ -11,7 +11,6 @@ builds:
     main: "./cmd/api"
     binary: credstack-api
     goos:
-      - darwin
       - linux
     goarch:
       - amd64
@@ -23,17 +22,15 @@ builds:
     env:
       - CGO_ENABLED=0
 
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}-{{ .Version }}_source"
+  format: 'tar.gz'
+
 archives:
-  - id: source
-    formats: ["zip", "tar.gz"]
+  - id: binaries
+    formats: ['binary']
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-    files:
-      - "**/*.go"
-      - "**/*.md"
-      - "*.md"
-      - go.mod
-      - go.sum
-      - LICENSE
 
 changelog:
   sort: asc
