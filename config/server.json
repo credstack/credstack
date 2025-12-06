@@ -1,0 +1,20 @@
+{
+  "mongo":{
+    "hostname":"mongo.local",
+    "port":27017,
+    "use_authentication":true,
+    "username":"admin",
+    "password":"admin",
+    "default_database":"credstack",
+    "authentication_database":"admin"
+  },
+  "log":{
+    "use_file_logging":true,
+    "path":"/var/log/credstack"
+  },
+  "api":{
+    "port":8080,
+    "prefork":false,
+    "debug":false
+  }
+}
