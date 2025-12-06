@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"strconv"
@@ -9,11 +10,15 @@ import (
 
 	"github.com/credstack/credstack/internal/server"
 	"github.com/credstack/credstack/internal/service"
+	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/options"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/pprof"
 	"github.com/gofiber/fiber/v3/middleware/recover"
 )
+
+// ErrPreflightFailed - Gets returned when a pre-flight check has failed
+var ErrPreflightFailed = credstackError.NewError(500, "PREFLIGHT_FAILED", "One or more preflight checks have failed")
 
 type Api struct {
 	// options - Universal options for the API
@@ -32,6 +37,26 @@ func (api *Api) RegisterHandlers() {
 	service.NewResourceServerService(api.server, api.app).RegisterHandlers()
 	service.NewOAuthService(api.server, api.app).RegisterHandlers()
 	service.NewWellKnownService(api.server, api.app).RegisterHandlers()
+}
+
+/*
+preFlight - Executes a series of pre-flight checks and initializes API dependencies. An error is returned if pre-flight
+checks fail for whatever reason. This phase can be skipped by settings api.skip_preflight == true
+*/
+func (api *Api) preFlight() error {
+	api.server.Log().LogStartupEvent("PreflightCheck", "Executing pre-flight checks on database")
+	dbErrors := api.server.Database().PreFlight()
+	if len(dbErrors) != 0 {
+		for coll, err := range dbErrors {
+			api.server.Log().LogErrorEvent("Preflight validation for collection failed: "+coll, err)
+		}
+
+		return fmt.Errorf("%w: %s", ErrPreflightFailed, dbErrors)
+	}
+
+	// TODO: Initialize resource server and client for credstack authentication
+
+	return nil
 }
 
 /*
@@ -63,6 +88,11 @@ Start - Connects to MongoDB and starts the API
 */
 func (api *Api) Start(ctx context.Context) error {
 	err := api.server.Start() // this needs to go.
+	if err != nil {
+		return err
+	}
+
+	err = api.preFlight()
 	if err != nil {
 		return err
 	}
