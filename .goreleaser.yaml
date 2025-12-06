@@ -11,7 +11,6 @@ builds:
     main: "./cmd/api"
     binary: credstack-api
     goos:
-      - darwin
       - linux
     goarch:
       - amd64
@@ -25,7 +24,7 @@ builds:
 
 source:
   enabled: true
-  name_template: "{{ .ProjectName }}_source"
+  name_template: "{{ .ProjectName }}-{{ .Version }}_source"
   format: 'tar.gz'
 
 archives:
