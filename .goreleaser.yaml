@@ -27,14 +27,6 @@ source:
   enabled: true
   name_template: "{{ .ProjectName }}_source"
   format: 'tar.gz'
-  files:
-    - "**/*.go"
-    - "**/*.md"
-    - "*.md"
-    - "go.mod"
-    - "go.sum"
-    - "Dockerfile"
-    - "LICENSE"
 
 archives:
   - id: binaries
