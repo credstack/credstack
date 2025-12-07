@@ -1,0 +1,12 @@
+apiVersion: v2
+name: credstack-api
+description: The open source & cloud-native identity provider
+type: application
+icon: https://raw.githubusercontent.com/credstack/credstack/refs/heads/main/docs/icons/credstack-name.png
+version: 0.1.0
+appVersion: "1.3.7-beta"
+sources:
+  - https://github.com/credstack/credstack
+maintainers:
+  - name: "Steven A. Zaluk"
+    url: https://github.com/stevezaluk
