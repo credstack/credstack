@@ -3,9 +3,7 @@ deployment:
   labels: {}
   replicas: 1
   image:
-    registry: "credstack"
-    name: "credstack-api"
-    version: "1.3.7-beta"
+    name: "credstack/credstack-api"
   service:
     annotations: {}
     labels: {}
