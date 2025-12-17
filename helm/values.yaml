@@ -1,108 +1,45 @@
-# deployment - Controls any parmaterized values for the API deployment
 deployment:
-  # annotations - Annotations that should be applied to the deployment resource
   annotations: {}
-
-  # labels - Labels that should be applied to the deployment resource
   labels: {}
-
-  # replicas - The number of replicas that should be deployed. Defaults to 1, raise this in production
   replicas: 1
-
-  # image - Allows you to overwrite the default image used in the deployment
   image:
-    # registry - The FQDN of the registry hosting the docker image
     registry: "credstack"
-
-    # name - The name of the docker image
     name: "credstack-api"
-
-    # version - The version of credstack that you want to deploy. Should mirror Chart.appVersion
     version: "1.3.7-beta"
 
-# service - Controls any parmaterized values for the service connected to the API deployment
 service:
-  # annotations - Annotations that should be applied to the resource
   annotations: {}
-
-  # labels - Labels that should be applied to the resource
   labels: {}
-
-  # type - The type of service that should be created. Defaults to LoadBalancer
   type: LoadBalancer
-
-  # port - The port that the API should be exposed on
   port: 443
 
 ingress:
-  # annotations - Annotations that should be applied to the resource
   annotations: {}
-  
-  # labels - Labels that should be applied to the resource
   labels: {}
-  
-  # host - Should match the host header for incoming requests
   host: "credstack.local"
-
-  # tls - Controls if tls should be enabled and if it is, what secret reference the certificate is deployed under
   tls:
-    # enabled - If set to false, then TLS is not enabled
     enabled: true
-
-    # secretRef - The secret reference containing the TLS certificate
     secretRef: "credstack-ingress-tls"
 
-# credstack - Block controlling actual config values for credstack. Gets converted into a ConfigMap/Secret on deployment
 credstack:
-  # mongo - Connection and credential information for Mongo. This chart does not deploy Mongo for you so you will need to manage this yourself
   mongo:
-    # hostname - The hostname of the running Mongo server
     hostname: "mongo.local"
-
-    # port - The port of the running Mongo server
     port: 27017
-
-    # defaultDatabase - The default database that collections will be initialized under
     defaultDatabase: "credstack"
-
-    # authDatabase - The database that authentication is performed under
     authDatabase: "admin"
-
-    # secretRef - The secret reference containing user credentials
     secretRef: ""
 
-  # userCredentials - Allows you to configure how Argon2id hashes are generated for user authentication
   userCredentials:
-    # time - The number of iterations that the argon algorithm will run
     time: 1
-
-    # memory - The maximum amount of memory (in Megabytes) that Argon can use to hash secrets
     memory: 2048
-
-    # threads - The number of threads to use when hashing secrets
     threads: 1
-  
-    # minSecretLength - Sets the minimum password length that a new user must provide
     minSecretLength: 12
-
-    # maxSecretLength - Sets the maximum password length that a new user must provide
     maxSecretLength: 48
 
-  # api - Allows you to configure API specific options
   api:
-    # debug - Enables debug mode for the API. See the docs for more specific information on what this enables/disables
     debug: false
-
-    # prefork - Allows the API to run on multiple processes
     prefork: false
-
-    # skipPreflight - Skips preflight checks and won't initialize the database
     skipPreflight: false
-
-    # tls - Configure TLS for the API container itself. Set this to true and pass a secret if you want full end-to-end in-transit encryption
     tls:
-      # enabled - If set to true, then the API will be deployed with TLS enabled
       enabled: true
-
-      # secretRef - The secret reference containing the TLS certificate
       secretRef: "credstack-api-tls"
