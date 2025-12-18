@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-cm
+data:
+  CREDSTACK_API_PORT: 80
+  CREDSTACK_API_PREFORK: {{ .Values.credstack.api.prefork }}
+  CREDSTACK_API_SKIP_PREFLIGHT: {{ .Values.credstack.api.skipPreflight }}
+  CREDSTACK_ARGON_TIME: {{ .Values.credstack.userCredentials.time }}
+  CREDSTACK_ARGON_MEMORY: {{ .Values.credstack.userCredentials.memory }}
+  CREDSTACK_ARGON_THREADS: {{ .Values.credstack.userCredentials.threads }}
+  CREDSTACK_ARGON_MIN_SECRET_LENGTH: {{ .Values.credstack.userCredentials.minSecretLength }}
+  CREDSTACK_ARGON_MAX_SECRET_LENGTH: {{ .Values.credstack.userCredentials.maxSecretLength }}
+  # need mongo
