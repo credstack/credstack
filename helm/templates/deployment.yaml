@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: credstack
+  name: credstack
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: credstack
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: credstack
+    spec:
+      containers:
+      - image: credstack/credstack:v1.3.7
+        name: credstack
