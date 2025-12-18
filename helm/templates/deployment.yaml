@@ -5,7 +5,7 @@ metadata:
     app: credstack
   name: credstack-api
 spec:
-  replicas: 1
+  replicas: {{ .Values.deployment.replicas }}
   selector:
     matchLabels:
       app: credstack
@@ -16,7 +16,7 @@ spec:
         app: credstack
     spec:
       containers:
-      - image: credstack/credstack:v1.3.7
+      - image: {{ .Values.deployment.image.name }}:{{ .Chart.AppVersion }}
         name: credstack
         - containerPort: 80
         args: ["--port", "80"]
