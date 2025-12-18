@@ -2,18 +2,27 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: credstack
+    app.kubernetes.io/name: "go-fiber"
+    app.kubernetes.io/part-of: "credstack"
+    app.kubernetes.io/component: "api"
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
   name: credstack-api
 spec:
   replicas: {{ .Values.deployment.replicas }}
   selector:
     matchLabels:
-      app: credstack
+      app.kubernetes.io/name: "go-fiber"
+      app.kubernetes.io/part-of: "credstack"
+      app.kubernetes.io/component: "api"
+      app.kubernetes.io/version: {{ .Chart.AppVersion }}
   strategy: {}
   template:
     metadata:
       labels:
-        app: credstack
+        app.kubernetes.io/name: "go-fiber"
+        app.kubernetes.io/part-of: "credstack"
+        app.kubernetes.io/component: "api"
+        app.kubernetes.io/version: {{ .Chart.AppVersion }}
     spec:
       containers:
       - image: {{ .Values.deployment.image.name }}:{{ .Chart.AppVersion }}
