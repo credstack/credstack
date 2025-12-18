@@ -19,11 +19,7 @@ spec:
       - image: credstack/credstack:v1.3.7
         name: credstack
         - containerPort: 80
-        {{ if .Values.credstack.api.debug }} # 80 will be the default in a future version
-        args: ["--port", "80", "--debug"]
-        {{ else }}
-        args: ["--port", "80", "--debug"]
-        {{ end }}
+        args: ["--port", "80"]
         envFrom:
           configMapRef:
             name: {{ .Release.Name }}-cm

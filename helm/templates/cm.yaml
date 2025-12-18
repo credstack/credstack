@@ -4,6 +4,7 @@ metadata:
   name: {{ .Release.Name }}-cm
 data:
   CREDSTACK_API_PORT: 80
+  CREDSTACK_API_DEBUG: {{ .Values.credstack.api.debug }}
   CREDSTACK_API_PREFORK: {{ .Values.credstack.api.prefork }}
   CREDSTACK_API_SKIP_PREFLIGHT: {{ .Values.credstack.api.skipPreflight }}
   CREDSTACK_ARGON_TIME: {{ .Values.credstack.userCredentials.time }}
