@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   labels:
     app: credstack
-  name: credstack
+  name: credstack-api
 spec:
   replicas: 1
   selector:
