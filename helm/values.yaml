@@ -1,18 +1,12 @@
 deployment:
-  annotations: {}
-  labels: {}
   replicas: 1
   image:
     name: "credstack/credstack-api"
   service:
-    annotations: {}
-    labels: {}
     type: LoadBalancer
     port: 443
 
 ingress:
-  annotations: {}
-  labels: {}
   enabled: true
   host: "credstack.local"
   class: ""
