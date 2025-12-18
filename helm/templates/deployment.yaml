@@ -18,3 +18,9 @@ spec:
       containers:
       - image: credstack/credstack:v1.3.7
         name: credstack
+        - containerPort: 80
+        {{ if .Values.credstack.api.debug }}
+        args: ["--port", "80", "--debug"]
+        {{ else }}
+        args: ["--port", "80", "--debug"]
+        {{ end }}
