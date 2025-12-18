@@ -26,9 +26,8 @@ spec:
     spec:
       containers:
       - image: {{ .Values.deployment.image.name }}:{{ .Chart.AppVersion }}
-        name: credstack
+        name: credstack-api
         - containerPort: 80
-        args: ["--port", "80"]
         envFrom:
           configMapRef:
             name: {{ .Release.Name }}-cm
