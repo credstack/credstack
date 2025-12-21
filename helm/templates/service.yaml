@@ -10,7 +10,6 @@ metadata:
 spec:
   type: {{ .Values.deployment.service.type}}
   ports:
-
 {{ if .Values.credstack.api.tls.enabled }}
   - name: https
     port: 443
