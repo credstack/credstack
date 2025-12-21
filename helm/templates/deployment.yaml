@@ -31,3 +31,10 @@ spec:
         envFrom:
           configMapRef:
             name: {{ .Release.Name }}-cm
+        resources:
+          requests:
+            cpu: {{ .Values.deployment.resources.requests.cpu }}
+            memory: {{ .Values.deployment.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.deployment.resources.limits.cpu }}
+            memory: {{ .Values.deployment.resources.limits.cpu }}
