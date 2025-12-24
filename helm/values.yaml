@@ -23,7 +23,8 @@ ingress:
     secretRef: "credstack-ingress-tls"
 
 mongo:
-  enabled: true
+  # enabled - If set to true, then this helm chart will deploy MongoDB and the config below will be ignored
+  enabled: false
   config:
     hostname: "mongo.local"
     port: 27017
