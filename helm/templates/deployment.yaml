@@ -29,7 +29,7 @@ spec:
       - image: {{ .Values.deployment.image.name }}:{{ .Chart.AppVersion }}
         name: credstack-api
         ports:
-          - name: HTTP
+          - name: http
             containerPort: 80
         envFrom:
           - configMapRef:
