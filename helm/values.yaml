@@ -12,7 +12,7 @@ deployment:
     limits:
       cpu: "100m"
       memory: "2Gi"
-  tolerations: {}
+  tolerations: []
 
 ingress:
   enabled: false
