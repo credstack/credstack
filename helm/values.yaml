@@ -15,7 +15,7 @@ deployment:
   tolerations: {}
 
 ingress:
-  enabled: true
+  enabled: false
   host: "credstack.local"
   class: ""
   tls:
