@@ -22,14 +22,16 @@ ingress:
     enabled: true
     secretRef: "credstack-ingress-tls"
 
-credstack:
-  mongo:
+mongo:
+  enabled: true
+  config:
     hostname: "mongo.local"
     port: 27017
     defaultDatabase: "credstack"
     authDatabase: "admin"
     secretRef: ""
 
+credstack:
   userCredentials:
     time: 1
     memory: 2048
