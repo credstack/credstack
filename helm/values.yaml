@@ -28,9 +28,10 @@ mongo:
   config:
     hostname: "mongo.local"
     port: 27017
+    username: "admin"
+    password: "admin"
     defaultDatabase: "credstack"
     authDatabase: "admin"
-    secretRef: ""
 
 credstack:
   userCredentials:
