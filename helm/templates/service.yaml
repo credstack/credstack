@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: "go-fiber"
+    app.kubernetes.io/part-of: "credstack"
+    app.kubernetes.io/component: "api"
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+  name: {{ .Release.Name }}-svc
+spec:
+  type: {{ .Values.deployment.service.type}}
+  ports:
+{{ if .Values.credstack.api.tls.enabled }}
+  - name: https
+    port: 443
+    protocol: TCP
+    targetPort: 443
+{{ else }}
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+{{ end }}
+  selector:
+    app.kubernetes.io/part-of: "credstack"
+    app.kubernetes.io/component: "api"

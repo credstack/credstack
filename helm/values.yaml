@@ -1,0 +1,50 @@
+deployment:
+  replicas: 1
+  image:
+    name: "credstack/credstack-api"
+  service:
+    type: LoadBalancer
+    port: 443
+  resources:
+    requests:
+      cpu: "10m"
+      memory: "500Mi"
+    limits:
+      cpu: "100m"
+      memory: "2Gi"
+  tolerations: []
+
+ingress:
+  enabled: false
+  host: "credstack.local"
+  class: ""
+  tls:
+    enabled: true
+    secretRef: "credstack-ingress-tls"
+
+mongo:
+  # enabled - If set to true, then this helm chart will deploy MongoDB and the config below will be ignored
+  enabled: false
+  config:
+    hostname: "mongo.local"
+    port: 27017
+    username: "admin"
+    password: "admin"
+    defaultDatabase: "credstack"
+    authDatabase: "admin"
+
+credstack:
+  userCredentials:
+    time: 1
+    memory: 2048
+    threads: 1
+    minSecretLength: 12
+    maxSecretLength: 48
+
+  api:
+    debug: false
+    prefork: false
+    skipPreflight: false
+    tls:
+      enabled: true
+      secretRef: "credstack-api-tls"
