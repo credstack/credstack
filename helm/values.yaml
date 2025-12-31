@@ -45,5 +45,5 @@ credstack:
     prefork: false
     skipPreflight: false
     tls:
-      enabled: true
+      enabled: false
       secretRef: "credstack-api-tls"
