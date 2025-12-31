@@ -3,8 +3,7 @@ deployment:
   image:
     name: "credstack/credstack-api"
   service:
-    type: LoadBalancer
-    port: 443
+    type: ClusterIP
   resources:
     requests:
       cpu: "10m"
@@ -46,5 +45,5 @@ credstack:
     prefork: false
     skipPreflight: false
     tls:
-      enabled: true
+      enabled: false
       secretRef: "credstack-api-tls"
