@@ -5,6 +5,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
@@ -24,6 +25,12 @@ type Config struct {
 
 	// CredentialConfig All user credential configuration options
 	CredentialConfig *CredentialConfig `mapstructure:"credential"`
+}
+
+// BindFlags A wrapper around viper.BindPFlags that provides access to the viper instance that the config
+// structure keeps track of
+func (config *Config) BindFlags(cmd *cobra.Command) {
+	_ = config.viper.BindPFlags(cmd.Flags())
 }
 
 // Load Loads the config from the requested file path and falls back to environmental variables
