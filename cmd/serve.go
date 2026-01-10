@@ -12,9 +12,8 @@ import (
 	"context"
 
 	"github.com/credstack/credstack/internal/api"
-	"github.com/credstack/credstack/pkg/options"
+	"github.com/credstack/credstack/internal/config"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // serveCmd Represents the serve command
@@ -23,10 +22,19 @@ var serveCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		globalConfig := config.New()
+		globalConfig.BindFlags(cmd)
+		err := globalConfig.Load(cfgFile) // default needs to be set here!
+		if err != nil {
+			fmt.Println("Fatal error when loading config: ", err)
+			os.Exit(1)
+		}
+
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 
-		err := api.New(options.Api().FromConfig()).Start(ctx)
+		fmt.Println(globalConfig.DatabaseConfig)
+		err = api.New(globalConfig).Start(ctx)
 		if err != nil {
 			os.Exit(1)
 		}
@@ -69,10 +77,4 @@ func init() {
 	serveCmd.Flags().Uint32("argon.salt_length", 32, "The length that a salt will be generated to")
 	serveCmd.Flags().Uint32("argon.min_secret_length", 12, "The minimum length requirement of plaintext user credentials")
 	serveCmd.Flags().Uint32("argon.max_secret_length", 48, "The maximum length requirement of plaintext user credentials")
-
-	err := viper.BindPFlags(serveCmd.Flags())
-	if err != nil {
-		fmt.Println("Failed to bind command flags: ", err.Error())
-		os.Exit(1)
-	}
 }
