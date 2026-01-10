@@ -93,10 +93,10 @@ func (server *Server) Stop() error {
 }
 
 // New Initializes a new Server structure with the values provided in the Config structure
-func New(config *config.Config) (*Server, error) {
+func New(config *config.Config) *Server {
 	return &Server{
 		config:   config,
 		database: NewDatabase(config.DatabaseConfig),
 		log:      NewLog(config.LogConfig),
-	}, nil
+	}
 }
