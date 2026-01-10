@@ -48,6 +48,12 @@ func (config *Config) Load(configPath string) error {
 		viper.AutomaticEnv()
 	}
 
+	// Always unmarshal all viper keys to our Config structure
+	err = config.viper.Unmarshal(config)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
