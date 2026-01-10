@@ -27,23 +27,45 @@ type Config struct {
 	CredentialConfig *CredentialConfig `mapstructure:"credential"`
 }
 
+// sanitizePath Performs basic sanitation on user provided paths
+func (config *Config) sanitizePath(configPath string) (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	return strings.Replace(configPath, "~", home, 1), nil
+}
+
 // BindFlags A wrapper around viper.BindPFlags that provides access to the viper instance that the config
 // structure keeps track of
 func (config *Config) BindFlags(cmd *cobra.Command) {
 	_ = config.viper.BindPFlags(cmd.Flags())
 }
 
-// Load Loads the config from the requested file path and falls back to environmental variables
-// if the file was not found
-func (config *Config) Load(configPath string) error {
-	home, err := os.UserHomeDir()
+func (config *Config) Write(configPath string) error {
+	sanitized, err := config.sanitizePath(configPath)
 	if err != nil {
 		return err
 	}
 
-	sanitizedPath := strings.Replace(configPath, "~", home, 1)
+	err = config.viper.WriteConfigAs(sanitized)
+	if err != nil {
+		return err
+	}
 
-	config.viper.AddConfigPath(path.Dir(sanitizedPath))
+	return nil
+}
+
+// Load Loads the config from the requested file path and falls back to environmental variables
+// if the file was not found
+func (config *Config) Load(configPath string) error {
+	sanitized, err := config.sanitizePath(configPath)
+	if err != nil {
+		return err
+	}
+
+	config.viper.AddConfigPath(path.Dir(sanitized))
 	config.viper.SetConfigType("json")
 	config.viper.SetConfigName("config.json")
 
