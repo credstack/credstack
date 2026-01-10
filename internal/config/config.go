@@ -14,16 +14,16 @@ type Config struct {
 	viper *viper.Viper
 
 	// DatabaseConfig All database configuration options
-	DatabaseConfig *DatabaseConfig
+	DatabaseConfig *DatabaseConfig `mapstructure:"database"`
 
 	// ApiConfig All API configuration options
-	ApiConfig *ApiConfig
+	ApiConfig *ApiConfig `mapstructure:"api"`
 
 	// LogConfig All logging configuration options
-	LogConfig *LogConfig
+	LogConfig *LogConfig `mapstructure:"log"`
 
 	// CredentialConfig All user credential configuration options
-	CredentialConfig *CredentialConfig
+	CredentialConfig *CredentialConfig `mapstructure:"credential"`
 }
 
 // Load Loads the config from the requested file path and falls back to environmental variables
