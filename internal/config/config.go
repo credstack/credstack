@@ -15,7 +15,7 @@ type Config struct {
 	viper *viper.Viper
 
 	// DatabaseConfig All database configuration options
-	DatabaseConfig *DatabaseConfig `mapstructure:"database"`
+	DatabaseConfig *DatabaseConfig `mapstructure:"database,squash"`
 
 	// ApiConfig All API configuration options
 	ApiConfig *ApiConfig `mapstructure:"api"`
@@ -89,7 +89,11 @@ func (config *Config) Load(configPath string) error {
 // New Initializes a new config structure along with a viper instance for values to be stored under
 func New() *Config {
 	config := &Config{
-		viper: viper.New(),
+		viper:            viper.New(),
+		ApiConfig:        &ApiConfig{},
+		DatabaseConfig:   &DatabaseConfig{},
+		LogConfig:        &LogConfig{},
+		CredentialConfig: &CredentialConfig{},
 	}
 
 	return config
