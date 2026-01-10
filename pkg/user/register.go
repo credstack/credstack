@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/credstack/credstack/internal/config"
 	"github.com/credstack/credstack/internal/server"
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/header"
-	"github.com/credstack/credstack/pkg/options"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -38,7 +38,7 @@ Register - Core logic for registering new users with credstack. Performs full va
 provided here. New users must have a unique email address and this will be validated here. Any errors propagated through
 this function call is returned. This is generally only named errors defined in this package.
 */
-func Register(serv *server.Server, opts *options.CredentialOptions, email string, username string, password string) error {
+func Register(serv *server.Server, config *config.CredentialConfig, email string, username string, password string) error {
 	/*
 		Originally, I was going to place this logic in NewCredential, however we don't want to consume a DB call
 		if the information provided here is invalid (Bad Request)
@@ -47,11 +47,11 @@ func Register(serv *server.Server, opts *options.CredentialOptions, email string
 		return ErrUserMissingIdentifier
 	}
 
-	if len(password) < int(opts.MinSecretLength) {
+	if len(password) < int(config.MinSecretLength) {
 		return ErrPasswordTooShort
 	}
 
-	if len(password) > int(opts.MaxSecretLength) {
+	if len(password) > int(config.MaxSecretLength) {
 		return ErrPasswordTooLong
 	}
 
@@ -100,7 +100,7 @@ func Register(serv *server.Server, opts *options.CredentialOptions, email string
 		Finally, once we know that the user doesn't already exist, we can pay the Argon cost, hash there password,
 		and store the results in the collection object
 	*/
-	credential, err := NewCredential(password, opts)
+	credential, err := NewCredential(password, config)
 	if err != nil {
 		return err
 	}

@@ -3,8 +3,8 @@ package user
 import (
 	"fmt"
 
+	"github.com/credstack/credstack/internal/config"
 	credstackError "github.com/credstack/credstack/pkg/errors"
-	"github.com/credstack/credstack/pkg/options"
 	"github.com/credstack/credstack/pkg/secret"
 )
 
@@ -45,13 +45,13 @@ NewCredential - Creates and generates a new UserCredential using the secret prov
 and the salt are stored as URL-Safe, base64 encoded strings to ensure that they can be safely stored in Mongo. Any
 errors that occur here are returned in the wrapped error: ErrFailedToHashCredential.
 */
-func NewCredential(credential string, opts *options.CredentialOptions) (*Credential, error) {
+func NewCredential(credential string, config *config.CredentialConfig) (*Credential, error) {
 	/*
 		All logic for generating Argon2 Hashes are provided by the secrets package. A new cryptographically secure salt
 		is generated from this function call, however returned values are not base64 encoded or marshalled into the
 		UserCredential structure.
 	*/
-	hash, salt, err := secret.NewArgon2Hash([]byte(credential), opts)
+	hash, salt, err := secret.NewArgon2Hash([]byte(credential), config)
 	if err != nil {
 		return nil, fmt.Errorf("%w (%v)", ErrFailedToHashCredential, err)
 	}
@@ -63,11 +63,11 @@ func NewCredential(credential string, opts *options.CredentialOptions) (*Credent
 	return &Credential{
 		Key:        secret.EncodeBase64(hash),
 		Salt:       secret.EncodeBase64(salt),
-		Time:       opts.Time,
-		Memory:     opts.Memory,
-		Threads:    uint32(opts.Threads),
-		KeyLength:  opts.KeyLength,
-		SaltLength: opts.SaltLength,
+		Time:       config.Time,
+		Memory:     config.Memory,
+		Threads:    uint32(config.Threads),
+		KeyLength:  config.KeyLength,
+		SaltLength: config.SaltLength,
 	}, nil
 }
 
@@ -100,7 +100,7 @@ func CheckCredential(validate string, credential *Credential) error {
 		validity. We need to create a separate CredentialOptions structure here as the secrets package has no awareness
 		of the UserCredential structure.
 	*/
-	isValid := secret.ValidateArgon2Hash([]byte(validate), decodedSalt, decodedHash, &options.CredentialOptions{
+	isValid := secret.ValidateArgon2Hash([]byte(validate), decodedSalt, decodedHash, &config.CredentialConfig{
 		Time:      credential.Time,
 		Memory:    credential.Memory,
 		Threads:   uint8(credential.Threads),
