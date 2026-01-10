@@ -5,12 +5,9 @@ Copyright © 2026 Steven A. Zaluk
 package cmd
 
 import (
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var cfgFile string
@@ -30,29 +27,6 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.credstack.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "~/.credstack/config.json", "config file (default is $HOME/.credstack.yaml)")
 	rootCmd.AddCommand(serveCmd)
-}
-
-func initConfig() {
-	if cfgFile != "" {
-		viper.SetConfigFile(cfgFile)
-	} else {
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-
-		viper.AddConfigPath(home + "/.credstack")
-		viper.SetConfigType("json")
-		viper.SetConfigName("config.json")
-	}
-
-	viper.SetEnvPrefix("CREDSTACK")
-	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
-	viper.AutomaticEnv()
-
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("No config file was detected. Either default values or environmental variables will be used")
-	}
 }
