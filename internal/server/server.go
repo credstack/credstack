@@ -9,8 +9,8 @@ Server - Provides an abstraction of any commonly used resources that services wo
 to interact with. Also provides lifecycle control for these objects
 */
 type Server struct {
-	// config The global configuration structure used for the entire application
-	config *config.Config
+	// Config The global configuration structure used for the entire application
+	Config *config.Config
 
 	// database - Provides a connected database for services to interact with
 	database *Database
@@ -42,8 +42,8 @@ Start - Initializes the server. Connects to the database and initializes the log
 */
 func (server *Server) Start() error {
 	server.Log().LogDatabaseEvent("DatabaseConnect",
-		server.config.DatabaseConfig.Hostname,
-		int(server.config.DatabaseConfig.Port),
+		server.Config.DatabaseConfig.Hostname,
+		int(server.Config.DatabaseConfig.Port),
 	)
 
 	/*
@@ -64,8 +64,8 @@ Stop - Stops the server from running. Disconnects the database and flushes the l
 */
 func (server *Server) Stop() error {
 	server.Log().LogDatabaseEvent("DatabaseDisconnect",
-		server.config.DatabaseConfig.Hostname,
-		int(server.config.DatabaseConfig.Port),
+		server.Config.DatabaseConfig.Hostname,
+		int(server.Config.DatabaseConfig.Port),
 	)
 	/*
 		Then we close our connection to the database gracefully.
@@ -95,7 +95,7 @@ func (server *Server) Stop() error {
 // New Initializes a new Server structure with the values provided in the Config structure
 func New(config *config.Config) *Server {
 	return &Server{
-		config:   config,
+		Config:   config,
 		database: NewDatabase(config.DatabaseConfig),
 		log:      NewLog(config.LogConfig),
 	}
