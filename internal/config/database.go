@@ -35,10 +35,10 @@ type DatabaseConfig struct {
 }
 
 /*
-DefaultCollections - Returns the default collections that credstack expects to be able to read/write to. This
+Collections - Returns the default collections that credstack expects to be able to read/write to. This
 is primarily used with Database.Init. This really shouldn't be changed so there is no setter defined for these
 */
-func (config *DatabaseConfig) DefaultCollections() []string {
+func (config *DatabaseConfig) Collections() []string {
 	return []string{
 		"user",
 		"role",
@@ -70,11 +70,11 @@ func (config *DatabaseConfig) IndexingMap() map[string]bson.D {
 }
 
 /*
-ToMongoOptions - Converts any pre-defined options declared in DatabaseConfig to an
+Mongo - Converts any pre-defined options declared in DatabaseConfig to an
 options.ClientOptions struct so that this can be used cleanly with the Database
 structure
 */
-func (config *DatabaseConfig) ToMongoOptions() *options.ClientOptions {
+func (config *DatabaseConfig) Mongo() *options.ClientOptions {
 	/*
 		So realistically, SetDirect should probably be set to false here and
 		the DatabaseConfig structure should be modified so that multiple hosts
