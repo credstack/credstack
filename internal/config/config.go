@@ -39,8 +39,18 @@ func (config *Config) sanitizePath(configPath string) (string, error) {
 
 // BindFlags A wrapper around viper.BindPFlags that provides access to the viper instance that the config
 // structure keeps track of
-func (config *Config) BindFlags(cmd *cobra.Command) {
-	_ = config.viper.BindPFlags(cmd.Flags())
+func (config *Config) BindFlags(cmd *cobra.Command) error {
+	err := config.viper.BindPFlags(cmd.Flags())
+	if err != nil {
+		return err
+	}
+
+	err = config.viper.Unmarshal(&config)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (config *Config) Write(configPath string) error {
