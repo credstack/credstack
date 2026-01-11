@@ -21,9 +21,6 @@ var serveCmd = &cobra.Command{
 	Short: "Start the Credstack API Server",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(globalConfig.DatabaseConfig)
-		fmt.Println(globalConfig.CredentialConfig)
-
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 		err := api.New(globalConfig).Start(ctx)
