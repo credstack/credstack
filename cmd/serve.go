@@ -39,14 +39,14 @@ func init() {
 	/*
 		Database - Provides options that control how CredStack connects to MongoDB
 	*/
-	serveCmd.Flags().String("mongo.hostname", "127.0.0.1", "The hostname of your running MongoDB server")
-	serveCmd.Flags().Int("mongo.port", 27017, "The port of your running MongoDB server")
-	serveCmd.Flags().Int("mongo.connection_timeout", 15, "The number of seconds that MongoDB should wait before closing the connection")
-	serveCmd.Flags().Bool("mongo.use_authentication", true, "If set to true, then authentication options will be evaluated")
-	serveCmd.Flags().String("mongo.default_database", "credstack", "The default database that credstack will initialize in")
-	serveCmd.Flags().String("mongo.authentication_database", "admin", "The default database in MongoDB that provides authentication")
-	serveCmd.Flags().String("mongo.username", "", "The username that credstack will use for authentication with MongoDB")
-	serveCmd.Flags().String("mongo.password", "", "The password that credstack will use for authentication with MongoDB")
+	serveCmd.Flags().String("database.hostname", "127.0.0.1", "The hostname of your running MongoDB server")
+	serveCmd.Flags().Int("database.port", 27017, "The port of your running MongoDB server")
+	serveCmd.Flags().Int("database.connection_timeout", 15, "The number of seconds that MongoDB should wait before closing the connection")
+	serveCmd.Flags().Bool("database.use_authentication", true, "If set to true, then authentication options will be evaluated")
+	serveCmd.Flags().String("database.default_database", "credstack", "The default database that credstack will initialize in")
+	serveCmd.Flags().String("database.authentication_database", "admin", "The default database in MongoDB that provides authentication")
+	serveCmd.Flags().String("database.username", "", "The username that credstack will use for authentication with MongoDB")
+	serveCmd.Flags().String("database.password", "", "The password that credstack will use for authentication with MongoDB")
 
 	/*
 		Log - Provides options that control how logging is handled
