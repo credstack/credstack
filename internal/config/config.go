@@ -25,6 +25,9 @@ type Config struct {
 
 	// CredentialConfig All user credential configuration options
 	CredentialConfig CredentialConfig `mapstructure:"argon"`
+
+	// ClientConfig All API client configuration options
+	ClientConfig ClientConfig `mapstructure:"client"`
 }
 
 // sanitizePath Performs basic sanitation on user provided paths
