@@ -12,7 +12,6 @@ import (
 	"context"
 
 	"github.com/credstack/credstack/internal/api"
-	"github.com/credstack/credstack/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -22,22 +21,12 @@ var serveCmd = &cobra.Command{
 	Short: "Start the Credstack API Server",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		globalConfig := config.New()
-		err := globalConfig.Load(cfgFile) // default needs to be set here!
-		if err != nil {
-			fmt.Println("Fatal error when loading config: ", err)
-			os.Exit(1)
-		}
-
-		err = globalConfig.BindFlags(cmd)
-		if err != nil {
-			fmt.Println("Fatal error when binding flags: ", err)
-			os.Exit(1)
-		}
+		fmt.Println(globalConfig.DatabaseConfig)
+		fmt.Println(globalConfig.CredentialConfig)
 
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
-		err = api.New(globalConfig).Start(ctx)
+		err := api.New(globalConfig).Start(ctx)
 		if err != nil {
 			os.Exit(1)
 		}
