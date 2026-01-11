@@ -28,7 +28,7 @@ it wants to use in the argument of that function call.
 */
 type Database struct {
 	// config - A structure storing client related options relating to authentication
-	config *config.DatabaseConfig
+	config config.DatabaseConfig
 
 	// client - A reference to the Mongo client that is used to perform operations
 	client *mongo.Client
@@ -40,7 +40,7 @@ type Database struct {
 /*
 Config - Returns a pointer to the config struct used with the Database
 */
-func (database *Database) Config() *config.DatabaseConfig {
+func (database *Database) Config() config.DatabaseConfig {
 	return database.config
 }
 
@@ -167,7 +167,7 @@ if more than 1 are passed here, only the first is used.
 
 If you need to construct a new database from viper configurations, you should use options.DatabaseOptions.FromConfig
 */
-func NewDatabase(config *config.DatabaseConfig) *Database {
+func NewDatabase(config config.DatabaseConfig) *Database {
 	return &Database{
 		config: config,
 	}

@@ -15,7 +15,7 @@ when you need to validate the hash
 Unlike other functions implemented in this library, the config parameter is forced. This is done to ensure that the
 caller is fully aware of the parameters that they are passing to this function.
 */
-func NewArgon2Hash(secret []byte, config *config.CredentialConfig) ([]byte, []byte, error) {
+func NewArgon2Hash(secret []byte, config config.CredentialConfig) ([]byte, []byte, error) {
 	/*
 		First we generate some secured random bytes to serve as our salt for our password hash
 	*/
@@ -48,7 +48,7 @@ user.UserCredential structure.
 
 A returned value of true indicates that the hashes match, any other result indicates that they do not
 */
-func ValidateArgon2Hash(secret []byte, salt []byte, target []byte, config *config.CredentialConfig) bool {
+func ValidateArgon2Hash(secret []byte, salt []byte, target []byte, config config.CredentialConfig) bool {
 	/*
 		This function call is generally expensive as we always need to re-hash the secret that is passed here.
 	*/

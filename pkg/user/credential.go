@@ -45,7 +45,7 @@ NewCredential - Creates and generates a new UserCredential using the secret prov
 and the salt are stored as URL-Safe, base64 encoded strings to ensure that they can be safely stored in Mongo. Any
 errors that occur here are returned in the wrapped error: ErrFailedToHashCredential.
 */
-func NewCredential(credential string, config *config.CredentialConfig) (*Credential, error) {
+func NewCredential(credential string, config config.CredentialConfig) (*Credential, error) {
 	/*
 		All logic for generating Argon2 Hashes are provided by the secrets package. A new cryptographically secure salt
 		is generated from this function call, however returned values are not base64 encoded or marshalled into the
@@ -100,7 +100,7 @@ func CheckCredential(validate string, credential *Credential) error {
 		validity. We need to create a separate CredentialOptions structure here as the secrets package has no awareness
 		of the UserCredential structure.
 	*/
-	isValid := secret.ValidateArgon2Hash([]byte(validate), decodedSalt, decodedHash, &config.CredentialConfig{
+	isValid := secret.ValidateArgon2Hash([]byte(validate), decodedSalt, decodedHash, config.CredentialConfig{
 		Time:      credential.Time,
 		Memory:    credential.Memory,
 		Threads:   uint8(credential.Threads),

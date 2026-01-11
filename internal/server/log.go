@@ -14,7 +14,7 @@ Log - An abstraction for the Logger. Handles any logic for creating and writing 
 */
 type Log struct {
 	// config - Defines the options that should be used with the logger
-	config *config.LogConfig
+	config config.LogConfig
 
 	// log - A production ready zap.Logger that is initialized when calling NewLog
 	log *zap.Logger
@@ -26,7 +26,7 @@ type Log struct {
 /*
 Config - Returns a pointer to the options used for the Log
 */
-func (log *Log) Config() *config.LogConfig {
+func (log *Log) Config() config.LogConfig {
 	return log.config
 }
 
@@ -147,7 +147,7 @@ NewLog - Constructs a new Log using the values passed in its parameters. If an o
 functions parameter, then the Log is initialized with default values. Additionally, if more than 1 are passed here,
 only the first is used.
 */
-func NewLog(config *config.LogConfig) *Log {
+func NewLog(config config.LogConfig) *Log {
 	log := &Log{
 		config: config,
 	}

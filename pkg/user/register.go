@@ -38,7 +38,7 @@ Register - Core logic for registering new users with credstack. Performs full va
 provided here. New users must have a unique email address and this will be validated here. Any errors propagated through
 this function call is returned. This is generally only named errors defined in this package.
 */
-func Register(serv *server.Server, config *config.CredentialConfig, email string, username string, password string) error {
+func Register(serv *server.Server, config config.CredentialConfig, email string, username string, password string) error {
 	/*
 		Originally, I was going to place this logic in NewCredential, however we don't want to consume a DB call
 		if the information provided here is invalid (Bad Request)
