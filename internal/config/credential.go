@@ -22,3 +22,16 @@ type CredentialConfig struct {
 	// MaxSecretLength - Sets the maximum password length that a new user must provide. Defaults to 48
 	MaxSecretLength uint32 `mapstructure:"max_secret_length"`
 }
+
+// DefaultCredentialConfig Initializes the CredentialConfig structure with sane defaults
+func DefaultCredentialConfig() CredentialConfig {
+	return CredentialConfig{
+		Time:            1,
+		Memory:          1024,
+		Threads:         1,
+		KeyLength:       16,
+		SaltLength:      32,
+		MinSecretLength: 12,
+		MaxSecretLength: 48,
+	}
+}

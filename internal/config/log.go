@@ -17,3 +17,12 @@ type LogConfig struct {
 	// EncoderConfig - Provides universal configuration options for both stdout logggin and file logging
 	EncoderConfig zapcore.EncoderConfig
 }
+
+// DefaultLogConfig Initializes the LogConfig structure with sane defaults
+func DefaultLogConfig() LogConfig {
+	return LogConfig{
+		UseFileLogging: false,
+		LogPath:        "/var/log/credstack",
+		LogLevel:       zapcore.InfoLevel,
+	}
+}

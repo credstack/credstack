@@ -90,10 +90,10 @@ func (config *Config) Load(configPath string) error {
 func New() *Config {
 	config := &Config{
 		viper:            viper.New(),
-		ApiConfig:        ApiConfig{},
-		DatabaseConfig:   DatabaseConfig{},
-		LogConfig:        LogConfig{},
-		CredentialConfig: CredentialConfig{},
+		ApiConfig:        DefaultApiConfig(),
+		DatabaseConfig:   DefaultDatabaseConfig(),
+		LogConfig:        DefaultLogConfig(),
+		CredentialConfig: DefaultCredentialConfig(),
 	}
 
 	return config

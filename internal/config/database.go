@@ -105,3 +105,17 @@ func (config *DatabaseConfig) Mongo() *options.ClientOptions {
 
 	return clientOptions
 }
+
+// DefaultDatabaseConfig Initializes the DatabaseConfig structure with sane defaults
+func DefaultDatabaseConfig() DatabaseConfig {
+	return DatabaseConfig{
+		Hostname:               "127.0.0.1",
+		Port:                   27017,
+		ConnectionTimeout:      15 * time.Second,
+		UseAuthentication:      true,
+		DefaultDatabase:        "credstack",
+		AuthenticationDatabase: "admin",
+		Username:               "admin",
+		Password:               "admin",
+	}
+}

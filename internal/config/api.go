@@ -57,3 +57,13 @@ func (config *ApiConfig) ListenerConfig() fiber.ListenConfig {
 
 	return listenConfig
 }
+
+// DefaultApiConfig Initializes the ApiConfig structure with sane defaults
+func DefaultApiConfig() ApiConfig {
+	return ApiConfig{
+		Port:          8080,
+		Debug:         false,
+		Prefork:       false,
+		SkipPreflight: false,
+	}
+}
