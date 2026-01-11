@@ -23,17 +23,20 @@ var serveCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		globalConfig := config.New()
-		globalConfig.BindFlags(cmd)
 		err := globalConfig.Load(cfgFile) // default needs to be set here!
 		if err != nil {
 			fmt.Println("Fatal error when loading config: ", err)
 			os.Exit(1)
 		}
 
+		err = globalConfig.BindFlags(cmd)
+		if err != nil {
+			fmt.Println("Fatal error when binding flags: ", err)
+			os.Exit(1)
+		}
+
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
-
-		fmt.Println(globalConfig.DatabaseConfig)
 		err = api.New(globalConfig).Start(ctx)
 		if err != nil {
 			os.Exit(1)
@@ -71,7 +74,7 @@ func init() {
 		Credential - Provides options that control how user credentials are hashed
 	*/
 	serveCmd.Flags().Uint32("argon.time", 1, "The number of iterations that will be made when hashing passwords with Argon2id")
-	serveCmd.Flags().Uint32("argon.memory", 16*1024, "The amount of memory that argon can consume while hashing passwords")
+	serveCmd.Flags().Uint32("argon.memory", 1024, "The amount of memory that argon can consume while hashing passwords")
 	serveCmd.Flags().Uint8("argon.threads", 1, "The number of goroutines that argon can use while hashing passwords")
 	serveCmd.Flags().Uint32("argon.key_length", 16, "The length that passwords will be hashed to")
 	serveCmd.Flags().Uint32("argon.salt_length", 32, "The length that a salt will be generated to")
