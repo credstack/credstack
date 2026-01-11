@@ -5,6 +5,7 @@ Copyright © 2025 Steven A. Zaluk
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -20,6 +21,7 @@ var serveCmd = &cobra.Command{
 	Short: "Start the Credstack API Server",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(globalConfig.DatabaseConfig)
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 		defer cancel()
 		err := api.New(globalConfig).Start(ctx)
@@ -41,7 +43,7 @@ func init() {
 	*/
 	serveCmd.Flags().String("database.hostname", "127.0.0.1", "The hostname of your running MongoDB server")
 	serveCmd.Flags().Int("database.port", 27017, "The port of your running MongoDB server")
-	serveCmd.Flags().Int("database.connection_timeout", 15, "The number of seconds that MongoDB should wait before closing the connection")
+	serveCmd.Flags().Duration("database.connection_timeout", 15*time.Second, "The number of seconds that MongoDB should wait before closing the connection")
 	serveCmd.Flags().Bool("database.use_authentication", true, "If set to true, then authentication options will be evaluated")
 	serveCmd.Flags().String("database.default_database", "credstack", "The default database that credstack will initialize in")
 	serveCmd.Flags().String("database.authentication_database", "admin", "The default database in MongoDB that provides authentication")
