@@ -5,7 +5,6 @@ Copyright © 2025 Steven A. Zaluk
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"time"
 
