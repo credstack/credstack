@@ -15,16 +15,16 @@ type Config struct {
 	viper *viper.Viper
 
 	// DatabaseConfig All database configuration options
-	DatabaseConfig *DatabaseConfig `mapstructure:"database,squash"`
+	DatabaseConfig DatabaseConfig `mapstructure:"database"`
 
 	// ApiConfig All API configuration options
-	ApiConfig *ApiConfig `mapstructure:"api"`
+	ApiConfig ApiConfig `mapstructure:"api"`
 
 	// LogConfig All logging configuration options
-	LogConfig *LogConfig `mapstructure:"log"`
+	LogConfig LogConfig `mapstructure:"log"`
 
 	// CredentialConfig All user credential configuration options
-	CredentialConfig *CredentialConfig `mapstructure:"credential"`
+	CredentialConfig CredentialConfig `mapstructure:"credential"`
 }
 
 // sanitizePath Performs basic sanitation on user provided paths
@@ -78,7 +78,7 @@ func (config *Config) Load(configPath string) error {
 	}
 
 	// Always unmarshal all viper keys to our Config structure
-	err = config.viper.Unmarshal(config)
+	err = config.viper.Unmarshal(&config)
 	if err != nil {
 		return err
 	}
@@ -90,10 +90,10 @@ func (config *Config) Load(configPath string) error {
 func New() *Config {
 	config := &Config{
 		viper:            viper.New(),
-		ApiConfig:        &ApiConfig{},
-		DatabaseConfig:   &DatabaseConfig{},
-		LogConfig:        &LogConfig{},
-		CredentialConfig: &CredentialConfig{},
+		ApiConfig:        ApiConfig{},
+		DatabaseConfig:   DatabaseConfig{},
+		LogConfig:        LogConfig{},
+		CredentialConfig: CredentialConfig{},
 	}
 
 	return config
