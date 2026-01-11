@@ -24,7 +24,7 @@ type Config struct {
 	LogConfig LogConfig `mapstructure:"log"`
 
 	// CredentialConfig All user credential configuration options
-	CredentialConfig CredentialConfig `mapstructure:"credential"`
+	CredentialConfig CredentialConfig `mapstructure:"argon"`
 }
 
 // sanitizePath Performs basic sanitation on user provided paths
