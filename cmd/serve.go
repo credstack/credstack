@@ -19,7 +19,7 @@ import (
 // serveCmd Represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
-	Short: "",
+	Short: "Start the Credstack API Server",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		globalConfig := config.New()
