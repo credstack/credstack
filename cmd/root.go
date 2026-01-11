@@ -27,6 +27,6 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "~/.credstack/config.json", "config file (default is $HOME/.credstack.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "~/.credstack/config.json", "Set the the config file to load")
 	rootCmd.AddCommand(serveCmd)
 }
