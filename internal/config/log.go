@@ -1,6 +1,7 @@
 package config
 
 import (
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -24,5 +25,6 @@ func DefaultLogConfig() LogConfig {
 		UseFileLogging: false,
 		LogPath:        "/var/log/credstack",
 		LogLevel:       zapcore.InfoLevel,
+		EncoderConfig:  zap.NewProductionEncoderConfig(),
 	}
 }
