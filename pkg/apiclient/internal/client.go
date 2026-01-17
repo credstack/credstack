@@ -4,12 +4,17 @@ import (
 	"net/http"
 	"runtime"
 	"time"
+
+	"github.com/credstack/credstack/internal/config"
 )
 
 // HTTPResource Overarching abstraction that provides common functionality for all HTTP resources
 type HTTPResource struct {
 	// client The http.Client that gets used for all requests
 	client *http.Client
+
+	// config The shared config.ClientConfig structure used for building requests
+	config config.ClientConfig
 }
 
 // BuildRequest Builds a request based with headers inserted for identification and authorization
@@ -26,7 +31,7 @@ func (resource *HTTPResource) BuildRequest(method string, uri string) (*http.Req
 	return req, nil
 }
 
-func New() *HTTPResource {
+func New(config config.ClientConfig) *HTTPResource {
 	client := &http.Client{
 		Transport: &http.Transport{
 			DisableCompression: true,
@@ -37,5 +42,6 @@ func New() *HTTPResource {
 
 	return &HTTPResource{
 		client: client,
+		config: config,
 	}
 }
