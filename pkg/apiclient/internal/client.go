@@ -1,6 +1,9 @@
 package internal
 
 import (
+	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
 	"runtime"
 	"time"
@@ -29,6 +32,37 @@ func (resource *HTTPResource) BuildRequest(method string, uri string) (*http.Req
 	req.Header.Set("Accept", "application/json")
 
 	return req, nil
+}
+
+// Do Execute an HTTP request while enforcing its retry/backoff policy
+func (resource *HTTPResource) Do(req *http.Request, model interface{}) (resp *http.Response, err error) {
+	for i := 0; i < resource.config.Retry; i++ {
+		resp, err = resource.client.Do(req)
+		if err == nil {
+			break
+		}
+
+		time.Sleep(resource.config.BackoffDuration)
+	}
+
+	if resp == nil {
+		return nil, errors.New("http: Got errors when making HTTP request to " + resource.config.Url)
+	}
+
+	defer resp.Body.Close()
+
+	buf := make([]byte, 256) // this might fuck us over later if a requests exceeds 256 bytes
+	_, err = resp.Body.Read(buf)
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+
+	err = json.Unmarshal(buf[:], model)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func New(config config.ClientConfig) *HTTPResource {
