@@ -10,6 +10,7 @@ import (
 )
 
 // Config Global configuration values for the entire application
+// TODO: Implement config validation before merging
 type Config struct {
 	// viper The viper instance that all configuration values will be stored under
 	viper *viper.Viper
