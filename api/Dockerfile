@@ -1,7 +1,7 @@
 # To build this with secrets: (sudo) docker build --secret id=sshkey,src=/path/to/id_rsa -t credstack-api:latest .
 # To build normally: (sudo) docker build . -t credstack-api:latest
 
-FROM golang:1.25.1-alpine AS builder
+FROM golang:1.25.5-alpine AS builder
 
 RUN apk --no-cache add ca-certificates git
 
