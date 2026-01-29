@@ -2,8 +2,8 @@ package service
 
 import (
 	"github.com/credstack/credstack/api/internal/middleware"
-	"github.com/credstack/credstack/sdk/internal/server"
 	"github.com/credstack/credstack/sdk/pkg/oauth/jwk"
+	"github.com/credstack/credstack/sdk/pkg/server"
 	"github.com/gofiber/fiber/v3"
 )
 
