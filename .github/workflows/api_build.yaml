@@ -1,10 +1,10 @@
 name: Build
-run-name: "credstack-api: Build ${{github.ref_name}}"
+run-name: "credstack-api: Build/Release ${{github.ref_name}}"
 
 on:
   push:
     tags:
-      - "v*"
+      - "api/v*"
 
 jobs:
   test:
@@ -40,3 +40,15 @@ jobs:
         with:
           push: true
           tags: credstack/credstack-api:latest,credstack/credstack-api:${{github.ref_name}}
+
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: GoReleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "latest"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
