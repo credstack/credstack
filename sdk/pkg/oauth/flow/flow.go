@@ -1,13 +1,13 @@
 package flow
 
 import (
-	"github.com/credstack/credstack/sdk/internal/server"
 	credstackError "github.com/credstack/credstack/sdk/pkg/errors"
 	"github.com/credstack/credstack/sdk/pkg/models/request"
 	"github.com/credstack/credstack/sdk/pkg/models/response"
 	"github.com/credstack/credstack/sdk/pkg/oauth/client"
 	"github.com/credstack/credstack/sdk/pkg/oauth/resourceserver"
 	"github.com/credstack/credstack/sdk/pkg/oauth/token"
+	"github.com/credstack/credstack/sdk/pkg/server"
 	"github.com/golang-jwt/jwt/v5"
 )
 

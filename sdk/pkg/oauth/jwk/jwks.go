@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/credstack/credstack/sdk/internal/server"
+	"github.com/credstack/credstack/sdk/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )

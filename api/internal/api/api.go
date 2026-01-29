@@ -9,9 +9,9 @@ import (
 	"syscall"
 
 	"github.com/credstack/credstack/api/internal/service"
-	"github.com/credstack/credstack/sdk/internal/server"
 	credstackError "github.com/credstack/credstack/sdk/pkg/errors"
 	"github.com/credstack/credstack/sdk/pkg/options"
+	"github.com/credstack/credstack/sdk/pkg/server"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/pprof"
 	"github.com/gofiber/fiber/v3/middleware/recover"
