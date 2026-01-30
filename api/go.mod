@@ -2,8 +2,6 @@ module github.com/credstack/credstack/api
 
 go 1.25.5
 
-replace github.com/credstack/credstack/sdk v1.3.7-beta => ../sdk
-
 require (
 	github.com/credstack/credstack/sdk v1.3.7-beta
 	github.com/gofiber/fiber/v3 v3.0.0-rc.3
