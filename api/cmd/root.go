@@ -2,7 +2,7 @@
 Copyright © 2025 Steven A. Zaluk
 */
 
-package main
+package cmd
 
 import (
 	"context"
@@ -113,8 +113,4 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Println("No config file was detected. Either default values or environmental variables will be used")
 	}
-}
-
-func main() {
-	Execute()
 }
