@@ -1,4 +1,4 @@
-name: Build
+name: "API Build"
 run-name: "credstack-api: Build/Release ${{github.ref_name}}"
 
 on:
