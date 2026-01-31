@@ -98,5 +98,11 @@ func (config *ServerConfig) Load(configPath string) error {
 
 // New Initialize a new ServerConfig structure
 func New() *ServerConfig {
-	return &ServerConfig{viper: viper.New()}
+	return &ServerConfig{
+		viper:            viper.New(),
+		ApiConfig:        DefaultApiConfig(),
+		DatabaseConfig:   DefaultDatabaseConfig(),
+		CredentialConfig: DefaultCredentialConfig(),
+		LogConfig:        DefaultLogConfig(),
+	}
 }
