@@ -9,8 +9,8 @@ import (
 	"syscall"
 
 	"github.com/credstack/credstack/api/internal/service"
+	"github.com/credstack/credstack/sdk/pkg/config"
 	credstackError "github.com/credstack/credstack/sdk/pkg/errors"
-	"github.com/credstack/credstack/sdk/pkg/options"
 	"github.com/credstack/credstack/sdk/pkg/server"
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/pprof"
@@ -22,7 +22,7 @@ var ErrPreflightFailed = credstackError.NewError(500, "PREFLIGHT_FAILED", "One o
 
 type Api struct {
 	// options - Universal options for the API
-	options *options.ApiOptions
+	config *config.ServerConfig
 
 	// app - An instance of a Fiber Application
 	app *fiber.App
@@ -92,7 +92,7 @@ func (api *Api) Start(ctx context.Context) error {
 		return err
 	}
 
-	if api.options.SkipPreflight == false {
+	if api.config.ApiConfig.SkipPreflight == false {
 		api.server.Log().LogStartupEvent("PreflightCheck", "Starting preflight checks")
 
 		err = api.preFlight()
@@ -115,8 +115,8 @@ func (api *Api) Start(ctx context.Context) error {
 		case <-ctx.Done():
 			return
 		default:
-			api.server.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(api.options.Port))
-			err := api.app.Listen(":"+strconv.Itoa(api.options.Port), api.options.ListenerConfig())
+			api.server.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(api.config.ApiConfig.Port))
+			err := api.app.Listen(":"+strconv.Itoa(api.config.ApiConfig.Port), api.config.ApiConfig.ListenerConfig())
 			if err != nil {
 				errChan <- err
 				return
@@ -140,8 +140,8 @@ func (api *Api) Start(ctx context.Context) error {
 /*
 New - Constructs a new fiber.api.app with recommended configurations
 */
-func New(options *options.ApiOptions) *Api {
-	app := fiber.New(options.FiberConfig())
+func New(config *config.ServerConfig) *Api {
+	app := fiber.New(config.ApiConfig.FiberConfig())
 
 	// recovery middleware is always added to ensure that the API does not crash due to a stray panic
 	app.Use(
@@ -149,16 +149,16 @@ func New(options *options.ApiOptions) *Api {
 	)
 
 	// only register pprof if options.debug == true
-	if options.Debug {
+	if config.ApiConfig.Debug {
 		app.Use(
 			pprof.New(),
 		)
 	}
 
 	api := &Api{
-		options: options,
-		server:  server.FromConfig(),
-		app:     app,
+		config: config,
+		server: server.New(config),
+		app:    app,
 	}
 
 	return api

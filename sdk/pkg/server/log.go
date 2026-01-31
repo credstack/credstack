@@ -1,19 +1,20 @@
 package server
 
 import (
+	"os"
+
 	internalTime "github.com/credstack/credstack/sdk/internal/time"
-	"github.com/credstack/credstack/sdk/pkg/options"
+	"github.com/credstack/credstack/sdk/pkg/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"os"
 )
 
 /*
 Log - An abstraction for the Logger. Handles any logic for creating and writing log files here
 */
 type Log struct {
-	// options - Defines the options that should be used with the logger
-	options *options.LogOptions
+	// config - Defines the options that should be used with the logger
+	config config.LogConfig
 
 	// log - A production ready zap.Logger that is initialized when calling NewLog
 	log *zap.Logger
@@ -23,10 +24,10 @@ type Log struct {
 }
 
 /*
-Options - Returns a pointer to the options used for the Log
+Config - Returns a pointer to the options used for the Log
 */
-func (log *Log) Options() *options.LogOptions {
-	return log.options
+func (log *Log) Config() config.LogConfig {
+	return log.config
 }
 
 /*
@@ -146,13 +147,9 @@ NewLog - Constructs a new Log using the values passed in its parameters. If an o
 functions parameter, then the Log is initialized with default values. Additionally, if more than 1 are passed here,
 only the first is used.
 */
-func NewLog(opts ...*options.LogOptions) *Log {
-	if len(opts) == 0 {
-		opts = append(opts, new(options.LogOptions))
-	}
-
+func NewLog(config config.LogConfig) *Log {
 	log := &Log{
-		options: opts[0],
+		config: config,
 	}
 
 	/*
@@ -161,9 +158,9 @@ func NewLog(opts ...*options.LogOptions) *Log {
 		production encoder that Zap provides
 	*/
 	consoleCore := zapcore.NewCore(
-		zapcore.NewConsoleEncoder(log.options.EncoderConfig),
+		zapcore.NewConsoleEncoder(log.config.EncoderConfig),
 		zapcore.AddSync(os.Stdout),
-		log.options.LogLevel,
+		log.config.LogLevel,
 	)
 
 	/*
@@ -178,7 +175,7 @@ func NewLog(opts ...*options.LogOptions) *Log {
 	// this is used here to ensure that we don't have to return any errors from this function call
 	var fileError error
 
-	if log.options.UseFileLogging {
+	if log.config.UseFileLogging {
 		// filename - Provides dead simple log rotation. The timestamp provided here is arbitrary and go uses this
 		// as a reference for how to build the format for time.Now
 		filename := "/credstack-" + internalTime.StringTimestamp()
@@ -186,7 +183,7 @@ func NewLog(opts ...*options.LogOptions) *Log {
 		/*
 			os.OpenFile expects this directory to exist, and should be created before utilizing file logging
 		*/
-		fp, err := os.OpenFile(log.options.LogPath+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		fp, err := os.OpenFile(log.config.LogPath+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			fileError = err
 		}
@@ -201,9 +198,9 @@ func NewLog(opts ...*options.LogOptions) *Log {
 				the logging system for cred-stack as I really just want performant, production ready logging
 			*/
 			fileCore := zapcore.NewCore(
-				zapcore.NewJSONEncoder(log.options.EncoderConfig),
+				zapcore.NewJSONEncoder(log.config.EncoderConfig),
 				zapcore.AddSync(log.fp),
-				log.options.LogLevel,
+				log.config.LogLevel,
 			)
 
 			// If we are using file based logging then we need to overwrite our existing core

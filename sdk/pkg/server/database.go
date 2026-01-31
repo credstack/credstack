@@ -3,8 +3,8 @@ package server
 import (
 	"context"
 
+	"github.com/credstack/credstack/sdk/pkg/config"
 	credstackError "github.com/credstack/credstack/sdk/pkg/errors"
-	"github.com/credstack/credstack/sdk/pkg/options"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
@@ -27,8 +27,8 @@ If a service wishes to make Database calls, it can call the Database.Collection 
 it wants to use in the argument of that function call.
 */
 type Database struct {
-	// options - A structure storing client related options relating to authentication
-	options *options.DatabaseOptions
+	// config - A structure storing client related options relating to authentication
+	config config.DatabaseConfig
 
 	// client - A reference to the Mongo client that is used to perform operations
 	client *mongo.Client
@@ -38,10 +38,10 @@ type Database struct {
 }
 
 /*
-Options - Returns a pointer to the options struct used with the Database
+Config - Returns a pointer to the config struct used with the Database
 */
-func (database *Database) Options() *options.DatabaseOptions {
-	return database.options
+func (database *Database) Config() config.DatabaseConfig {
+	return database.config
 }
 
 /*
@@ -57,7 +57,7 @@ this function should be re-used across multiple calls to ensure that excess reso
 are not wasted initiating additional connections to MongoDB.
 */
 func (database *Database) Connect() error {
-	client, err := mongo.Connect(database.options.ToMongoOptions())
+	client, err := mongo.Connect(database.config.Mongo())
 	if err != nil {
 		return err
 	}
@@ -76,7 +76,7 @@ func (database *Database) Connect() error {
 	}
 
 	database.client = client
-	database.database = client.Database(database.options.DefaultDatabase)
+	database.database = client.Database(database.config.DefaultDatabase)
 
 	return nil
 }
@@ -117,7 +117,7 @@ func (database *Database) PreFlight() map[string]error {
 		All the ones listed here are getting added as unique indexes, to protect against
 		duplicated data
 	*/
-	indexingMap := database.options.IndexingMap()
+	indexingMap := database.config.IndexingMap()
 
 	// failed - What is returned at the end of this functions execution
 	failed := make(map[string]error, len(indexingMap))
@@ -167,12 +167,8 @@ if more than 1 are passed here, only the first is used.
 
 If you need to construct a new database from viper configurations, you should use options.DatabaseOptions.FromConfig
 */
-func NewDatabase(opts ...*options.DatabaseOptions) *Database {
-	if len(opts) == 0 {
-		opts = append(opts, options.Database())
-	}
-
+func NewDatabase(config config.DatabaseConfig) *Database {
 	return &Database{
-		options: opts[0],
+		config: config,
 	}
 }

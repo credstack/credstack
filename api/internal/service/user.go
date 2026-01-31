@@ -5,7 +5,6 @@ import (
 
 	"github.com/credstack/credstack/api/internal/middleware"
 	"github.com/credstack/credstack/sdk/pkg/models/request"
-	"github.com/credstack/credstack/sdk/pkg/options"
 	"github.com/credstack/credstack/sdk/pkg/server"
 	"github.com/credstack/credstack/sdk/pkg/user"
 	"github.com/gofiber/fiber/v3"
@@ -79,7 +78,7 @@ func (svc *UserService) PostUserHandler(c fiber.Ctx) error {
 
 	err = user.Register(
 		svc.server,
-		options.Credential().FromConfig(),
+		svc.server.Config.CredentialConfig,
 		registerRequest.Email,
 		registerRequest.Username,
 		registerRequest.Password,
