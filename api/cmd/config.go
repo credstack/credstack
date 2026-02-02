@@ -12,9 +12,9 @@ import (
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Perform operations on API configuration",
-	Long: `Allows you to manipulate the config file for the credstack API. Calling 'config' with no arguments will print
-out the fully process config file as the API would read it at runtime allowing you to resolve potential issues with your
-config file. 
+	Long: `Allows you to manipulate the configuration for the credstack API. Calling 'config' with no arguments will print
+out the fully processed configuration for the API. This includes all potential configuration sources (Flag Overrides,
+Environment Variables, and Config File). 
 
 Calling the 'init' sub-command will allow you to initialize a new config file with sane defaults, and overrides with the
 '--set' flag will be respected. `,
