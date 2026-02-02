@@ -4,7 +4,7 @@ run-name: "credstack-api: Build/Release ${{github.ref_name}}"
 on:
   push:
     tags:
-      - "api/v*"
+      - "api/v**"
 
 jobs:
   test:

@@ -1,12 +1,17 @@
 package server
 
-import "github.com/credstack/credstack/sdk/pkg/options"
+import (
+	"github.com/credstack/credstack/sdk/pkg/config"
+)
 
 /*
 Server - Provides an abstraction of any commonly used resources that services would need
 to interact with. Also provides lifecycle control for these objects
 */
 type Server struct {
+	// Config The global configuration structure used for the entire application
+	Config *config.ServerConfig
+
 	// database - Provides a connected database for services to interact with
 	database *Database
 
@@ -37,8 +42,8 @@ Start - Initializes the server. Connects to the database and initializes the log
 */
 func (server *Server) Start() error {
 	server.Log().LogDatabaseEvent("DatabaseConnect",
-		server.Database().Options().Hostname,
-		int(server.Database().Options().Port),
+		server.Config.DatabaseConfig.Hostname,
+		int(server.Config.DatabaseConfig.Port),
 	)
 
 	/*
@@ -59,8 +64,8 @@ Stop - Stops the server from running. Disconnects the database and flushes the l
 */
 func (server *Server) Stop() error {
 	server.Log().LogDatabaseEvent("DatabaseDisconnect",
-		server.Database().Options().Hostname,
-		int(server.Database().Options().Port),
+		server.Config.DatabaseConfig.Hostname,
+		int(server.Config.DatabaseConfig.Port),
 	)
 	/*
 		Then we close our connection to the database gracefully.
@@ -87,36 +92,11 @@ func (server *Server) Stop() error {
 	return nil
 }
 
-/*
-New - Constructs a new server using configurations passed in the arguments of this function
-*/
-func New(dbOpts *options.DatabaseOptions, logOpts *options.LogOptions) *Server {
+// New Initializes a new Server structure with the values provided in the Config structure
+func New(config *config.ServerConfig) *Server {
 	return &Server{
-		database: NewDatabase(dbOpts),
-		log:      NewLog(logOpts),
-	}
-}
-
-/*
-Default - Initializes the server and its components with default configurations
-*/
-func Default() *Server {
-	/*
-		We don't need to pass any options here, as these constructors will
-		automatically fill them with defaults
-	*/
-	return &Server{
-		database: NewDatabase(),
-		log:      NewLog(),
-	}
-}
-
-/*
-FromConfig - Initializes the server and its components with configurations created from viper values
-*/
-func FromConfig() *Server {
-	return &Server{
-		database: NewDatabase(options.Database().FromConfig()),
-		log:      NewLog(options.Log().FromConfig()),
+		Config:   config,
+		database: NewDatabase(config.DatabaseConfig),
+		log:      NewLog(config.LogConfig),
 	}
 }

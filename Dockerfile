@@ -10,24 +10,24 @@ ENV CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64
 
-WORKDIR /app
+WORKDIR /build
 
 # Add nonroot user and group so that we can create our /app/log directory with proper permissions
 RUN addgroup -S nonroot -g 1000 && adduser -S nonroot -u 1000 -G nonroot
 RUN mkdir -p /log && chown -R nonroot:nonroot /log && chmod -R 755 /log
 
 # Copy source files
-COPY . .
+COPY ./api ./api
+COPY ./sdk ./sdk
 
-RUN go mod download
-
+WORKDIR ./api
 # Strip symbols and debugging information
-RUN go build -o app -ldflags="-s -w" ./cmd/
+RUN go build -o app -ldflags="-s -w" .
 
 FROM gcr.io/distroless/static-debian12
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /app/app /app/app
+COPY --from=builder /build/api/app /app/app
 COPY --from=builder /log /log
 
 ENV CREDSTACK_LOG_PATH="/log"
