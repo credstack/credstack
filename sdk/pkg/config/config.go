@@ -77,7 +77,7 @@ func (config *ServerConfig) Load(configPath string) error {
 
 	config.viper.AddConfigPath(path.Dir(sanitized))
 	config.viper.SetConfigType("json")
-	config.viper.SetConfigName("config.json")
+	config.viper.SetConfigName(path.Base(sanitized))
 
 	err = config.viper.ReadInConfig()
 	if err != nil {
