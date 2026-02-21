@@ -28,3 +28,4 @@ go.work.sum
 # Exclude locally built artifacts
 dist/
 build/
+.local-volumes/
