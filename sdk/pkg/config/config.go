@@ -24,6 +24,9 @@ type ServerConfig struct {
 
 	// LogConfig All options for controlling how logs are generated/written
 	LogConfig LogConfig `mapstructure:"log"`
+
+	// KmsConfig All options related to third-party KMS providers
+	KmsConfig KmsConfig `mapstructure:"kms"`
 }
 
 // sanitizePath Performs basic sanitation on user provided paths
@@ -104,5 +107,6 @@ func New() *ServerConfig {
 		DatabaseConfig:   DefaultDatabaseConfig(),
 		CredentialConfig: DefaultCredentialConfig(),
 		LogConfig:        DefaultLogConfig(),
+		KmsConfig:        DefaultKMSConfig(),
 	}
 }
