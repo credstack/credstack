@@ -1,4 +1,4 @@
-package secret
+package key
 
 // PrivateKey Represents a private key used for signing verifying Access Tokens
 type PrivateKey interface {
