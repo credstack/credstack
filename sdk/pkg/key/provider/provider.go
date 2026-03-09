@@ -1,11 +1,16 @@
 package provider
 
-import "github.com/credstack/credstack/sdk/pkg/key"
+import (
+	credstackError "github.com/credstack/credstack/sdk/pkg/errors"
+	"github.com/credstack/credstack/sdk/pkg/key"
+)
+
+var ErrKeyNotExist = credstackError.NewError(404, "ERR_PRIV_KEY_NOT_EXIST", "jwk: Failed to find private key with the requested key ID")
 
 // Provider Represents a Key Provider that can be used to fetch keys for signing
 type Provider interface {
 	// Count Returns the current number of keys that are available for signing
-	Count(bool) (int, error)
+	Count(string, string, bool) (int, error)
 
 	// ActiveKey Returns the currently active signing key for JWT's
 	ActiveKey(string, string) (key.PrivateKey, error)
