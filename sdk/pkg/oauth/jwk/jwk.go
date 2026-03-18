@@ -16,7 +16,6 @@ import (
 
 var ErrGenerateKey = credstackError.NewError(500, "ERR_GENERATING_KEY", "jwk: Failed to generate cryptographic key")
 var ErrMarshalKey = credstackError.NewError(500, "ERR_MARSHALING_KEY", "jwk: Failed to marshal/unmarshal key")
-var ErrKeyNotExist = credstackError.NewError(404, "ERR_PRIV_KEY_NOT_EXIST", "jwk: Failed to find private key with the requested key ID")
 var ErrKeyIsNotValid = credstackError.NewError(500, "ERR_KEY_NOT_VALID", "jwk: The requested private or public key is not valid")
 
 /*
@@ -134,36 +133,6 @@ func Get(serv *server.Server, kid string) (*JSONWebKey, error) {
 		with this. Additionally, the same KID is used across both the JWK and the Private Key to simplify key access
 	*/
 	result := serv.Database().Collection("jwk").FindOne(context.Background(), bson.M{"kid": kid})
-	err := result.Decode(&jwk)
-	if err != nil {
-		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
-			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
-		}
-
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, ErrKeyNotExist
-		}
-	}
-
-	return &jwk, nil
-}
-
-/*
-ActiveKey - Fetches the latest active private key according to the algorithm that is passed in the parameter. The same
-model (key.PrivateJSONWebKey) is used for both RS256 and HS256 keys, so the same function can be used for either. Additional
-functions are provided within the package to convert this model into a valid RSA private key to use
-
-TODO: This does not support HS-256
-TODO: This may not be needed, validate as the rest of this package gets fleshed out
-*/
-func ActiveKey(serv *server.Server, alg string, audience string) (*PrivateJSONWebKey, error) {
-	var jwk PrivateJSONWebKey
-
-	/*
-		The header.identifier field always represents our Key Identifiers (kid) so we can always safely lookup our key
-		with this. Additionally, the same KID is used across both the JWK and the Private Key to simplify key access
-	*/
-	result := serv.Database().Collection("key").FindOne(context.Background(), bson.M{"alg": alg, "is_current": true, "audience": audience})
 	err := result.Decode(&jwk)
 	if err != nil {
 		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
