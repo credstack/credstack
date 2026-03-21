@@ -10,7 +10,7 @@ var ErrKeyNotExist = credstackError.NewError(404, "ERR_PRIV_KEY_NOT_EXIST", "jwk
 // Provider Represents a Key Provider that can be used to fetch keys for signing
 type Provider interface {
 	// generate Generates a new private key and inserts it into the database
-	generate(string, string) error
+	generate(string, string, bool) error
 
 	// Count Returns the current number of keys that are available for signing
 	Count(string, string, bool) (int, error)
