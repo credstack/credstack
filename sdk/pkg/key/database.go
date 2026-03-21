@@ -4,11 +4,15 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 
+	"github.com/credstack/credstack/sdk/pkg/header"
 	"github.com/credstack/credstack/sdk/pkg/secret"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type DatabasePrivateKey struct {
+	// Header The header of the private key
+	Header *header.Header `json:"header" bson:"header"`
+
 	// Algorithm The encryption algorithm that was used to generate the private key
 	Alg string `json:"algorithm" bson:"algorithm"`
 
@@ -56,6 +60,11 @@ func (key *DatabasePrivateKey) Audience() string {
 // Current Set to true if the key can be used for signing, false if not
 func (key *DatabasePrivateKey) Current() bool {
 	return key.IsCurrent
+}
+
+// Id Returns the ID of the private key used. Used as the 'kid' field in the claims of tokens signed with the key
+func (key *DatabasePrivateKey) Id() string {
+	return key.Header.Identifier
 }
 
 // Sign Uses the private key to generate a signature of a JWT Token

@@ -15,4 +15,7 @@ type PrivateKey interface {
 
 	// Current Set to true if the key can be used for signing, false if not
 	Current() bool
+
+	// Id Returns the ID of the private key used. Used as the 'kid' field in the claims of tokens signed with the key
+	Id() string
 }
