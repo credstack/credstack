@@ -20,9 +20,9 @@ type DatabaseKeyProvider struct {
 	database *server.Database
 }
 
-// generate Generates a new private key and inserts it into the database
+// generate Generates a new private key and inserts it into the database.
 // TODO: This only supports RS256 for the time being
-func (provider *DatabaseKeyProvider) generate(alg string, aud string) error {
+func (provider *DatabaseKeyProvider) generate(alg string, aud string, isCurrent bool) error {
 	generatedKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return err
@@ -31,6 +31,7 @@ func (provider *DatabaseKeyProvider) generate(alg string, aud string) error {
 	privateKey := key.NewDatabasePrivateKey(generatedKey)
 	privateKey.Alg = "RS256"
 	privateKey.Aud = aud
+	privateKey.IsCurrent = isCurrent
 
 	_, err = provider.database.Collection("key").InsertOne(context.Background(), privateKey)
 	if err != nil {
@@ -81,9 +82,19 @@ func (provider *DatabaseKeyProvider) ActiveKey(alg string, aud string) (key.Priv
 
 // Rotate Rotates all private key's. Does not invalidate them for validation
 func (provider *DatabaseKeyProvider) Rotate(alg string, aud string) error {
-	activeKeys, err := provider.Count(alg, aud, false)
-	if err != nil {
-		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err) // move to proper named error
+	_, err := provider.database.Collection("key").UpdateMany(
+		context.Background(),
+		bson.M{"is_current": true, "audience": aud, "alg": alg},
+		bson.M{"is_current": false},
+	)
+
+	if err != nil { // named error here
+		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+	}
+
+	err = provider.generate(alg, aud, true)
+	if err != nil { // named error here
+		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
 	}
 
 	return nil
@@ -91,6 +102,19 @@ func (provider *DatabaseKeyProvider) Rotate(alg string, aud string) error {
 
 // RotateRevoke Rotates all private keys, and revokes previously used keys
 func (provider *DatabaseKeyProvider) RotateRevoke(alg string, aud string) error {
+	err := provider.Rotate(alg, aud)
+	if err != nil { // named error here
+		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+	}
+
+	_, err = provider.database.Collection("key").DeleteMany(
+		context.Background(),
+		bson.M{"is_current": false, "audience": aud, "alg": alg},
+	)
+	if err != nil { // named error here
+		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+	}
+
 	return nil
 }
 
