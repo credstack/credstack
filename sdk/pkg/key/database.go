@@ -68,8 +68,10 @@ func (key *DatabasePrivateKey) Id() string {
 }
 
 // Sign Uses the private key to generate a signature of a JWT Token
-func (key *DatabasePrivateKey) Sign(token *jwt.Token) (string, error) {
-	// TODO: Update sign to inject kid
+func (key *DatabasePrivateKey) Sign(claims jwt.RegisteredClaims, alg jwt.SigningMethod) (string, error) {
+	if key.Alg != alg.Alg() {
+		return "", nil // return err here
+	}
 
 	/*
 		structs that implement key.PrivateKey do not have constructors as they are unmarshalled
@@ -84,9 +86,9 @@ func (key *DatabasePrivateKey) Sign(token *jwt.Token) (string, error) {
 		}
 	}
 
-	if token.Method.Alg() != key.Alg {
-		// return error here
-	}
+	// always insert our key ID into the header to ensure that the token can be validated later
+	token := jwt.NewWithClaims(alg, claims)
+	token.Header["kid"] = key.Id()
 
 	sig, err := token.SignedString(key.privateKey)
 	if err != nil {
