@@ -70,7 +70,7 @@ func (key *DatabasePrivateKey) Id() string {
 // Sign Uses the private key to generate a signature of a JWT Token
 func (key *DatabasePrivateKey) Sign(claims jwt.RegisteredClaims, alg jwt.SigningMethod) (string, error) {
 	if key.Alg != alg.Alg() {
-		return "", nil // return err here
+		return "", ErrAlgNotSupported // return err here
 	}
 
 	/*
@@ -80,6 +80,7 @@ func (key *DatabasePrivateKey) Sign(claims jwt.RegisteredClaims, alg jwt.Signing
 		each startup but given that keys are cached by the key provider, this **should** be fine
 	*/
 	if key.privateKey == nil {
+		// this won't really properly support HS256. Creation of tech debt in real time
 		err := key.load()
 		if err != nil {
 			return "", err

@@ -1,6 +1,12 @@
 package key
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	credstackError "github.com/credstack/credstack/sdk/pkg/errors"
+	"github.com/golang-jwt/jwt/v5"
+)
+
+// ErrAlgNotSupported Returned when the caller tries to sign a token wtih an algorithm that the key does not support
+var ErrAlgNotSupported = credstackError.NewError(400, "SIGN_ALG_NOT_SUPPORTED", "token: The private key does not support signing tokens of this algorithm")
 
 // PrivateKey Represents a private key used for signing verifying Access Tokens
 type PrivateKey interface {
