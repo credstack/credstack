@@ -36,6 +36,14 @@ type JSONWebKey struct {
 }
 
 /*
+JSONWebKeySet - Represents a list of public keys that can be used for validating token signatures
+*/
+type JSONWebKeySet struct {
+	// Keys - All Keys available for signing under the set
+	Keys []JSONWebKey `json:"keys" bson:"keys"`
+}
+
+/*
 New - Generates a new key depending on the algorithm that you specify in the parameter. Calling this function will
 immediately set the key as the current one, however this will not retroactively update previously issued key. If you are
 attempting to rotate/revoke keys, then you should use RotateKeys or RotateRevokeKeys.
