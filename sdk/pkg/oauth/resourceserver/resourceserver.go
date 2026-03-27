@@ -8,6 +8,7 @@ import (
 
 	credstackError "github.com/credstack/credstack/sdk/pkg/errors"
 	"github.com/credstack/credstack/sdk/pkg/header"
+	"github.com/credstack/credstack/sdk/pkg/key/provider"
 	"github.com/credstack/credstack/sdk/pkg/oauth/client"
 	"github.com/credstack/credstack/sdk/pkg/oauth/jwk"
 	"github.com/credstack/credstack/sdk/pkg/oauth/token"
@@ -57,6 +58,9 @@ type ResourceServer struct {
 
 	// EnforceRBAC - If set to true, then the API will evaluate scopes and roles during validation (and will insert them as claims in the token)
 	EnforceRBAC bool `json:"enforce_rbac" bson:"enforce_rbac"`
+
+	// provider The key provider for the resource server
+	provider provider.Provider
 }
 
 /*
@@ -65,30 +69,22 @@ will be inserted into the generated token. Calling this function alone, does not
 generates the token. An instantiated server structure needs to be passed here to ensure that we can fetch the current
 active encryption key for token signing (RS256)
 */
-func (api *ResourceServer) GenerateToken(serv *server.Server, application *client.Client, claims jwt.RegisteredClaims) (*token.Token, error) {
-	switch api.TokenType {
-	case "RS256":
-		privateKey, err := jwk.ActiveKey(serv, api.TokenType, api.Audience)
-		if err != nil {
-			return nil, err
-		}
-
-		tok, err := token.RS256(privateKey, claims, uint32(application.TokenLifetime))
-		if err != nil {
-			return nil, err
-		}
-
-		return tok, nil
-	case "HS256":
-		tok, err := token.HS256(application.ClientSecret, claims, uint32(application.TokenLifetime))
-		if err != nil {
-			return nil, err
-		}
-
-		return tok, nil
-	default:
-		return nil, fmt.Errorf("%w (%v)", token.ErrFailedToSignToken, "Invalid Signing Algorithm")
+func (api *ResourceServer) GenerateToken(claims jwt.RegisteredClaims, client *client.Client) (*token.Token, error) {
+	activeKey, err := api.provider.ActiveKey(
+		api.Audience,
+		api.TokenType,
+	)
+	if err != nil {
+		return nil, err
 	}
+
+	// Bad! Stop casting down uint64 to uint32
+	signed, err := activeKey.Sign(claims, jwt.GetSigningMethod(api.TokenType), uint32(client.TokenLifetime))
+	if err != nil {
+		return nil, err
+	}
+
+	return signed, nil
 }
 
 /*

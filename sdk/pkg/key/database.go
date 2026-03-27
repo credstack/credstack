@@ -3,8 +3,10 @@ package key
 import (
 	"crypto/rsa"
 	"crypto/x509"
+	"time"
 
 	"github.com/credstack/credstack/sdk/pkg/header"
+	"github.com/credstack/credstack/sdk/pkg/oauth/token"
 	"github.com/credstack/credstack/sdk/pkg/secret"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -68,9 +70,9 @@ func (key *DatabasePrivateKey) Id() string {
 }
 
 // Sign Uses the private key to generate a signature of a JWT Token
-func (key *DatabasePrivateKey) Sign(claims jwt.RegisteredClaims, alg jwt.SigningMethod) (string, error) {
+func (key *DatabasePrivateKey) Sign(claims jwt.RegisteredClaims, alg jwt.SigningMethod, expiry uint32) (*token.Token, error) {
 	if key.Alg != alg.Alg() {
-		return "", ErrAlgNotSupported // return err here
+		return nil, ErrAlgNotSupported // return err here
 	}
 
 	/*
@@ -83,20 +85,24 @@ func (key *DatabasePrivateKey) Sign(claims jwt.RegisteredClaims, alg jwt.Signing
 		// this won't really properly support HS256. Creation of tech debt in real time
 		err := key.load()
 		if err != nil {
-			return "", err
+			return nil, err
 		}
 	}
 
-	// always insert our key ID into the header to ensure that the token can be validated later
-	token := jwt.NewWithClaims(alg, claims)
-	token.Header["kid"] = key.Id()
+	generatedToken := jwt.NewWithClaims(alg, claims)
+	generatedToken.Header["kid"] = key.Id()
 
-	sig, err := token.SignedString(key.privateKey)
+	sig, err := generatedToken.SignedString(key.privateKey)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return sig, err
+	return &token.Token{
+		Subject:     claims.Subject,
+		AccessToken: sig,
+		ExpiresIn:   expiry,
+		ExpiresAt:   time.Now().UTC().Add(time.Duration(expiry) * time.Second),
+	}, err
 }
 
 // Verify Check's a JWT and returns true or false if the token is valid
