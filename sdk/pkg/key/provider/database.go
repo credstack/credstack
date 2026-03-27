@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/credstack/credstack/sdk/pkg/key"
+	"github.com/credstack/credstack/sdk/pkg/oauth/jwk"
 	"github.com/credstack/credstack/sdk/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -116,6 +117,37 @@ func (provider *DatabaseKeyProvider) RotateRevoke(alg string, aud string) error 
 	}
 
 	return nil
+}
+
+// JWKS Returns the JWKS for the given audience and algorithm
+func (provider *DatabaseKeyProvider) JWKS(alg string, aud string) (*jwk.JSONWebKeySet, error) {
+	jwks := new(jwk.JSONWebKeySet)
+
+	/*
+		This function call is actually fairly simple, as all we really need to do here is list out the entire collection.
+	*/
+	cursor, err := provider.database.Collection("jwk").Find(context.Background(), bson.M{"kty": "RSA"})
+	if err != nil {
+		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+	}
+
+	/*
+		Then we simply just decode all the results into our slice and then return it.
+	*/
+	err = cursor.All(context.Background(), &jwks.Keys) // check here for proper errors
+	if err != nil {
+		if !errors.Is(err, mongo.ErrNoDocuments) && err != nil {
+			return nil, fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
+		}
+
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, ErrKeyNotExist
+		}
+	}
+
+	return jwks, nil
 }
 
 // NewDatabaseKeyProvider Initializes a new database key provider

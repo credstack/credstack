@@ -3,6 +3,7 @@ package provider
 import (
 	credstackError "github.com/credstack/credstack/sdk/pkg/errors"
 	"github.com/credstack/credstack/sdk/pkg/key"
+	"github.com/credstack/credstack/sdk/pkg/oauth/jwk"
 )
 
 var ErrKeyNotExist = credstackError.NewError(404, "ERR_PRIV_KEY_NOT_EXIST", "jwk: Failed to find private key with the requested key ID")
@@ -23,4 +24,7 @@ type Provider interface {
 
 	// RotateRevoke Rotates all private keys, and revokes previously used keys
 	RotateRevoke(string, string) error
+
+	// JWKS Returns the JWKS for the given audience and algorithm
+	JWKS(string, string) (*jwk.JSONWebKeySet, error)
 }
