@@ -12,6 +12,9 @@ builds:
     flags: ["-v"]
     ldflags:
       - "-s -w"
+      - -X github.com/credstack/credstack/internal/version.SemVer={{.Version}}
+      - -X github.com/credstack/credstack/internal/version.CommitSHA={{.ShortCommit}}
+      - -X github.com/credstack/credstack/internal/version.BuildDate={{.Date}}
 
 nfpms:
   - id: api

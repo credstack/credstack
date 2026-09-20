@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/credstack/credstack/internal/api"
+	"github.com/credstack/credstack/internal/cli/api/versioncmd"
 	"github.com/credstack/credstack/pkg/config"
 	"github.com/spf13/cobra"
 )
@@ -86,6 +87,9 @@ func init() {
 	rootCmd.Flags().Uint32("argon.salt_length", 32, "The length that a salt will be generated to")
 	rootCmd.Flags().Uint32("argon.min_secret_length", 12, "The minimum length requirement of plaintext user credentials")
 	rootCmd.Flags().Uint32("argon.max_secret_length", 48, "The maximum length requirement of plaintext user credentials")
+
+	rootCmd.AddCommand(versioncmd.NewVersionCommand())
+
 }
 
 func initConfig() {
