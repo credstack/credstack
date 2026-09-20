@@ -2,8 +2,10 @@ package server
 
 import (
 	"os"
+	"runtime"
 
 	internalTime "github.com/credstack/credstack/internal/time"
+	"github.com/credstack/credstack/internal/version"
 	"github.com/credstack/credstack/pkg/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -71,6 +73,16 @@ func (log *Log) LogTokenEvent(eventType string, email string, tokenType string, 
 		zap.String("tokenType", tokenType),
 		zap.String("appId", appId),
 		zap.String("apiId", apiId),
+	)
+}
+
+// LogVersion Logs the current version of credstack
+func (log *Log) LogVersion() {
+	log.log.Info("Version",
+		zap.String("sem_ver", version.SemVer),
+		zap.String("commit_sha", version.CommitSHA),
+		zap.String("build_date", version.BuildDate),
+		zap.String("runtime", runtime.Version()),
 	)
 }
 

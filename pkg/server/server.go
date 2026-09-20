@@ -41,6 +41,7 @@ func (server *Server) Log() *Log {
 Start - Initializes the server. Connects to the database and initializes the logger
 */
 func (server *Server) Start() error {
+	server.Log().LogVersion()
 	server.Log().LogDatabaseEvent("DatabaseConnect",
 		server.Config.DatabaseConfig.Hostname,
 		int(server.Config.DatabaseConfig.Port),
