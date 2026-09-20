@@ -32,6 +32,10 @@ jobs:
       with:
         push: true
         tags: ghcr.io/credstack/credstack:latest,ghcr.io/credstack/credstack:${{ github.ref_name }}
+        build-args: |
+          SEMVER=${{github.ref_name}}
+          COMMITSHA=${{github.sha}}
+          BUILDDATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
   release:
     runs-on: ubuntu-latest
