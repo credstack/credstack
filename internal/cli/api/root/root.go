@@ -19,36 +19,33 @@ import (
 var cfgFile string
 var globalConfig *config.ServerConfig
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "credstack",
-	Short: "",
-	Long:  `The open source & cloud-native identity provider`,
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		err := globalConfig.BindFlags(cmd)
-		if err != nil {
-			fmt.Println("Fatal error when binding flags: ", err)
-			os.Exit(1)
-		}
-	},
-	Run: func(cmd *cobra.Command, args []string) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-		defer cancel()
-		err := api.New(globalConfig).Start(ctx)
-		if err != nil {
-			os.Exit(1)
-		}
-	},
-}
+// NewRootCmd Initializes a new root command and returns a pointer to it
+func NewRootCmd() *cobra.Command {
+	rootCmd := &cobra.Command{
+		Use:          "credstack",
+		Short:        "",
+		Long:         `The open source & cloud-native identity provider`,
+		SilenceUsage: true,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			err := globalConfig.BindFlags(cmd)
+			if err != nil {
+				fmt.Println("Fatal error when binding flags: ", err)
+				os.Exit(1)
+			}
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+			defer cancel()
 
-func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
+			err := api.New(globalConfig).Start(ctx)
+			if err != nil {
+				return err
+			}
+
+			return nil
+		},
 	}
-}
 
-func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "~/.credstack/config.json", "Set the the config file to load")
@@ -90,6 +87,7 @@ func init() {
 
 	rootCmd.AddCommand(versioncmd.NewVersionCommand())
 
+	return rootCmd
 }
 
 func initConfig() {
