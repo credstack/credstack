@@ -1,0 +1,56 @@
+version: 2
+
+project_name: "credstack"
+
+builds:
+  - id: api
+    binary: "credstack-api"
+    main: "./cmd/credstack-api/main.go"
+    goos: [linux]
+    goarch: [arm64, amd64]
+    env: [CGO_ENABLED=0]
+    flags: ["-v"]
+    ldflags:
+      - "-s -w"
+
+nfpms:
+  - id: api
+    formats:
+      - deb
+      - rpm
+    vendor: "Steven A. Zaluk"
+    homepage: "https://github.com/credstack/credstack"
+    maintainer: "Steven A. Zaluk <szaluk@stevenzaluk.com>"
+    description: "A cloud native identity provider"
+    license: "MIT"
+
+archives:
+  - formats: [tar.gz]
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^build:"
+      - "^ci:"
+
+snapshot:
+  version_template: "0.0.0-SNAPSHOT-{{ .ShortCommit }}"
+
+release:
+  footer: >-
+
+    ---
+
+    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
