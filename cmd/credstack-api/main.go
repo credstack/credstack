@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/credstack/credstack/internal/cli/api/root"
+	"github.com/credstack/credstack/internal/cli/api/rootcmd"
 )
 
 func main() {
-	if err := root.NewRootCmd().Execute(); err != nil {
+	if err := rootcmd.NewRootCmd().Execute(); err != nil {
 		panic(err)
 	}
 }

@@ -2,7 +2,7 @@
 Copyright © 2025 Steven A. Zaluk
 */
 
-package root
+package rootcmd
 
 import (
 	"context"
