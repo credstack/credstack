@@ -1,15 +1,10 @@
 package token
 
 import (
-	"context"
-	"errors"
-	"fmt"
 	"time"
 
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/models/response"
-	"github.com/credstack/credstack/pkg/server"
-	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // ErrFailedToSignToken - An error that gets wrapped when jwt.Token.SignedString returns an error
@@ -63,25 +58,4 @@ func (token *Token) Response() *response.TokenResponse {
 		RefreshToken: token.RefreshToken,
 		Scope:        token.Scope,
 	}
-}
-
-/*
-NewToken - Provides logic for storing tokens of a specific type in the database. This does not generate tokens as this
-logic is provided through a method on the API struct
-*/
-func NewToken(serv *server.Server, token *Token) error {
-	_, err := serv.Database().Collection("token").InsertOne(context.Background(), token)
-	if err != nil {
-		var writeError mongo.WriteException
-		if errors.As(err, &writeError) {
-			if writeError.HasErrorCode(11000) { // 11000 is the error code for a WriteError. This should be a const
-				return ErrTokenCollision // this should almost never occur, but we check for it regardless
-			}
-		}
-
-		// always return a wrapped internal database error here
-		return fmt.Errorf("%w (%v)", server.ErrInternalDatabase, err)
-	}
-
-	return nil
 }
