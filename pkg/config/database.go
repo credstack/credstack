@@ -45,7 +45,6 @@ func (config *DatabaseConfig) Collections() []string {
 		"scope",
 		"client",
 		"resource_server",
-		"token",
 		"key",
 		"jwk",
 	}
@@ -63,7 +62,6 @@ func (config *DatabaseConfig) IndexingMap() map[string]bson.D {
 		"scope":           {{Key: "header.identifier", Value: 1}},
 		"client":          {{Key: "client_id", Value: 1}, {Key: "header.identifier", Value: 1}},
 		"resource_server": {{Key: "header.identifier", Value: 1}},
-		"token":           {{Key: "token", Value: 1}},
 		"key":             {{Key: "header.identifier", Value: 1}},
 		"jwk":             {{Key: "kid", Value: 1}},
 	}

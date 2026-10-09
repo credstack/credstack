@@ -6,7 +6,6 @@ import (
 	"github.com/credstack/credstack/pkg/models/response"
 	"github.com/credstack/credstack/pkg/oauth/client"
 	"github.com/credstack/credstack/pkg/oauth/resourceserver"
-	"github.com/credstack/credstack/pkg/oauth/token"
 	"github.com/credstack/credstack/pkg/server"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -53,11 +52,6 @@ func IssueTokenForFlow(serv *server.Server, request *request.TokenRequest, issue
 	}
 
 	generatedToken, err := requestedApi.GenerateToken(serv, app, *claims)
-	if err != nil {
-		return nil, err
-	}
-
-	err = token.NewToken(serv, generatedToken)
 	if err != nil {
 		return nil, err
 	}
