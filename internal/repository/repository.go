@@ -17,12 +17,18 @@ type Repository[T any] struct {
 	coll string
 }
 
-// Get Returns the first instance of an object according to a filter
-func (repo *Repository[T]) Get(filter bson.M) (*T, error) {
+// Get Returns the first instance of an object according to a filter.
+func (repo *Repository[T]) Get(filter bson.M, projection ...string) (*T, error) {
+	projections := bson.M{}
+	for _, value := range projection {
+		projections[value] = 0
+	}
+
 	// Needs to support projections here
 	result := repo.db.Collection(repo.coll).FindOne(
 		context.Background(),
 		filter,
+		mongoOpts.FindOne().SetProjection(projections),
 	)
 
 	ret := new(T)
@@ -34,11 +40,16 @@ func (repo *Repository[T]) Get(filter bson.M) (*T, error) {
 }
 
 // List Return all the objects in a collection with an enforced limit
-func (repo *Repository[T]) List(limit int) ([]*T, error) {
+func (repo *Repository[T]) List(limit int, projection ...string) ([]*T, error) {
+	projections := bson.M{}
+	for _, value := range projection {
+		projections[value] = 0
+	}
+
 	result, err := repo.db.Collection(repo.coll).Find(
 		context.Background(),
 		bson.M{},
-		mongoOpts.Find().SetLimit(int64(limit)),
+		mongoOpts.Find().SetLimit(int64(limit)).SetProjection(projections),
 	)
 	if err != nil {
 		return nil, err
