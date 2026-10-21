@@ -18,7 +18,7 @@ type Repository[T any] struct {
 }
 
 // Get Returns the first instance of an object according to a filter.
-func (repo *Repository[T]) Get(filter bson.M, projection ...string) (*T, error) {
+func (repo *Repository[T]) Get(ctx context.Context, filter bson.M, projection ...string) (*T, error) {
 	projections := bson.M{}
 	for _, value := range projection {
 		projections[value] = 0
@@ -26,7 +26,7 @@ func (repo *Repository[T]) Get(filter bson.M, projection ...string) (*T, error) 
 
 	// Needs to support projections here
 	result := repo.db.Collection(repo.coll).FindOne(
-		context.Background(),
+		ctx,
 		filter,
 		mongoOpts.FindOne().SetProjection(projections),
 	)
@@ -40,14 +40,14 @@ func (repo *Repository[T]) Get(filter bson.M, projection ...string) (*T, error) 
 }
 
 // List Return all the objects in a collection with an enforced limit
-func (repo *Repository[T]) List(limit int, projection ...string) ([]*T, error) {
+func (repo *Repository[T]) List(ctx context.Context, limit int, projection ...string) ([]*T, error) {
 	projections := bson.M{}
 	for _, value := range projection {
 		projections[value] = 0
 	}
 
 	result, err := repo.db.Collection(repo.coll).Find(
-		context.Background(),
+		ctx,
 		bson.M{},
 		mongoOpts.Find().SetLimit(int64(limit)).SetProjection(projections),
 	)
@@ -56,7 +56,7 @@ func (repo *Repository[T]) List(limit int, projection ...string) ([]*T, error) {
 	}
 
 	ret := make([]*T, 0, limit)
-	if err := result.All(context.Background(), ret); err != nil {
+	if err := result.All(ctx, ret); err != nil {
 		return nil, err
 	}
 
@@ -64,9 +64,9 @@ func (repo *Repository[T]) List(limit int, projection ...string) ([]*T, error) {
 }
 
 // Delete Remove the first instance of an object from a collection according to the filter
-func (repo *Repository[T]) Delete(filter bson.M) (int, error) {
+func (repo *Repository[T]) Delete(ctx context.Context, filter bson.M) (int, error) {
 	result, err := repo.db.Collection(repo.coll).DeleteOne(
-		context.Background(),
+		ctx,
 		filter,
 	)
 	if err != nil {
@@ -77,9 +77,9 @@ func (repo *Repository[T]) Delete(filter bson.M) (int, error) {
 }
 
 // Create Insert a single object into Mongo at the collection specified during creation
-func (repo *Repository[T]) Create(v T) error {
+func (repo *Repository[T]) Create(ctx context.Context, v *T) error {
 	_, err := repo.db.Collection(repo.coll).InsertOne(
-		context.Background(),
+		ctx,
 		v,
 	)
 	if err != nil {
@@ -90,9 +90,9 @@ func (repo *Repository[T]) Create(v T) error {
 }
 
 // Update Update a single object in Mongo
-func (repo *Repository[T]) Update(filter bson.M, patch PatchFunc[T]) error {
+func (repo *Repository[T]) Update(ctx context.Context, filter bson.M, patch PatchFunc[T]) error {
 	_, err := repo.db.Collection(repo.coll).UpdateOne(
-		context.Background(),
+		ctx,
 		filter,
 		bson.M{"$set": patch},
 	)
