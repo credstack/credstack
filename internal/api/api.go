@@ -29,7 +29,7 @@ type Api struct {
 
 func (api *Api) handleSignal(ctx context.Context) {
 	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, unix.SIGTERM, unix.SIGINT)
+	signal.Notify(sig, os.Interrupt, unix.SIGQUIT, unix.SIGTERM, unix.SIGINT)
 
 	for {
 		select {
