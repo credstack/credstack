@@ -37,8 +37,12 @@ func NewRootCmd() *cobra.Command {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 			defer cancel()
 
-			err := api.New(globalConfig).Start(ctx)
+			api, err := api.New(globalConfig)
 			if err != nil {
+				return err
+			}
+
+			if err := api.Run(ctx); err != nil {
 				return err
 			}
 

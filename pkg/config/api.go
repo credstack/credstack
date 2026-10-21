@@ -1,69 +1,65 @@
 package config
 
 import (
-	"time"
-
-	"github.com/gofiber/fiber/v3"
+	"fmt"
+	"net/netip"
 )
 
+// Config Represents common API Configuration options exposed to a maintainer
 type ApiConfig struct {
-	// Port - The port number that the API should listen for requests on
-	Port int `mapstructure:"port"`
+	// Port The port the API should listen for requests on
+	Port int `json:"port" yaml:"port" mapstructure:"port"`
 
-	// Debug - Enables debug logging for the API. Useful for development
-	Debug bool `mapstructure:"debug"`
+	// Debug If set to true, set gin.ReleaseMode to debug and inject pprof routes
+	Debug bool `json:"debug" yaml:"debug" mapstructure:"debug"`
 
-	// Prefork - Allows the API to run on multiple processes to increase performance
-	Prefork bool `mapstructure:"prefork"`
+	// UseTLS If set to true, enforce TLS on the API Server
+	UseTLS bool `json:"use_tls" yaml:"useTls" mapstructure:"use_tls"`
 
-	// SkipPreflight - If set to true, then preflight checks are not conducted on API start
-	SkipPreflight bool `mapstructure:"skip_preflight"`
+	// TLSCert A unix path to a TLS certificate. Must be PEM encoded
+	TLSCert string `json:"tls_cert" yaml:"tlsCert" mapstructure:"tlsCert"`
+
+	// TLSKey A unix path to a TLS Key. Must be PEM encoded
+	TLSKey string `json:"tls_key" yaml:"tlsKey" mapstructure:"tlsKey"`
+
+	// TrustedIPs A list of IP addresses representing your proxy servers that should be added
+	// to Gin's trusted IP list. IP addresses defined here force Gin to respect the X-Forwarded-For
+	// header
+	TrustedIPs []string `json:"trusted_ips" yaml:"trustedIps" mapstructure:"trusted_ips"`
+
+	// TrustedPlatform An HTTP Header that represent how a real client IP address is being forwarded
+	// to the API. Each platform can use a different Header for this, so if yours uses a custom one, provide it here
+	TrustedPlatform string `json:"trusted_platform" yaml:"trustedPlatform" mapstructure:"trusted_platform"`
 }
 
-/*
-FiberConfig - Returns a fiber.Config  structure for the Api structure to consume
-*/
-func (config *ApiConfig) FiberConfig() fiber.Config {
-	fiberConfig := fiber.Config{
-		CaseSensitive:    true,
-		StrictRouting:    true,
-		DisableKeepalive: true,
+// Validate Validates the config file for correctness
+func (config ApiConfig) Validate() error {
+	if config.UseTLS {
+		if config.TLSCert == "" || config.TLSKey == "" {
+			return fmt.Errorf("api config validation err: config.TLSCert and config.TLSKey cannot be empty")
+		}
 	}
 
-	if config.Debug {
-		fiberConfig.CaseSensitive = false
-		fiberConfig.StrictRouting = false
-		fiberConfig.IdleTimeout = 10 * time.Minute
-		fiberConfig.TrustProxy = true
+	for _, ip := range config.TrustedIPs {
+		if _, err := netip.ParseAddr(ip); err != nil {
+			return fmt.Errorf("api config validation err: %s is not a valid IP address", ip)
+		}
 	}
 
-	return fiberConfig
+	return nil
 }
 
-/*
-ListenerConfig - Returns a fiber.ListenConfig structure for the Api structure to consume
-*/
-func (config *ApiConfig) ListenerConfig() fiber.ListenConfig {
-	listenConfig := fiber.ListenConfig{
-		DisableStartupMessage: true,
-		EnablePrefork:         config.Prefork,
-		ListenerNetwork:       fiber.NetworkTCP4,
-	}
-
-	if config.Debug {
-		listenConfig.EnablePrefork = false
-		listenConfig.EnablePrintRoutes = true
-	}
-
-	return listenConfig
+// Addr Returns an address string for use with lower level HTTP libraries
+func (config ApiConfig) Addr() string {
+	return fmt.Sprintf(":%d", config.Port)
 }
 
-// DefaultApiConfig Initializes the ApiConfig structure with sane defaults
+// DefaultConfig Initializes a new api.Config and returns a pointer to it
 func DefaultApiConfig() ApiConfig {
 	return ApiConfig{
-		Port:          8080,
-		Debug:         false,
-		Prefork:       false,
-		SkipPreflight: false,
+		Debug:           true,
+		Port:            8080,
+		TrustedIPs:      nil,
+		TrustedPlatform: "",
 	}
 }
