@@ -9,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-type ClientService struct {
+type ClientRouteHandler struct {
 	// server - Dependencies required by all API handlers
 	server *server.Server
 
@@ -17,11 +17,11 @@ type ClientService struct {
 	group fiber.Router
 }
 
-func (svc *ClientService) Group() fiber.Router {
+func (svc *ClientRouteHandler) Group() fiber.Router {
 	return svc.group
 }
 
-func (svc *ClientService) RegisterHandlers() {
+func (svc *ClientRouteHandler) RegisterHandlers() {
 	svc.group.Get("", svc.GetClientHandler)
 	svc.group.Post("", svc.PostClientHandler)
 	svc.group.Patch("", svc.PatchClientHandler)
@@ -34,7 +34,7 @@ not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ClientService) GetClientHandler(c fiber.Ctx) error {
+func (svc *ClientRouteHandler) GetClientHandler(c fiber.Ctx) error {
 	clientId := c.Query("client_id")
 	if clientId == "" {
 		limit, err := strconv.Atoi(c.Query("limit", "10"))
@@ -64,7 +64,7 @@ not be called directly, and should only ever be passed to fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ClientService) PostClientHandler(c fiber.Ctx) error {
+func (svc *ClientRouteHandler) PostClientHandler(c fiber.Ctx) error {
 	var model client.Client
 
 	err := middleware.BindJSON(c, &model)
@@ -86,7 +86,7 @@ not be called directly, and should only ever be passed to fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ClientService) PatchClientHandler(c fiber.Ctx) error {
+func (svc *ClientRouteHandler) PatchClientHandler(c fiber.Ctx) error {
 	clientId := c.Query("client_id")
 
 	var model client.Client
@@ -110,7 +110,7 @@ not be called directly, and should only ever be passed to fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ClientService) DeleteClientHandler(c fiber.Ctx) error {
+func (svc *ClientRouteHandler) DeleteClientHandler(c fiber.Ctx) error {
 	clientId := c.Query("client_id")
 
 	err := client.Delete(svc.server, clientId)
@@ -121,8 +121,8 @@ func (svc *ClientService) DeleteClientHandler(c fiber.Ctx) error {
 	return c.Status(200).JSON(&fiber.Map{"message": "Deleted application successfully"})
 }
 
-func NewClientService(server *server.Server, app *fiber.App) *ClientService {
-	return &ClientService{
+func NewClientRouteHandler(server *server.Server, app *fiber.App) *ClientRouteHandler {
+	return &ClientRouteHandler{
 		server: server,
 		group:  app.Group("/client"),
 	}

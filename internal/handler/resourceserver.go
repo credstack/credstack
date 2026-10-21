@@ -9,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-type ResourceServerService struct {
+type ResourceServerRouteHandler struct {
 	// server - Dependencies required by all API handlers
 	server *server.Server
 
@@ -17,11 +17,11 @@ type ResourceServerService struct {
 	group fiber.Router
 }
 
-func (svc *ResourceServerService) Group() fiber.Router {
+func (svc *ResourceServerRouteHandler) Group() fiber.Router {
 	return svc.group
 }
 
-func (svc *ResourceServerService) RegisterHandlers() {
+func (svc *ResourceServerRouteHandler) RegisterHandlers() {
 	svc.group.Get("", svc.GetResourceServerHandler)
 	svc.group.Post("", svc.PostResourceServerHandler)
 	svc.group.Patch("", svc.PatchResourceServerHandler)
@@ -34,7 +34,7 @@ not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ResourceServerService) GetResourceServerHandler(c fiber.Ctx) error {
+func (svc *ResourceServerRouteHandler) GetResourceServerHandler(c fiber.Ctx) error {
 	audience := c.Query("audience")
 	if audience == "" {
 		limit, err := strconv.Atoi(c.Query("limit", "10"))
@@ -66,7 +66,7 @@ TODO: Authentication handler needs to happen here
 TODO: Underlying functions need domain validation in place
 TODO: Underlying functions need to be updated here so that we can assign applications at birth
 */
-func (svc *ResourceServerService) PostResourceServerHandler(c fiber.Ctx) error {
+func (svc *ResourceServerRouteHandler) PostResourceServerHandler(c fiber.Ctx) error {
 	var model resourceserver.ResourceServer
 
 	err := middleware.BindJSON(c, &model)
@@ -88,7 +88,7 @@ not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ResourceServerService) PatchResourceServerHandler(c fiber.Ctx) error {
+func (svc *ResourceServerRouteHandler) PatchResourceServerHandler(c fiber.Ctx) error {
 	audience := c.Query("audience")
 
 	var model resourceserver.ResourceServer
@@ -112,7 +112,7 @@ not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ResourceServerService) DeleteResourceServerHandler(c fiber.Ctx) error {
+func (svc *ResourceServerRouteHandler) DeleteResourceServerHandler(c fiber.Ctx) error {
 	audience := c.Query("audience")
 
 	err := resourceserver.Delete(svc.server, audience)
@@ -123,8 +123,8 @@ func (svc *ResourceServerService) DeleteResourceServerHandler(c fiber.Ctx) error
 	return c.Status(201).JSON(&fiber.Map{"message": "Deleted API successfully"})
 }
 
-func NewResourceServerService(server *server.Server, app *fiber.App) *ResourceServerService {
-	return &ResourceServerService{
+func NewResourceServerRouteHandler(server *server.Server, app *fiber.App) *ResourceServerRouteHandler {
+	return &ResourceServerRouteHandler{
 		server: server,
 		group:  app.Group("/resource_server"),
 	}

@@ -10,7 +10,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-type UserService struct {
+type UserRouteHandler struct {
 	// server - Dependencies required by all API handlers
 	server *server.Server
 
@@ -18,14 +18,14 @@ type UserService struct {
 	group fiber.Router
 }
 
-func (svc *UserService) Group() fiber.Router {
+func (svc *UserRouteHandler) Group() fiber.Router {
 	return svc.group
 }
 
 /*
 RegisterHandlers - Registers required handlers with the associated Fiber router
 */
-func (svc *UserService) RegisterHandlers() {
+func (svc *UserRouteHandler) RegisterHandlers() {
 	svc.group.Get("", svc.GetUserHandler)
 	svc.group.Post("", svc.PostUserHandler)
 	svc.group.Patch("", svc.PatchUserHandler)
@@ -38,7 +38,7 @@ not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *UserService) GetUserHandler(c fiber.Ctx) error {
+func (svc *UserRouteHandler) GetUserHandler(c fiber.Ctx) error {
 	email := c.Query("email")
 	if email == "" {
 		limit, err := strconv.Atoi(c.Query("limit", "10"))
@@ -68,7 +68,7 @@ not be called directly, and should only ever be passed to fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *UserService) PostUserHandler(c fiber.Ctx) error {
+func (svc *UserRouteHandler) PostUserHandler(c fiber.Ctx) error {
 	var registerRequest request.UserRegisterRequest
 
 	err := middleware.BindJSON(c, &registerRequest)
@@ -97,7 +97,7 @@ not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *UserService) PatchUserHandler(c fiber.Ctx) error {
+func (svc *UserRouteHandler) PatchUserHandler(c fiber.Ctx) error {
 	email := c.Query("email")
 
 	var model user.User
@@ -121,7 +121,7 @@ not be called directly, and should only ever be passed to Fiber
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *UserService) DeleteUserHandler(c fiber.Ctx) error {
+func (svc *UserRouteHandler) DeleteUserHandler(c fiber.Ctx) error {
 	email := c.Query("email")
 
 	err := user.Delete(svc.server, email)
@@ -132,8 +132,8 @@ func (svc *UserService) DeleteUserHandler(c fiber.Ctx) error {
 	return c.Status(200).JSON(fiber.Map{"message": "Successfully deleted user"})
 }
 
-func NewUserService(server *server.Server, app *fiber.App) *UserService {
-	return &UserService{
+func NewUserRouteHandler(server *server.Server, app *fiber.App) *UserRouteHandler {
+	return &UserRouteHandler{
 		server: server,
 		group:  app.Group("/user"),
 	}

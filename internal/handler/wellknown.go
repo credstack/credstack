@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 )
 
-type WellKnownService struct {
+type WellKnownRouteHandler struct {
 	// server - Dependencies required by all API handlers
 	server *server.Server
 
@@ -15,11 +15,11 @@ type WellKnownService struct {
 	group fiber.Router
 }
 
-func (svc *WellKnownService) Group() fiber.Router {
+func (svc *WellKnownRouteHandler) Group() fiber.Router {
 	return svc.group
 }
 
-func (svc *WellKnownService) RegisterHandlers() {
+func (svc *WellKnownRouteHandler) RegisterHandlers() {
 	svc.group.Get("/jwks.json", svc.GetJWKHandler)
 }
 
@@ -27,7 +27,7 @@ func (svc *WellKnownService) RegisterHandlers() {
 GetJWKHandler - Provides a Fiber handler for processing a GET request to /.well-known/jwks.json. This should
 not be called directly, and should only ever be passed to Fiber
 */
-func (svc *WellKnownService) GetJWKHandler(c fiber.Ctx) error {
+func (svc *WellKnownRouteHandler) GetJWKHandler(c fiber.Ctx) error {
 	jwks, err := jwk.JWKS(svc.server)
 	if err != nil {
 		return middleware.HandleError(c, err)
@@ -36,8 +36,8 @@ func (svc *WellKnownService) GetJWKHandler(c fiber.Ctx) error {
 	return c.JSON(jwks)
 }
 
-func NewWellKnownService(server *server.Server, app *fiber.App) *WellKnownService {
-	return &WellKnownService{
+func NewWellKnownRouteHandler(server *server.Server, app *fiber.App) *WellKnownRouteHandler {
+	return &WellKnownRouteHandler{
 		server: server,
 		group:  app.Group("/.well-known"),
 	}

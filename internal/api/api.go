@@ -32,11 +32,11 @@ type Api struct {
 }
 
 func (api *Api) RegisterHandlers() {
-	handler.NewUserService(api.server, api.app).RegisterHandlers()
-	handler.NewClientService(api.server, api.app).RegisterHandlers()
-	handler.NewResourceServerService(api.server, api.app).RegisterHandlers()
-	handler.NewOAuthService(api.server, api.app).RegisterHandlers()
-	handler.NewWellKnownService(api.server, api.app).RegisterHandlers()
+	handler.NewUserRouteHandler(api.server, api.app).RegisterHandlers()
+	handler.NewClientRouteHandler(api.server, api.app).RegisterHandlers()
+	handler.NewResourceServerRouteHandler(api.server, api.app).RegisterHandlers()
+	handler.NewOAuthRouteHandler(api.server, api.app).RegisterHandlers()
+	handler.NewWellKnownRouteHandler(api.server, api.app).RegisterHandlers()
 }
 
 /*

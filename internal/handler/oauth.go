@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-type OAuthService struct {
+type OAuthRouteHandler struct {
 	// server - Dependencies required by all API handlers
 	server *server.Server
 
@@ -17,11 +17,11 @@ type OAuthService struct {
 	group fiber.Router
 }
 
-func (svc *OAuthService) Group() fiber.Router {
+func (svc *OAuthRouteHandler) Group() fiber.Router {
 	return svc.group
 }
 
-func (svc *OAuthService) RegisterHandlers() {
+func (svc *OAuthRouteHandler) RegisterHandlers() {
 	svc.group.Get("/token", svc.GetTokenHandler)
 }
 
@@ -29,7 +29,7 @@ func (svc *OAuthService) RegisterHandlers() {
 GetTokenHandler - Provides a fiber handler for processing a GET request to /oauth2/token This should
 not be called directly, and should only ever be passed to fiber
 */
-func (svc *OAuthService) GetTokenHandler(c fiber.Ctx) error {
+func (svc *OAuthRouteHandler) GetTokenHandler(c fiber.Ctx) error {
 	req := new(request.TokenRequest)
 
 	if err := c.Bind().Query(req); err != nil {
@@ -44,8 +44,8 @@ func (svc *OAuthService) GetTokenHandler(c fiber.Ctx) error {
 	return c.JSON(resp)
 }
 
-func NewOAuthService(server *server.Server, app *fiber.App) *OAuthService {
-	return &OAuthService{
+func NewOAuthRouteHandler(server *server.Server, app *fiber.App) *OAuthRouteHandler {
+	return &OAuthRouteHandler{
 		server: server,
 		group:  app.Group("/oauth"),
 	}
