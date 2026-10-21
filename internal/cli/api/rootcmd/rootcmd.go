@@ -34,15 +34,12 @@ func NewRootCmd() *cobra.Command {
 			}
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-			defer cancel()
-
 			api, err := api.New(globalConfig)
 			if err != nil {
 				return err
 			}
 
-			if err := api.Run(ctx); err != nil {
+			if err := api.Run(context.Background()); err != nil {
 				return err
 			}
 
