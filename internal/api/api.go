@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/credstack/credstack/internal/service"
+	"github.com/credstack/credstack/internal/handler"
 	"github.com/credstack/credstack/pkg/config"
 	credstackError "github.com/credstack/credstack/pkg/errors"
 	"github.com/credstack/credstack/pkg/server"
@@ -32,11 +32,11 @@ type Api struct {
 }
 
 func (api *Api) RegisterHandlers() {
-	service.NewUserService(api.server, api.app).RegisterHandlers()
-	service.NewClientService(api.server, api.app).RegisterHandlers()
-	service.NewResourceServerService(api.server, api.app).RegisterHandlers()
-	service.NewOAuthService(api.server, api.app).RegisterHandlers()
-	service.NewWellKnownService(api.server, api.app).RegisterHandlers()
+	handler.NewUserService(api.server, api.app).RegisterHandlers()
+	handler.NewClientService(api.server, api.app).RegisterHandlers()
+	handler.NewResourceServerService(api.server, api.app).RegisterHandlers()
+	handler.NewOAuthService(api.server, api.app).RegisterHandlers()
+	handler.NewWellKnownService(api.server, api.app).RegisterHandlers()
 }
 
 /*
