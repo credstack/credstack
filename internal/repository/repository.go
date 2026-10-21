@@ -16,7 +16,7 @@ var (
 	ErrInternalDatabase = errors.New("database: Unknown internal database error occured")
 )
 
-type PatchFunc[T any] func(T) bson.M
+type PatchFunc[T any] func(*T) bson.M
 
 // Repository An abstraction capable of performing basic CRUD operations on top of Mongo
 type Repository[T any] struct {
