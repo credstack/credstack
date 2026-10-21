@@ -2,10 +2,18 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/credstack/credstack/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
+)
+
+var (
+	ErrNoObjectFound    = errors.New("database: No object found for the given filter")
+	ErrDuplicateObject  = errors.New("database: Cannot insert an object with a duplicated identifier")
+	ErrInternalDatabase = errors.New("database: Unknown internal database error occured")
 )
 
 type PatchFunc[T any] func(T) bson.M
@@ -15,6 +23,26 @@ type Repository[T any] struct {
 	db *server.Database
 
 	coll string
+}
+
+// handleError Convert a generic database error into a named error
+func (repo *Repository[T]) handleError(err error) error {
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return ErrNoObjectFound
+		}
+
+		writeErr := new(mongo.WriteException)
+		if errors.As(err, writeErr) {
+			if writeErr.HasErrorCode(11000) {
+				return ErrDuplicateObject
+			}
+		}
+
+		return ErrInternalDatabase
+	}
+
+	return nil
 }
 
 // Get Returns the first instance of an object according to a filter.
@@ -33,7 +61,7 @@ func (repo *Repository[T]) Get(ctx context.Context, filter bson.M, projection ..
 
 	ret := new(T)
 	if err := result.Decode(ret); err != nil {
-		return nil, err
+		return nil, repo.handleError(err)
 	}
 
 	return ret, nil
@@ -52,12 +80,12 @@ func (repo *Repository[T]) List(ctx context.Context, limit int, projection ...st
 		mongoOpts.Find().SetLimit(int64(limit)).SetProjection(projections),
 	)
 	if err != nil {
-		return nil, err
+		return nil, repo.handleError(err)
 	}
 
 	ret := make([]*T, 0, limit)
 	if err := result.All(ctx, ret); err != nil {
-		return nil, err
+		return nil, repo.handleError(err)
 	}
 
 	return ret, nil
@@ -70,7 +98,7 @@ func (repo *Repository[T]) Delete(ctx context.Context, filter bson.M) (int, erro
 		filter,
 	)
 	if err != nil {
-		return 0, err
+		return 0, repo.handleError(err)
 	}
 
 	return int(result.DeletedCount), nil
@@ -83,7 +111,7 @@ func (repo *Repository[T]) Create(ctx context.Context, v *T) error {
 		v,
 	)
 	if err != nil {
-		return err
+		return repo.handleError(err)
 	}
 
 	return nil
@@ -97,7 +125,7 @@ func (repo *Repository[T]) Update(ctx context.Context, filter bson.M, patch Patc
 		bson.M{"$set": patch},
 	)
 	if err != nil {
-		return err
+		return repo.handleError(err)
 	}
 
 	return nil
