@@ -12,7 +12,9 @@ import (
 
 	"github.com/credstack/credstack/internal/api"
 	"github.com/credstack/credstack/internal/cli/api/versioncmd"
+	"github.com/credstack/credstack/internal/handler"
 	"github.com/credstack/credstack/pkg/config"
+	"github.com/credstack/credstack/pkg/server"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +41,20 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
+			srv := server.New(globalConfig)
+			if err := srv.Start(); err != nil {
+				return err
+			}
+
+			api.RegisterRouteHandlers(
+				handler.NewWellKnownRouteHandler(srv),
+			)
+
 			if err := api.Run(context.Background()); err != nil {
+				return err
+			}
+
+			if err := srv.Stop(); err != nil {
 				return err
 			}
 
