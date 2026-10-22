@@ -1,44 +1,41 @@
 package handler
 
 import (
-	"github.com/credstack/credstack/internal/middleware"
 	"github.com/credstack/credstack/pkg/oauth/jwk"
 	"github.com/credstack/credstack/pkg/server"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gin-gonic/gin"
 )
 
 type WellKnownRouteHandler struct {
 	// server - Dependencies required by all API handlers
 	server *server.Server
-
-	// group - The Fiber API group for this service
-	group fiber.Router
 }
 
-func (svc *WellKnownRouteHandler) Group() fiber.Router {
-	return svc.group
+func (svc *WellKnownRouteHandler) Prefix() string {
+	return "/.well-known"
 }
 
-func (svc *WellKnownRouteHandler) RegisterHandlers() {
-	svc.group.Get("/jwks.json", svc.GetJWKHandler)
+func (svc *WellKnownRouteHandler) Group(engine *gin.Engine) {
+	group := engine.Group(svc.Prefix())
+
+	group.GET("/jwks.json", svc.GetJWKHandler())
 }
 
-/*
-GetJWKHandler - Provides a Fiber handler for processing a GET request to /.well-known/jwks.json. This should
-not be called directly, and should only ever be passed to Fiber
-*/
-func (svc *WellKnownRouteHandler) GetJWKHandler(c fiber.Ctx) error {
-	jwks, err := jwk.JWKS(svc.server)
-	if err != nil {
-		return middleware.HandleError(c, err)
+// GetJWKHandler Provides a gin.HandlerFunc for `/.well-known/jwks.json`. Should not be called directly
+func (svc *WellKnownRouteHandler) GetJWKHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		jwks, err := jwk.JWKS(svc.server)
+		if err != nil {
+			c.JSON(500, err) // TODO: Real error handling here
+		}
+
+		c.JSON(200, jwks)
 	}
-
-	return c.JSON(jwks)
 }
 
-func NewWellKnownRouteHandler(server *server.Server, app *fiber.App) *WellKnownRouteHandler {
+// NewWellKnownRouteHandler Initializes a new WellKnownRouteHandler and returns a pointer to it
+func NewWellKnownRouteHandler(server *server.Server) *WellKnownRouteHandler {
 	return &WellKnownRouteHandler{
 		server: server,
-		group:  app.Group("/.well-known"),
 	}
 }
