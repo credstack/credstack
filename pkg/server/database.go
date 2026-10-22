@@ -107,6 +107,8 @@ an additional database call.
 A map is returned representing the errors that were encountered during the initialization process. The maps key
 represents the name of the collection and the value is the error that occurred. If an error occurs during initialization
 then the current iteration of the loop is continued and initialization is continued
+
+TODO: This should return a typical error
 */
 func (database *Database) PreFlight() map[string]error {
 	/*

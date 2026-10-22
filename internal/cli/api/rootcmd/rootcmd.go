@@ -46,6 +46,12 @@ func NewRootCmd() *cobra.Command {
 				return err
 			}
 
+			// TODO: This should really get its own abstraction so that other server components
+			// can have preflights
+			if err := srv.Database().PreFlight(); len(err) > 0 {
+				return fmt.Errorf("got the following errors during DB preflight: %v", err)
+			}
+
 			api.RegisterRouteHandlers(
 				handler.NewWellKnownRouteHandler(srv),
 			)
