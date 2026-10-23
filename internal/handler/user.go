@@ -7,134 +7,122 @@ import (
 	"github.com/credstack/credstack/pkg/models/request"
 	"github.com/credstack/credstack/pkg/server"
 	"github.com/credstack/credstack/pkg/user"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gin-gonic/gin"
 )
 
 type UserRouteHandler struct {
 	// server - Dependencies required by all API handlers
 	server *server.Server
-
-	// group - The Fiber API group for this service
-	group fiber.Router
 }
 
-func (svc *UserRouteHandler) Group() fiber.Router {
-	return svc.group
+func (svc *UserRouteHandler) Prefix() string {
+	return "/usr"
 }
 
-/*
-RegisterHandlers - Registers required handlers with the associated Fiber router
-*/
-func (svc *UserRouteHandler) RegisterHandlers() {
-	svc.group.Get("", svc.GetUserHandler)
-	svc.group.Post("", svc.PostUserHandler)
-	svc.group.Patch("", svc.PatchUserHandler)
-	svc.group.Delete("", svc.DeleteUserHandler)
+func (svc *UserRouteHandler) Group(engine *gin.Engine) {
+	group := engine.Group("/user")
+
+	group.GET("/", svc.GetUserHandler())
+	group.POST("/", svc.PostUserHandler())
+	group.PATCH("/", svc.PatchUserHandler())
+	group.DELETE("/", svc.DeleteUserHandler())
 }
 
-/*
-GetUserHandler - Provides a Fiber handler for processing a get request to /management/user. This should
-not be called directly, and should only ever be passed to Fiber
+// GetUserHandler Provides a Gin handler for processing a get request to /user. This should
+// not be called directly
+//
+// TODO: Authentication handler needs to happen here
+func (svc *UserRouteHandler) GetUserHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		email := c.Query("email")
+		if email == "" {
+			limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+			if err != nil {
+				middleware.HandleError(c, err)
+			}
 
-TODO: Authentication handler needs to happen here
-*/
-func (svc *UserRouteHandler) GetUserHandler(c fiber.Ctx) error {
-	email := c.Query("email")
-	if email == "" {
-		limit, err := strconv.Atoi(c.Query("limit", "10"))
-		if err != nil {
-			return middleware.HandleError(c, err)
+			users, err := user.List(svc.server, limit, false)
+			if err != nil {
+				middleware.HandleError(c, err)
+			}
+
+			c.JSON(200, users)
 		}
 
-		users, err := user.List(svc.server, limit, false)
+		requestedUser, err := user.Get(svc.server, email, false)
 		if err != nil {
-			return middleware.HandleError(c, err)
+			middleware.HandleError(c, err)
 		}
 
-		return c.JSON(users)
-	}
+		c.JSON(200, requestedUser)
 
-	requestedUser, err := user.Get(svc.server, email, false)
-	if err != nil {
-		return middleware.HandleError(c, err)
 	}
-
-	return c.JSON(requestedUser)
 }
 
-/*
-PostUserHandler - Provides a fiber handler for processing a POST request to /auth/register This should
-not be called directly, and should only ever be passed to fiber
+// PostUserHandler - Provides a Gin handler for processing a POST request to /user This should
+// not be called directly
+//
+// TODO: Authentication handler needs to happen here
+func (svc *UserRouteHandler) PostUserHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		registerRequest := new(request.UserRegisterRequest)
 
-TODO: Authentication handler needs to happen here
-*/
-func (svc *UserRouteHandler) PostUserHandler(c fiber.Ctx) error {
-	var registerRequest request.UserRegisterRequest
+		if err := c.BindJSON(registerRequest); err != nil {
+			middleware.HandleError(c, err)
+		}
 
-	err := middleware.BindJSON(c, &registerRequest)
-	if err != nil {
-		return err
+		err := user.Register(
+			svc.server,
+			svc.server.Config.CredentialConfig,
+			registerRequest.Email,
+			registerRequest.Username,
+			registerRequest.Password,
+		)
+
+		if err != nil {
+			middleware.HandleError(c, err)
+		}
+
+		c.JSON(200, gin.H{"message": "User successfully registered"})
 	}
-
-	err = user.Register(
-		svc.server,
-		svc.server.Config.CredentialConfig,
-		registerRequest.Email,
-		registerRequest.Username,
-		registerRequest.Password,
-	)
-
-	if err != nil {
-		return middleware.HandleError(c, err)
-	}
-
-	return c.Status(200).JSON(&fiber.Map{"message": "User successfully registered"}) // this should get its own response
 }
 
-/*
-PatchUserHandler - Provides a Fiber handler for processing a PATCH request to /management/user. This should
-not be called directly, and should only ever be passed to Fiber
+// PatchUserHandler Provides a Gin handler for processing a PATCH request to /user. This should
+// not be called directly
+//
+// TODO: Authentication handler needs to happen here
+func (svc *UserRouteHandler) PatchUserHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
 
-TODO: Authentication handler needs to happen here
-*/
-func (svc *UserRouteHandler) PatchUserHandler(c fiber.Ctx) error {
-	email := c.Query("email")
+		model := new(user.User)
+		if err := c.BindJSON(model); err != nil {
+			middleware.HandleError(c, err)
+		}
 
-	var model user.User
+		if err := user.Update(svc.server, c.Query("email"), model); err != nil {
+			middleware.HandleError(c, err)
+		}
 
-	err := middleware.BindJSON(c, &model)
-	if err != nil {
-		return err
+		c.JSON(200, gin.H{"message": "Updated user successfully"})
 	}
-
-	err = user.Update(svc.server, email, &model)
-	if err != nil {
-		return middleware.HandleError(c, err)
-	}
-
-	return c.Status(200).JSON(&fiber.Map{"message": "Updated user successfully"})
 }
 
-/*
-DeleteUserHandler - Provides a Fiber handler for processing a DELETE request to /management/user. This should
-not be called directly, and should only ever be passed to Fiber
+// DeleteUserHandler Provides a Gin handler for processing a DELETE request to /user. This should
+// not be called directly
+//
+// TODO: Authentication handler needs to happen here
+func (svc *UserRouteHandler) DeleteUserHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if err := user.Delete(svc.server, c.Query("email")); err != nil {
+			middleware.HandleError(c, err)
+		}
 
-TODO: Authentication handler needs to happen here
-*/
-func (svc *UserRouteHandler) DeleteUserHandler(c fiber.Ctx) error {
-	email := c.Query("email")
-
-	err := user.Delete(svc.server, email)
-	if err != nil {
-		return middleware.HandleError(c, err)
+		c.JSON(200, gin.H{"message": "Successfully deleted user"})
 	}
-
-	return c.Status(200).JSON(fiber.Map{"message": "Successfully deleted user"})
 }
 
-func NewUserRouteHandler(server *server.Server, app *fiber.App) *UserRouteHandler {
+func NewUserRouteHandler(server *server.Server) *UserRouteHandler {
 	return &UserRouteHandler{
 		server: server,
-		group:  app.Group("/user"),
 	}
 }

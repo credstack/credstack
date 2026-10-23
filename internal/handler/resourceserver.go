@@ -6,126 +6,113 @@ import (
 	"github.com/credstack/credstack/internal/middleware"
 	"github.com/credstack/credstack/pkg/oauth/resourceserver"
 	"github.com/credstack/credstack/pkg/server"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gin-gonic/gin"
 )
 
 type ResourceServerRouteHandler struct {
 	// server - Dependencies required by all API handlers
 	server *server.Server
-
-	// group - The Fiber API group for this service
-	group fiber.Router
 }
 
-func (svc *ResourceServerRouteHandler) Group() fiber.Router {
-	return svc.group
+func (svc *ResourceServerRouteHandler) Prefix() string {
+	return "/resource_server"
 }
 
-func (svc *ResourceServerRouteHandler) RegisterHandlers() {
-	svc.group.Get("", svc.GetResourceServerHandler)
-	svc.group.Post("", svc.PostResourceServerHandler)
-	svc.group.Patch("", svc.PatchResourceServerHandler)
-	svc.group.Delete("", svc.DeleteResourceServerHandler)
+func (svc *ResourceServerRouteHandler) Group(engine *gin.Engine) {
+	group := engine.Group(svc.Prefix())
+
+	group.GET("/", svc.GetResourceServerHandler())
+	group.POST("/", svc.PostResourceServerHandler())
+	group.PATCH("/", svc.PatchResourceServerHandler())
+	group.DELETE("/", svc.DeleteResourceServerHandler())
 }
 
-/*
-GetResourceServerHandler - Provides a Fiber handler for processing a GET request to /management/api. This should
-not be called directly, and should only ever be passed to Fiber
+// GetResourceServerHandler - Provides a Gin handler for processing a GET request to /management/api. This should
+// not be called directly
+//
+// TODO: Authentication handler needs to happen here
+func (svc *ResourceServerRouteHandler) GetResourceServerHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		audience := c.Query("audience")
+		if audience == "" {
+			limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+			if err != nil {
+				middleware.HandleError(c, err)
+			}
 
-TODO: Authentication handler needs to happen here
-*/
-func (svc *ResourceServerRouteHandler) GetResourceServerHandler(c fiber.Ctx) error {
-	audience := c.Query("audience")
-	if audience == "" {
-		limit, err := strconv.Atoi(c.Query("limit", "10"))
-		if err != nil {
-			return middleware.HandleError(c, err)
+			apis, err := resourceserver.List(svc.server, limit)
+			if err != nil {
+				middleware.HandleError(c, err)
+			}
+
+			c.JSON(200, apis)
 		}
 
-		apis, err := resourceserver.List(svc.server, limit)
+		requestedApi, err := resourceserver.Get(svc.server, audience)
 		if err != nil {
-			return middleware.HandleError(c, err)
+			middleware.HandleError(c, err)
 		}
 
-		return c.JSON(apis)
+		c.JSON(200, requestedApi)
 	}
-
-	requestedApi, err := resourceserver.Get(svc.server, audience)
-	if err != nil {
-		return middleware.HandleError(c, err)
-	}
-
-	return c.JSON(requestedApi)
 }
 
-/*
-PostResourceServerHandler - Provides a Fiber handler for processing a POST request to /management/api. This should
-not be called directly, and should only ever be passed to Fiber
+// PostResourceServerHandler - Provides a Gin handler for processing a POST request to /management/api. This should
+// not be called directly
+//
+// TODO: Authentication handler needs to happen here
+// TODO: Better object validation
+func (svc *ResourceServerRouteHandler) PostResourceServerHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		model := new(resourceserver.ResourceServer)
 
-TODO: Authentication handler needs to happen here
-TODO: Underlying functions need domain validation in place
-TODO: Underlying functions need to be updated here so that we can assign applications at birth
-*/
-func (svc *ResourceServerRouteHandler) PostResourceServerHandler(c fiber.Ctx) error {
-	var model resourceserver.ResourceServer
+		if err := c.BindJSON(model); err != nil {
+			middleware.HandleError(c, err)
+		}
 
-	err := middleware.BindJSON(c, &model)
-	if err != nil {
-		return err
+		if err := resourceserver.New(svc.server, model.Name, model.Audience, model.TokenType); err != nil {
+			middleware.HandleError(c, err)
+		}
+
+		c.JSON(200, gin.H{"message": "Created API successfully"})
 	}
-
-	err = resourceserver.New(svc.server, model.Name, model.Audience, model.TokenType)
-	if err != nil {
-		return middleware.HandleError(c, err)
-	}
-
-	return c.Status(201).JSON(&fiber.Map{"message": "Created API successfully"})
 }
 
-/*
-PatchResourceServerHandler - Provides a Fiber handler for processing a PATCH request to /management/api. This should
-not be called directly, and should only ever be passed to Fiber
+// PatchResourceServerHandler - Provides a Gin handler for processing a PATCH request to /management/api. This should
+// not be called directly
+//
+// TODO: Authentication handler needs to happen here
+func (svc *ResourceServerRouteHandler) PatchResourceServerHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		model := new(resourceserver.ResourceServer)
+		if err := c.BindJSON(model); err != nil {
+			middleware.HandleError(c, err)
+		}
 
-TODO: Authentication handler needs to happen here
-*/
-func (svc *ResourceServerRouteHandler) PatchResourceServerHandler(c fiber.Ctx) error {
-	audience := c.Query("audience")
+		if err := resourceserver.Update(svc.server, c.Query("audience"), model); err != nil {
+			middleware.HandleError(c, err)
+		}
 
-	var model resourceserver.ResourceServer
-
-	err := middleware.BindJSON(c, &model)
-	if err != nil {
-		return err
+		c.JSON(200, gin.H{"message": "Updated API successfully"})
 	}
-
-	err = resourceserver.Update(svc.server, audience, &model)
-	if err != nil {
-		return middleware.HandleError(c, err)
-	}
-
-	return c.Status(201).JSON(&fiber.Map{"message": "Updated API successfully"})
 }
 
-/*
-DeleteResourceServerHandler - Provides a Fiber handler for processing a DELETE request to /management/api. This should
-not be called directly, and should only ever be passed to Fiber
+// DeleteResourceServerHandler - Provides a Gin handler for processing a DELETE request to /management/api. This should
+// not be called directly
+//
+// TODO: Authentication handler needs to happen here
+func (svc *ResourceServerRouteHandler) DeleteResourceServerHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if err := resourceserver.Delete(svc.server, c.Query("audience")); err != nil {
+			middleware.HandleError(c, err)
+		}
 
-TODO: Authentication handler needs to happen here
-*/
-func (svc *ResourceServerRouteHandler) DeleteResourceServerHandler(c fiber.Ctx) error {
-	audience := c.Query("audience")
-
-	err := resourceserver.Delete(svc.server, audience)
-	if err != nil {
-		return middleware.HandleError(c, err)
+		c.JSON(200, gin.H{"message": "Deleted API successfully"})
 	}
-
-	return c.Status(201).JSON(&fiber.Map{"message": "Deleted API successfully"})
 }
 
-func NewResourceServerRouteHandler(server *server.Server, app *fiber.App) *ResourceServerRouteHandler {
+func NewResourceServerRouteHandler(server *server.Server) *ResourceServerRouteHandler {
 	return &ResourceServerRouteHandler{
 		server: server,
-		group:  app.Group("/resource_server"),
 	}
 }

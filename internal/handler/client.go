@@ -6,124 +6,114 @@ import (
 	"github.com/credstack/credstack/internal/middleware"
 	"github.com/credstack/credstack/pkg/oauth/client"
 	"github.com/credstack/credstack/pkg/server"
-	"github.com/gofiber/fiber/v3"
+	"github.com/gin-gonic/gin"
 )
 
 type ClientRouteHandler struct {
 	// server - Dependencies required by all API handlers
 	server *server.Server
-
-	// group - The Fiber API group for this service
-	group fiber.Router
 }
 
-func (svc *ClientRouteHandler) Group() fiber.Router {
-	return svc.group
+func (svc *ClientRouteHandler) Prefix() string {
+	return "/client"
 }
 
-func (svc *ClientRouteHandler) RegisterHandlers() {
-	svc.group.Get("", svc.GetClientHandler)
-	svc.group.Post("", svc.PostClientHandler)
-	svc.group.Patch("", svc.PatchClientHandler)
-	svc.group.Delete("", svc.DeleteClientHandler)
+func (svc *ClientRouteHandler) Group(engine *gin.Engine) {
+	group := engine.Group(svc.Prefix())
+
+	group.GET("/", svc.GetClientHandler())
+	group.POST("/", svc.PostClientHandler())
+	group.PATCH("/", svc.PatchClientHandler())
+	group.DELETE("/", svc.DeleteClientHandler())
 }
 
-/*
-GetClientHandler - Provides a Fiber handler for processing a get request to /client. This should
-not be called directly, and should only ever be passed to Fiber
+// GetClientHandler - Provides a Gin handler for processing a get request to /client. This should
+// not be called directly
+//
+// TODO: Authentication handler needs to happen here
+func (svc *ClientRouteHandler) GetClientHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		clientId := c.Query("client_id")
+		if clientId == "" {
+			limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+			if err != nil {
+				middleware.HandleError(c, err)
+			}
 
-TODO: Authentication handler needs to happen here
-*/
-func (svc *ClientRouteHandler) GetClientHandler(c fiber.Ctx) error {
-	clientId := c.Query("client_id")
-	if clientId == "" {
-		limit, err := strconv.Atoi(c.Query("limit", "10"))
-		if err != nil {
-			return middleware.HandleError(c, err)
+			apps, err := client.List(svc.server, limit, true)
+			if err != nil {
+				middleware.HandleError(c, err)
+			}
+
+			c.JSON(200, apps)
 		}
 
-		apps, err := client.List(svc.server, limit, true)
+		app, err := client.Get(svc.server, clientId, true)
 		if err != nil {
-			return middleware.HandleError(c, err)
+			middleware.HandleError(c, err)
 		}
 
-		return c.JSON(apps)
+		c.JSON(200, app)
 	}
-
-	app, err := client.Get(svc.server, clientId, true)
-	if err != nil {
-		return middleware.HandleError(c, err)
-	}
-
-	return c.JSON(app)
 }
 
 /*
-PostClientHandler - Provides a fiber handler for processing a POST request to /client This should
-not be called directly, and should only ever be passed to fiber
+PostClientHandler - Provides a Gin handler for processing a POST request to /client This should
+not be called directly
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ClientRouteHandler) PostClientHandler(c fiber.Ctx) error {
-	var model client.Client
+func (svc *ClientRouteHandler) PostClientHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		model := new(client.Client)
+		if err := c.BindJSON(model); err != nil {
+			middleware.HandleError(c, err)
+		}
 
-	err := middleware.BindJSON(c, &model)
-	if err != nil {
-		return err
+		clientId, err := client.New(svc.server, model.Name, model.IsPublic, model.GrantTypes...)
+		if err != nil {
+			middleware.HandleError(c, err)
+		}
+
+		c.JSON(200, gin.H{"message": "Created application successfully", "client_id": clientId})
 	}
-
-	clientId, err := client.New(svc.server, model.Name, model.IsPublic, model.GrantTypes...)
-	if err != nil {
-		return middleware.HandleError(c, err)
-	}
-
-	return c.Status(201).JSON(&fiber.Map{"message": "Created application successfully", "client_id": clientId})
 }
 
-/*
-PatchClientHandler - Provides a fiber handler for processing a PATCH request to /client This should
-not be called directly, and should only ever be passed to fiber
+// PatchClientHandler - Provides a Gin handler for processing a PATCH request to /client This should
+// not be called directly
+//
+// TODO: Authentication handler needs to happen here
+func (svc *ClientRouteHandler) PatchClientHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		model := new(client.Client)
+		if err := c.BindJSON(model); err != nil {
+			middleware.HandleError(c, err)
+		}
 
-TODO: Authentication handler needs to happen here
-*/
-func (svc *ClientRouteHandler) PatchClientHandler(c fiber.Ctx) error {
-	clientId := c.Query("client_id")
+		if err := client.Update(svc.server, c.Query("client_id"), model); err != nil {
+			middleware.HandleError(c, err)
+		}
 
-	var model client.Client
-
-	err := middleware.BindJSON(c, &model)
-	if err != nil {
-		return err
+		c.JSON(200, gin.H{"message": "Updated application successfully"})
 	}
-
-	err = client.Update(svc.server, clientId, &model)
-	if err != nil {
-		return middleware.HandleError(c, err)
-	}
-
-	return c.Status(200).JSON(&fiber.Map{"message": "Updated application successfully"})
 }
 
-/*
-DeleteClientHandler - Provides a fiber handler for processing a DELETE request to /client This should
-not be called directly, and should only ever be passed to fiber
+// DeleteClientHandler - Provides a Gin handler for processing a DELETE request to /client This should
+// not be called directly
+//
+// TODO: Authentication handler needs to happen here
+func (svc *ClientRouteHandler) DeleteClientHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if err := client.Delete(svc.server, c.Query("client_id")); err != nil {
+			middleware.HandleError(c, err)
+		}
 
-TODO: Authentication handler needs to happen here
-*/
-func (svc *ClientRouteHandler) DeleteClientHandler(c fiber.Ctx) error {
-	clientId := c.Query("client_id")
-
-	err := client.Delete(svc.server, clientId)
-	if err != nil {
-		return middleware.HandleError(c, err)
+		c.JSON(200, gin.H{"message": "Deleted application successfully"})
 	}
-
-	return c.Status(200).JSON(&fiber.Map{"message": "Deleted application successfully"})
 }
 
-func NewClientRouteHandler(server *server.Server, app *fiber.App) *ClientRouteHandler {
+func NewClientRouteHandler(server *server.Server) *ClientRouteHandler {
 	return &ClientRouteHandler{
 		server: server,
-		group:  app.Group("/client"),
 	}
 }

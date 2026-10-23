@@ -54,6 +54,10 @@ func NewRootCmd() *cobra.Command {
 
 			api.RegisterRouteHandlers(
 				handler.NewWellKnownRouteHandler(srv),
+				handler.NewOAuthRouteHandler(srv),
+				handler.NewUserRouteHandler(srv),
+				handler.NewResourceServerRouteHandler(srv),
+				handler.NewClientRouteHandler(srv),
 			)
 
 			if err := api.Run(context.Background()); err != nil {
