@@ -14,24 +14,24 @@ type ClientRouteHandler struct {
 	server *server.Server
 }
 
-func (svc *ClientRouteHandler) Prefix() string {
+func (handler *ClientRouteHandler) Prefix() string {
 	return "/client"
 }
 
-func (svc *ClientRouteHandler) Group(engine *gin.Engine) {
-	group := engine.Group(svc.Prefix())
+func (handler *ClientRouteHandler) Group(engine *gin.Engine) {
+	group := engine.Group(handler.Prefix())
 
-	group.GET("/", svc.GetClientHandler())
-	group.POST("/", svc.PostClientHandler())
-	group.PATCH("/", svc.PatchClientHandler())
-	group.DELETE("/", svc.DeleteClientHandler())
+	group.GET("/", handler.GetClientHandler())
+	group.POST("/", handler.PostClientHandler())
+	group.PATCH("/", handler.PatchClientHandler())
+	group.DELETE("/", handler.DeleteClientHandler())
 }
 
 // GetClientHandler - Provides a Gin handler for processing a get request to /client. This should
 // not be called directly
 //
 // TODO: Authentication handler needs to happen here
-func (svc *ClientRouteHandler) GetClientHandler() gin.HandlerFunc {
+func (handler *ClientRouteHandler) GetClientHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		clientId := c.Query("client_id")
 		if clientId == "" {
@@ -40,7 +40,7 @@ func (svc *ClientRouteHandler) GetClientHandler() gin.HandlerFunc {
 				middleware.HandleError(c, err)
 			}
 
-			apps, err := client.List(svc.server, limit, true)
+			apps, err := client.List(handler.server, limit, true)
 			if err != nil {
 				middleware.HandleError(c, err)
 			}
@@ -48,7 +48,7 @@ func (svc *ClientRouteHandler) GetClientHandler() gin.HandlerFunc {
 			c.JSON(200, apps)
 		}
 
-		app, err := client.Get(svc.server, clientId, true)
+		app, err := client.Get(handler.server, clientId, true)
 		if err != nil {
 			middleware.HandleError(c, err)
 		}
@@ -63,14 +63,14 @@ not be called directly
 
 TODO: Authentication handler needs to happen here
 */
-func (svc *ClientRouteHandler) PostClientHandler() gin.HandlerFunc {
+func (handler *ClientRouteHandler) PostClientHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		model := new(client.Client)
 		if err := c.BindJSON(model); err != nil {
 			middleware.HandleError(c, err)
 		}
 
-		clientId, err := client.New(svc.server, model.Name, model.IsPublic, model.GrantTypes...)
+		clientId, err := client.New(handler.server, model.Name, model.IsPublic, model.GrantTypes...)
 		if err != nil {
 			middleware.HandleError(c, err)
 		}
@@ -83,14 +83,14 @@ func (svc *ClientRouteHandler) PostClientHandler() gin.HandlerFunc {
 // not be called directly
 //
 // TODO: Authentication handler needs to happen here
-func (svc *ClientRouteHandler) PatchClientHandler() gin.HandlerFunc {
+func (handler *ClientRouteHandler) PatchClientHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		model := new(client.Client)
 		if err := c.BindJSON(model); err != nil {
 			middleware.HandleError(c, err)
 		}
 
-		if err := client.Update(svc.server, c.Query("client_id"), model); err != nil {
+		if err := client.Update(handler.server, c.Query("client_id"), model); err != nil {
 			middleware.HandleError(c, err)
 		}
 
@@ -102,9 +102,9 @@ func (svc *ClientRouteHandler) PatchClientHandler() gin.HandlerFunc {
 // not be called directly
 //
 // TODO: Authentication handler needs to happen here
-func (svc *ClientRouteHandler) DeleteClientHandler() gin.HandlerFunc {
+func (handler *ClientRouteHandler) DeleteClientHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := client.Delete(svc.server, c.Query("client_id")); err != nil {
+		if err := client.Delete(handler.server, c.Query("client_id")); err != nil {
 			middleware.HandleError(c, err)
 		}
 

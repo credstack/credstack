@@ -11,20 +11,20 @@ type WellKnownRouteHandler struct {
 	server *server.Server
 }
 
-func (svc *WellKnownRouteHandler) Prefix() string {
+func (handler *WellKnownRouteHandler) Prefix() string {
 	return "/.well-known"
 }
 
-func (svc *WellKnownRouteHandler) Group(engine *gin.Engine) {
-	group := engine.Group(svc.Prefix())
+func (handler *WellKnownRouteHandler) Group(engine *gin.Engine) {
+	group := engine.Group(handler.Prefix())
 
-	group.GET("/jwks.json", svc.GetJWKHandler())
+	group.GET("/jwks.json", handler.GetJWKHandler())
 }
 
 // GetJWKHandler Provides a gin.HandlerFunc for `/.well-known/jwks.json`. Should not be called directly
-func (svc *WellKnownRouteHandler) GetJWKHandler() gin.HandlerFunc {
+func (handler *WellKnownRouteHandler) GetJWKHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		jwks, err := jwk.JWKS(svc.server)
+		jwks, err := jwk.JWKS(handler.server)
 		if err != nil {
 			c.JSON(500, err) // TODO: Real error handling here
 		}

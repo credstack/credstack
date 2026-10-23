@@ -15,7 +15,7 @@ type OAuthRouteHandler struct {
 }
 
 // Prefix Returns the parent prefix of all routes this Handler provides
-func (svc *OAuthRouteHandler) Prefix() string {
+func (handler *OAuthRouteHandler) Prefix() string {
 	return "/oauth"
 }
 

@@ -15,24 +15,24 @@ type UserRouteHandler struct {
 	server *server.Server
 }
 
-func (svc *UserRouteHandler) Prefix() string {
+func (handler *UserRouteHandler) Prefix() string {
 	return "/usr"
 }
 
-func (svc *UserRouteHandler) Group(engine *gin.Engine) {
+func (handler *UserRouteHandler) Group(engine *gin.Engine) {
 	group := engine.Group("/user")
 
-	group.GET("/", svc.GetUserHandler())
-	group.POST("/", svc.PostUserHandler())
-	group.PATCH("/", svc.PatchUserHandler())
-	group.DELETE("/", svc.DeleteUserHandler())
+	group.GET("/", handler.GetUserHandler())
+	group.POST("/", handler.PostUserHandler())
+	group.PATCH("/", handler.PatchUserHandler())
+	group.DELETE("/", handler.DeleteUserHandler())
 }
 
 // GetUserHandler Provides a Gin handler for processing a get request to /user. This should
 // not be called directly
 //
 // TODO: Authentication handler needs to happen here
-func (svc *UserRouteHandler) GetUserHandler() gin.HandlerFunc {
+func (handler *UserRouteHandler) GetUserHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		email := c.Query("email")
 		if email == "" {
@@ -41,7 +41,7 @@ func (svc *UserRouteHandler) GetUserHandler() gin.HandlerFunc {
 				middleware.HandleError(c, err)
 			}
 
-			users, err := user.List(svc.server, limit, false)
+			users, err := user.List(handler.server, limit, false)
 			if err != nil {
 				middleware.HandleError(c, err)
 			}
@@ -49,7 +49,7 @@ func (svc *UserRouteHandler) GetUserHandler() gin.HandlerFunc {
 			c.JSON(200, users)
 		}
 
-		requestedUser, err := user.Get(svc.server, email, false)
+		requestedUser, err := user.Get(handler.server, email, false)
 		if err != nil {
 			middleware.HandleError(c, err)
 		}
@@ -63,7 +63,7 @@ func (svc *UserRouteHandler) GetUserHandler() gin.HandlerFunc {
 // not be called directly
 //
 // TODO: Authentication handler needs to happen here
-func (svc *UserRouteHandler) PostUserHandler() gin.HandlerFunc {
+func (handler *UserRouteHandler) PostUserHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		registerRequest := new(request.UserRegisterRequest)
 
@@ -72,8 +72,8 @@ func (svc *UserRouteHandler) PostUserHandler() gin.HandlerFunc {
 		}
 
 		err := user.Register(
-			svc.server,
-			svc.server.Config.CredentialConfig,
+			handler.server,
+			handler.server.Config.CredentialConfig,
 			registerRequest.Email,
 			registerRequest.Username,
 			registerRequest.Password,
@@ -91,7 +91,7 @@ func (svc *UserRouteHandler) PostUserHandler() gin.HandlerFunc {
 // not be called directly
 //
 // TODO: Authentication handler needs to happen here
-func (svc *UserRouteHandler) PatchUserHandler() gin.HandlerFunc {
+func (handler *UserRouteHandler) PatchUserHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		model := new(user.User)
@@ -99,7 +99,7 @@ func (svc *UserRouteHandler) PatchUserHandler() gin.HandlerFunc {
 			middleware.HandleError(c, err)
 		}
 
-		if err := user.Update(svc.server, c.Query("email"), model); err != nil {
+		if err := user.Update(handler.server, c.Query("email"), model); err != nil {
 			middleware.HandleError(c, err)
 		}
 
@@ -111,9 +111,9 @@ func (svc *UserRouteHandler) PatchUserHandler() gin.HandlerFunc {
 // not be called directly
 //
 // TODO: Authentication handler needs to happen here
-func (svc *UserRouteHandler) DeleteUserHandler() gin.HandlerFunc {
+func (handler *UserRouteHandler) DeleteUserHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := user.Delete(svc.server, c.Query("email")); err != nil {
+		if err := user.Delete(handler.server, c.Query("email")); err != nil {
 			middleware.HandleError(c, err)
 		}
 

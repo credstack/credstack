@@ -14,24 +14,24 @@ type ResourceServerRouteHandler struct {
 	server *server.Server
 }
 
-func (svc *ResourceServerRouteHandler) Prefix() string {
+func (handler *ResourceServerRouteHandler) Prefix() string {
 	return "/resource_server"
 }
 
-func (svc *ResourceServerRouteHandler) Group(engine *gin.Engine) {
-	group := engine.Group(svc.Prefix())
+func (handler *ResourceServerRouteHandler) Group(engine *gin.Engine) {
+	group := engine.Group(handler.Prefix())
 
-	group.GET("/", svc.GetResourceServerHandler())
-	group.POST("/", svc.PostResourceServerHandler())
-	group.PATCH("/", svc.PatchResourceServerHandler())
-	group.DELETE("/", svc.DeleteResourceServerHandler())
+	group.GET("/", handler.GetResourceServerHandler())
+	group.POST("/", handler.PostResourceServerHandler())
+	group.PATCH("/", handler.PatchResourceServerHandler())
+	group.DELETE("/", handler.DeleteResourceServerHandler())
 }
 
 // GetResourceServerHandler - Provides a Gin handler for processing a GET request to /management/api. This should
 // not be called directly
 //
 // TODO: Authentication handler needs to happen here
-func (svc *ResourceServerRouteHandler) GetResourceServerHandler() gin.HandlerFunc {
+func (handler *ResourceServerRouteHandler) GetResourceServerHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		audience := c.Query("audience")
 		if audience == "" {
@@ -40,7 +40,7 @@ func (svc *ResourceServerRouteHandler) GetResourceServerHandler() gin.HandlerFun
 				middleware.HandleError(c, err)
 			}
 
-			apis, err := resourceserver.List(svc.server, limit)
+			apis, err := resourceserver.List(handler.server, limit)
 			if err != nil {
 				middleware.HandleError(c, err)
 			}
@@ -48,7 +48,7 @@ func (svc *ResourceServerRouteHandler) GetResourceServerHandler() gin.HandlerFun
 			c.JSON(200, apis)
 		}
 
-		requestedApi, err := resourceserver.Get(svc.server, audience)
+		requestedApi, err := resourceserver.Get(handler.server, audience)
 		if err != nil {
 			middleware.HandleError(c, err)
 		}
@@ -62,7 +62,7 @@ func (svc *ResourceServerRouteHandler) GetResourceServerHandler() gin.HandlerFun
 //
 // TODO: Authentication handler needs to happen here
 // TODO: Better object validation
-func (svc *ResourceServerRouteHandler) PostResourceServerHandler() gin.HandlerFunc {
+func (handler *ResourceServerRouteHandler) PostResourceServerHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		model := new(resourceserver.ResourceServer)
 
@@ -70,7 +70,7 @@ func (svc *ResourceServerRouteHandler) PostResourceServerHandler() gin.HandlerFu
 			middleware.HandleError(c, err)
 		}
 
-		if err := resourceserver.New(svc.server, model.Name, model.Audience, model.TokenType); err != nil {
+		if err := resourceserver.New(handler.server, model.Name, model.Audience, model.TokenType); err != nil {
 			middleware.HandleError(c, err)
 		}
 
@@ -82,14 +82,14 @@ func (svc *ResourceServerRouteHandler) PostResourceServerHandler() gin.HandlerFu
 // not be called directly
 //
 // TODO: Authentication handler needs to happen here
-func (svc *ResourceServerRouteHandler) PatchResourceServerHandler() gin.HandlerFunc {
+func (handler *ResourceServerRouteHandler) PatchResourceServerHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		model := new(resourceserver.ResourceServer)
 		if err := c.BindJSON(model); err != nil {
 			middleware.HandleError(c, err)
 		}
 
-		if err := resourceserver.Update(svc.server, c.Query("audience"), model); err != nil {
+		if err := resourceserver.Update(handler.server, c.Query("audience"), model); err != nil {
 			middleware.HandleError(c, err)
 		}
 
@@ -101,9 +101,9 @@ func (svc *ResourceServerRouteHandler) PatchResourceServerHandler() gin.HandlerF
 // not be called directly
 //
 // TODO: Authentication handler needs to happen here
-func (svc *ResourceServerRouteHandler) DeleteResourceServerHandler() gin.HandlerFunc {
+func (handler *ResourceServerRouteHandler) DeleteResourceServerHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := resourceserver.Delete(svc.server, c.Query("audience")); err != nil {
+		if err := resourceserver.Delete(handler.server, c.Query("audience")); err != nil {
 			middleware.HandleError(c, err)
 		}
 
