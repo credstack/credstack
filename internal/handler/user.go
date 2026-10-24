@@ -4,15 +4,19 @@ import (
 	"strconv"
 
 	"github.com/credstack/credstack/internal/middleware"
+	"github.com/credstack/credstack/internal/services/user"
 	"github.com/credstack/credstack/pkg/models/request"
+	userModel "github.com/credstack/credstack/pkg/models/user"
 	"github.com/credstack/credstack/pkg/server"
-	"github.com/credstack/credstack/pkg/user"
 	"github.com/gin-gonic/gin"
 )
 
 type UserRouteHandler struct {
-	// server - Dependencies required by all API handlers
+	// server Dependencies required by all API handlers
 	server *server.Server
+
+	// svc The user service
+	svc *user.Service
 }
 
 func (handler *UserRouteHandler) Prefix() string {
@@ -39,19 +43,23 @@ func (handler *UserRouteHandler) GetUserHandler() gin.HandlerFunc {
 			limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
 			if err != nil {
 				middleware.HandleError(c, err)
+				return
 			}
 
-			users, err := user.List(handler.server, limit, false)
+			users, err := handler.svc.List(c.Request.Context(), limit)
 			if err != nil {
 				middleware.HandleError(c, err)
+				return
 			}
 
 			c.JSON(200, users)
+			return
 		}
 
-		requestedUser, err := user.Get(handler.server, email, false)
+		requestedUser, err := handler.svc.Get(c.Request.Context(), email)
 		if err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
 		c.JSON(200, requestedUser)
@@ -69,18 +77,12 @@ func (handler *UserRouteHandler) PostUserHandler() gin.HandlerFunc {
 
 		if err := c.BindJSON(registerRequest); err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
-		err := user.Register(
-			handler.server,
-			handler.server.Config.CredentialConfig,
-			registerRequest.Email,
-			registerRequest.Username,
-			registerRequest.Password,
-		)
-
-		if err != nil {
+		if err := handler.svc.Register(c.Request.Context(), registerRequest); err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
 		c.JSON(200, gin.H{"message": "User successfully registered"})
@@ -93,14 +95,15 @@ func (handler *UserRouteHandler) PostUserHandler() gin.HandlerFunc {
 // TODO: Authentication handler needs to happen here
 func (handler *UserRouteHandler) PatchUserHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
-		model := new(user.User)
+		model := new(userModel.User)
 		if err := c.BindJSON(model); err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
-		if err := user.Update(handler.server, c.Query("email"), model); err != nil {
+		if err := handler.svc.Update(c.Request.Context(), c.Query("email"), model); err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
 		c.JSON(200, gin.H{"message": "Updated user successfully"})
@@ -113,7 +116,7 @@ func (handler *UserRouteHandler) PatchUserHandler() gin.HandlerFunc {
 // TODO: Authentication handler needs to happen here
 func (handler *UserRouteHandler) DeleteUserHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := user.Delete(handler.server, c.Query("email")); err != nil {
+		if err := handler.svc.Delete(c.Request.Context(), c.Query("email")); err != nil {
 			middleware.HandleError(c, err)
 		}
 
@@ -124,5 +127,6 @@ func (handler *UserRouteHandler) DeleteUserHandler() gin.HandlerFunc {
 func NewUserRouteHandler(server *server.Server) *UserRouteHandler {
 	return &UserRouteHandler{
 		server: server,
+		svc:    user.New(server),
 	}
 }
