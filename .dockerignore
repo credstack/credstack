@@ -27,3 +27,6 @@ kustomize/
 # Build Artifacts
 dist/
 build/
+
+# Misc
+.ignored/
