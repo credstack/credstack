@@ -14,7 +14,7 @@ type TokenResponse struct {
 	TokenType string `json:"token_type" bson:"token_type"`
 
 	// ExpiresIn - The amount of time (in seconds) that the access token expires in
-	ExpiresIn uint32 `json:"expires_in" bson:"expires_in"`
+	ExpiresIn int `json:"expires_in" bson:"expires_in"`
 
 	// RefreshToken - The refresh tokne that was issued
 	RefreshToken string `json:"refresh_token" bson:"refresh_token"` // omit if empty
