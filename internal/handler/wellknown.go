@@ -1,14 +1,18 @@
 package handler
 
 import (
-	"github.com/credstack/credstack/pkg/oauth/jwk"
+	"github.com/credstack/credstack/internal/middleware"
+	"github.com/credstack/credstack/internal/services/oauth/jwk"
 	"github.com/credstack/credstack/pkg/server"
 	"github.com/gin-gonic/gin"
 )
 
 type WellKnownRouteHandler struct {
-	// server - Dependencies required by all API handlers
+	// server Dependencies required by all API handlers
 	server *server.Server
+
+	// jwkService Service for interacting with JWK/JWKS
+	jwkService *jwk.Service
 }
 
 func (handler *WellKnownRouteHandler) Prefix() string {
@@ -17,16 +21,16 @@ func (handler *WellKnownRouteHandler) Prefix() string {
 
 func (handler *WellKnownRouteHandler) Group(engine *gin.Engine) {
 	group := engine.Group(handler.Prefix())
-
 	group.GET("/jwks.json", handler.GetJWKHandler())
 }
 
 // GetJWKHandler Provides a gin.HandlerFunc for `/.well-known/jwks.json`. Should not be called directly
 func (handler *WellKnownRouteHandler) GetJWKHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		jwks, err := jwk.JWKS(handler.server)
+		jwks, err := handler.jwkService.JWKS(c.Request.Context())
 		if err != nil {
-			c.JSON(500, err) // TODO: Real error handling here
+			middleware.HandleError(c, err)
+			return
 		}
 
 		c.JSON(200, jwks)
@@ -36,6 +40,7 @@ func (handler *WellKnownRouteHandler) GetJWKHandler() gin.HandlerFunc {
 // NewWellKnownRouteHandler Initializes a new WellKnownRouteHandler and returns a pointer to it
 func NewWellKnownRouteHandler(server *server.Server) *WellKnownRouteHandler {
 	return &WellKnownRouteHandler{
-		server: server,
+		server:     server,
+		jwkService: jwk.New(server),
 	}
 }
