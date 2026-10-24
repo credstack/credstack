@@ -18,7 +18,7 @@ type Service struct {
 
 // Get Returns a OAuth Client for a given client_id
 func (svc *Service) Get(ctx context.Context, clientId string) (*client.Client, error) {
-	ret, err := svc.repository.Get(ctx, bson.M{"client_id": clientId}, "client_secret")
+	ret, err := svc.repository.Get(ctx, bson.M{"client_id": clientId})
 	if err != nil {
 		return nil, err
 	}
