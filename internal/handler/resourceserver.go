@@ -4,14 +4,19 @@ import (
 	"strconv"
 
 	"github.com/credstack/credstack/internal/middleware"
-	"github.com/credstack/credstack/pkg/oauth/resourceserver"
+	"github.com/credstack/credstack/internal/services/oauth/jwk"
+	"github.com/credstack/credstack/internal/services/oauth/resourceserver"
+	resourceServerModel "github.com/credstack/credstack/pkg/models/oauth/resourceserver"
 	"github.com/credstack/credstack/pkg/server"
 	"github.com/gin-gonic/gin"
 )
 
 type ResourceServerRouteHandler struct {
-	// server - Dependencies required by all API handlers
+	// server Dependencies required by all API handlers
 	server *server.Server
+
+	// svc Resource Server service
+	svc *resourceserver.Service
 }
 
 func (handler *ResourceServerRouteHandler) Prefix() string {
@@ -38,22 +43,26 @@ func (handler *ResourceServerRouteHandler) GetResourceServerHandler() gin.Handle
 			limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
 			if err != nil {
 				middleware.HandleError(c, err)
+				return
 			}
 
-			apis, err := resourceserver.List(handler.server, limit)
+			rs, err := handler.svc.List(c.Request.Context(), limit)
 			if err != nil {
 				middleware.HandleError(c, err)
+				return
 			}
 
-			c.JSON(200, apis)
+			c.JSON(200, rs)
+			return
 		}
 
-		requestedApi, err := resourceserver.Get(handler.server, audience)
+		rs, err := handler.svc.Get(c.Request.Context(), audience)
 		if err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
-		c.JSON(200, requestedApi)
+		c.JSON(200, rs)
 	}
 }
 
@@ -64,14 +73,15 @@ func (handler *ResourceServerRouteHandler) GetResourceServerHandler() gin.Handle
 // TODO: Better object validation
 func (handler *ResourceServerRouteHandler) PostResourceServerHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		model := new(resourceserver.ResourceServer)
+		model := new(resourceServerModel.ResourceServer)
 
 		if err := c.BindJSON(model); err != nil {
 			middleware.HandleError(c, err)
 		}
 
-		if err := resourceserver.New(handler.server, model.Name, model.Audience, model.TokenType); err != nil {
+		if err := handler.svc.New(c.Request.Context(), model); err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
 		c.JSON(200, gin.H{"message": "Created API successfully"})
@@ -84,13 +94,15 @@ func (handler *ResourceServerRouteHandler) PostResourceServerHandler() gin.Handl
 // TODO: Authentication handler needs to happen here
 func (handler *ResourceServerRouteHandler) PatchResourceServerHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		model := new(resourceserver.ResourceServer)
+		model := new(resourceServerModel.ResourceServer)
 		if err := c.BindJSON(model); err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
-		if err := resourceserver.Update(handler.server, c.Query("audience"), model); err != nil {
+		if err := handler.svc.Update(c.Request.Context(), c.Query("audience"), model); err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
 		c.JSON(200, gin.H{"message": "Updated API successfully"})
@@ -101,10 +113,12 @@ func (handler *ResourceServerRouteHandler) PatchResourceServerHandler() gin.Hand
 // not be called directly
 //
 // TODO: Authentication handler needs to happen here
+// TODO: This is returning 200 even when no resource server is found
 func (handler *ResourceServerRouteHandler) DeleteResourceServerHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := resourceserver.Delete(handler.server, c.Query("audience")); err != nil {
+		if err := handler.svc.Delete(c.Request.Context(), c.Query("audience")); err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
 		c.JSON(200, gin.H{"message": "Deleted API successfully"})
@@ -114,5 +128,6 @@ func (handler *ResourceServerRouteHandler) DeleteResourceServerHandler() gin.Han
 func NewResourceServerRouteHandler(server *server.Server) *ResourceServerRouteHandler {
 	return &ResourceServerRouteHandler{
 		server: server,
+		svc:    resourceserver.New(server, jwk.New(server)),
 	}
 }
