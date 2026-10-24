@@ -1,6 +1,12 @@
 package server
 
 import (
+	"fmt"
+	"log/slog"
+	"runtime"
+
+	"github.com/credstack/credstack/internal/log"
+	"github.com/credstack/credstack/internal/version"
 	"github.com/credstack/credstack/pkg/config"
 )
 
@@ -14,9 +20,6 @@ type Server struct {
 
 	// database - Provides a connected database for services to interact with
 	database *Database
-
-	// log - Provides a production-ready Zap logger for services to interact with
-	log *Log
 }
 
 /*
@@ -29,31 +32,18 @@ func (server *Server) Database() *Database {
 }
 
 /*
-Log - Returns a pointer to the Log that the server is currently using. If you are using this
-be sure to call Log.Close once the application exists as existing writes that have been buffered
-will get flushed
-*/
-func (server *Server) Log() *Log {
-	return server.log
-}
-
-/*
 Start - Initializes the server. Connects to the database and initializes the logger
 */
 func (server *Server) Start() error {
-	server.Log().LogVersion()
-	server.Log().LogDatabaseEvent("DatabaseConnect",
-		server.Config.DatabaseConfig.Hostname,
-		int(server.Config.DatabaseConfig.Port),
-	)
+	if err := log.Init(server.Config.LogConfig); err != nil {
+		return fmt.Errorf("log: Failed to initialize logger: %v", err)
+	}
 
-	/*
-		We still need to connect to our database as the constructors for Server do not
-		provide this functionality by default.
-	*/
+	slog.Info("version", "sem_ver", version.SemVer, "commit_sha", version.CommitSHA, "build_date", version.BuildDate, "runtime", runtime.Version())
+	slog.Info("connecting to database", "hostname", server.Config.DatabaseConfig.Hostname, "port", server.Config.DatabaseConfig.Port)
+
 	err := server.Database().Connect()
 	if err != nil {
-		server.Log().LogErrorEvent("Failed to connect to database", err)
 		return err
 	}
 
@@ -64,30 +54,14 @@ func (server *Server) Start() error {
 Stop - Stops the server from running. Disconnects the database and flushes the logger to disk
 */
 func (server *Server) Stop() error {
-	server.Log().LogDatabaseEvent("DatabaseDisconnect",
-		server.Config.DatabaseConfig.Hostname,
-		int(server.Config.DatabaseConfig.Port),
-	)
+	slog.Info("disconncting from database", "hostname", server.Config.DatabaseConfig.Hostname, "port", server.Config.DatabaseConfig.Port)
+
 	/*
 		Then we close our connection to the database gracefully.
 	*/
 	err := server.Database().Disconnect()
 	if err != nil {
 		return err // log here
-	}
-
-	server.Log().LogShutdownEvent("LogFlush", "Flushing queued logs and closing log file")
-
-	/*
-		Then we flush any buffered logs to sync and close the open log file, any errors
-		returned from this action will be logged properly
-	*/
-	err = server.Log().CloseLog()
-	if err != nil {
-		if err.Error() == "sync /dev/stdout: invalid argument" { // we explicitly ignore this error as it /dev/stdout is not a real file that supports the Sync system call
-			return nil
-		}
-		return err
 	}
 
 	return nil
@@ -98,6 +72,5 @@ func New(config *config.ServerConfig) *Server {
 	return &Server{
 		Config:   config,
 		database: NewDatabase(config.DatabaseConfig),
-		log:      NewLog(config.LogConfig),
 	}
 }

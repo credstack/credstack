@@ -5,6 +5,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/credstack/credstack/internal/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -23,7 +24,7 @@ type ServerConfig struct {
 	CredentialConfig CredentialConfig `mapstructure:"credential"`
 
 	// LogConfig All options for controlling how logs are generated/written
-	LogConfig LogConfig `mapstructure:"log"`
+	LogConfig log.Config `mapstructure:"log"`
 }
 
 // sanitizePath Performs basic sanitation on user provided paths
@@ -103,6 +104,6 @@ func New() *ServerConfig {
 		ApiConfig:        DefaultApiConfig(),
 		DatabaseConfig:   DefaultDatabaseConfig(),
 		CredentialConfig: DefaultCredentialConfig(),
-		LogConfig:        DefaultLogConfig(),
+		LogConfig:        log.DefaultConfig(),
 	}
 }

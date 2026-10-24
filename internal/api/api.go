@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"os"
@@ -35,14 +35,14 @@ func (api *Api) handleSignal(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			if err := api.shutdown(ctx); err != nil {
-				log.Printf("error on shutdown: %v", err.Error())
+				slog.Error("error on shutdown: %v", "err", err.Error())
 			}
 
 			return
 		case <-sig:
-			log.Printf("received either SIGTERM or SIGINT. Shutting down API Server")
+			slog.Info("received either SIGTERM or SIGINT. Shutting down API Server")
 			if err := api.shutdown(ctx); err != nil {
-				log.Printf("error on shutdown: %v", err.Error())
+				slog.Error("error on shutdown: %v", "err", err.Error())
 			}
 
 			return

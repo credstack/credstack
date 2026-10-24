@@ -95,9 +95,7 @@ func NewRootCmd() *cobra.Command {
 	/*
 		Log - Provides options that control how logging is handled
 	*/
-	rootCmd.Flags().String("log.level", "", "The level of logging to use. Can be one of: debug, warn, info. Defaults to info")
-	rootCmd.Flags().String("log.path", "/var/log/credstack", "The directory to write log files too")
-	rootCmd.Flags().Bool("log.use_file_logging", false, "If set to true, then log files will be written. Otherwise, only STDOUT logging will be used")
+	rootCmd.Flags().String("log.level", "info", "The level of logging to use. Can be one of: debug, warn, info. Defaults to info")
 
 	/*
 		Credential - Provides options that control how user credentials are hashed
