@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/credstack/credstack/internal/secret"
-	"github.com/credstack/credstack/pkg/config"
 )
 
 // Credential Represents a user's hashed password, along with the parameters used for hashing
@@ -33,8 +32,8 @@ type Credential struct {
 
 // NewCredential Creates and generates a new UserCredential using the secret provided in the parameter. Both the secret
 // and the salt are stored as URL-Safe, base64 encoded strings.
-func New(credential string, config config.CredentialConfig) (*Credential, error) {
-	hash, salt, err := secret.NewArgon2Hash([]byte(credential), config)
+func New(credential string, config Config) (*Credential, error) {
+	hash, salt, err := NewArgon2Hash([]byte(credential), config)
 	if err != nil {
 		return nil, fmt.Errorf("credential: Failed to hash user credential %v", err)
 	}
@@ -62,7 +61,7 @@ func CheckCredential(validate string, credential *Credential) error {
 		return err
 	}
 
-	isValid := secret.ValidateArgon2Hash([]byte(validate), decodedSalt, decodedHash, config.CredentialConfig{
+	isValid := ValidateArgon2Hash([]byte(validate), decodedSalt, decodedHash, Config{
 		Time:      credential.Time,
 		Memory:    credential.Memory,
 		Threads:   uint8(credential.Threads),
