@@ -5,6 +5,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/credstack/credstack/internal/database"
 	"github.com/credstack/credstack/internal/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -18,7 +19,7 @@ type ServerConfig struct {
 	ApiConfig ApiConfig `mapstructure:"api"`
 
 	// DatabaseConfig All Database configuration options
-	DatabaseConfig DatabaseConfig `mapstructure:"database"`
+	DatabaseConfig database.Config `mapstructure:"database"`
 
 	// CredentialConfig All options for controlling how user passwords are hashed
 	CredentialConfig CredentialConfig `mapstructure:"credential"`
@@ -102,7 +103,7 @@ func New() *ServerConfig {
 	return &ServerConfig{
 		viper:            viper.New(),
 		ApiConfig:        DefaultApiConfig(),
-		DatabaseConfig:   DefaultDatabaseConfig(),
+		DatabaseConfig:   database.DefaultConfig(),
 		CredentialConfig: DefaultCredentialConfig(),
 		LogConfig:        log.DefaultConfig(),
 	}

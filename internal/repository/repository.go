@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/credstack/credstack/internal/server"
+	"github.com/credstack/credstack/internal/database"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -20,7 +20,7 @@ type PatchFunc[T any] func(*T) bson.M
 
 // Repository An abstraction capable of performing basic CRUD operations on top of Mongo
 type Repository[T any] struct {
-	db *server.Database
+	db *database.Database
 
 	coll string
 }
@@ -132,7 +132,7 @@ func (repo *Repository[T]) Update(ctx context.Context, filter bson.M, patch Patc
 }
 
 // New Initializes a new repository and returns a pointer to it
-func New[T any](db *server.Database, collection string) *Repository[T] {
+func New[T any](db *database.Database, collection string) *Repository[T] {
 	return &Repository[T]{
 		db:   db,
 		coll: collection,

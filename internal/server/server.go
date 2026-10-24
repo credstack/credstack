@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"runtime"
 
+	"github.com/credstack/credstack/internal/database"
 	"github.com/credstack/credstack/internal/log"
 	"github.com/credstack/credstack/internal/version"
 	"github.com/credstack/credstack/pkg/config"
@@ -19,7 +20,7 @@ type Server struct {
 	Config *config.ServerConfig
 
 	// database - Provides a connected database for services to interact with
-	database *Database
+	database *database.Database
 }
 
 /*
@@ -27,7 +28,7 @@ Database - Returns a pointer to the Database that the server is currently using.
 database gets re-used across multiple services as re-connecting to the database across every
 function call gets expensive
 */
-func (server *Server) Database() *Database {
+func (server *Server) Database() *database.Database {
 	return server.database
 }
 
@@ -71,6 +72,6 @@ func (server *Server) Stop() error {
 func New(config *config.ServerConfig) *Server {
 	return &Server{
 		Config:   config,
-		database: NewDatabase(config.DatabaseConfig),
+		database: database.New(config.DatabaseConfig),
 	}
 }
