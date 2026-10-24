@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/credstack/credstack/internal/secret"
 	"github.com/credstack/credstack/pkg/models/header"
-	"github.com/credstack/credstack/pkg/secret"
 )
 
 const RSAKeySize int = 2048

@@ -3,8 +3,8 @@ package credential
 import (
 	"fmt"
 
+	"github.com/credstack/credstack/internal/secret"
 	"github.com/credstack/credstack/pkg/config"
-	"github.com/credstack/credstack/pkg/secret"
 )
 
 // Credential Represents a user's hashed password, along with the parameters used for hashing

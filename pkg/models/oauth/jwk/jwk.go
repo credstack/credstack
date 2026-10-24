@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/credstack/credstack/pkg/secret"
+	"github.com/credstack/credstack/internal/secret"
 )
 
 // JSONWebKey Represents a JSON Web Key used for signing tokens
