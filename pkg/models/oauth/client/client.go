@@ -26,7 +26,7 @@ type Client struct {
 	RedirectURI string `bson:"redirect_uri" json:"redirect_uri"`
 
 	// TokenLifetime An unsigned integer representing the amount of time in seconds that the token is valid for
-	TokenLifetime uint64 `bson:"token_lifetime" json:"token_lifetime" validate:"gte=3600"`
+	TokenLifetime int `bson:"token_lifetime" json:"token_lifetime" validate:"gte=3600"`
 
 	// GrantTypes The grant types that the Client is allowed to issue tokens under
 	GrantTypes []string `bson:"grant_types" json:"grant_types" validate:"required,gt=0,dive,oneof=authorization_code client_credentials"`
