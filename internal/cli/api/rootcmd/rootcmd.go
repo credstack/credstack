@@ -13,8 +13,8 @@ import (
 	"github.com/credstack/credstack/internal/api"
 	"github.com/credstack/credstack/internal/cli/api/versioncmd"
 	"github.com/credstack/credstack/internal/handler"
+	"github.com/credstack/credstack/internal/server"
 	"github.com/credstack/credstack/pkg/config"
-	"github.com/credstack/credstack/pkg/server"
 	"github.com/spf13/cobra"
 )
 

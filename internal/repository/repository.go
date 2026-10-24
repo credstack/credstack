@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/credstack/credstack/pkg/server"
+	"github.com/credstack/credstack/internal/server"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"

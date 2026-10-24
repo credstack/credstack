@@ -2,8 +2,8 @@ package handler
 
 import (
 	"github.com/credstack/credstack/internal/middleware"
+	"github.com/credstack/credstack/internal/server"
 	"github.com/credstack/credstack/internal/services/oauth/jwk"
-	"github.com/credstack/credstack/pkg/server"
 	"github.com/gin-gonic/gin"
 )
 

@@ -4,10 +4,10 @@ import (
 	"strconv"
 
 	"github.com/credstack/credstack/internal/middleware"
+	"github.com/credstack/credstack/internal/server"
 	"github.com/credstack/credstack/internal/services/oauth/jwk"
 	"github.com/credstack/credstack/internal/services/oauth/resourceserver"
 	resourceServerModel "github.com/credstack/credstack/pkg/models/oauth/resourceserver"
-	"github.com/credstack/credstack/pkg/server"
 	"github.com/gin-gonic/gin"
 )
 

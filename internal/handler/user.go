@@ -4,10 +4,10 @@ import (
 	"strconv"
 
 	"github.com/credstack/credstack/internal/middleware"
+	"github.com/credstack/credstack/internal/server"
 	"github.com/credstack/credstack/internal/services/user"
 	"github.com/credstack/credstack/pkg/models/request"
 	userModel "github.com/credstack/credstack/pkg/models/user"
-	"github.com/credstack/credstack/pkg/server"
 	"github.com/gin-gonic/gin"
 )
 

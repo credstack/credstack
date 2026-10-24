@@ -5,6 +5,7 @@ import (
 	"crypto/subtle"
 	"errors"
 
+	"github.com/credstack/credstack/internal/server"
 	"github.com/credstack/credstack/internal/services/oauth/client"
 	"github.com/credstack/credstack/internal/services/oauth/jwk"
 	"github.com/credstack/credstack/internal/services/oauth/resourceserver"
@@ -12,7 +13,6 @@ import (
 	clientModel "github.com/credstack/credstack/pkg/models/oauth/client"
 	"github.com/credstack/credstack/pkg/models/request"
 	"github.com/credstack/credstack/pkg/models/response"
-	"github.com/credstack/credstack/pkg/server"
 )
 
 var (

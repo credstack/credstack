@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/credstack/credstack/internal/server"
 	"github.com/credstack/credstack/internal/services/oauth/jwk"
 	internal "github.com/credstack/credstack/internal/time" // rename to `time`
 	tokenModel "github.com/credstack/credstack/pkg/models/oauth/token"
-	"github.com/credstack/credstack/pkg/server"
 	"github.com/golang-jwt/jwt/v5"
 )
 

@@ -4,9 +4,9 @@ import (
 	"strconv"
 
 	"github.com/credstack/credstack/internal/middleware"
+	"github.com/credstack/credstack/internal/server"
 	"github.com/credstack/credstack/internal/services/oauth/client"
 	clientModel "github.com/credstack/credstack/pkg/models/oauth/client"
-	"github.com/credstack/credstack/pkg/server"
 	"github.com/gin-gonic/gin"
 )
 
