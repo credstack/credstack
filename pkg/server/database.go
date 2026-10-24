@@ -4,14 +4,10 @@ import (
 	"context"
 
 	"github.com/credstack/credstack/pkg/config"
-	credstackError "github.com/credstack/credstack/pkg/errors"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	mongoOpts "go.mongodb.org/mongo-driver/v2/mongo/options"
 	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 )
-
-// ErrInternalDatabase - Provides a simple wrapper around an internal database error
-var ErrInternalDatabase = credstackError.NewError(500, "INTERNAL_DATABASE_ERROR", "database: an internal error occurred")
 
 /*
 Database - Defines the core abstraction around a MongoDB database. This structure provides construction from
