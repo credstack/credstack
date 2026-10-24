@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/credstack/credstack/internal/repository"
-	"github.com/credstack/credstack/pkg/header"
+	"github.com/credstack/credstack/pkg/models/header"
 	"github.com/credstack/credstack/pkg/models/oauth/client"
 	"github.com/credstack/credstack/pkg/secret"
 	"github.com/credstack/credstack/pkg/server"

@@ -5,7 +5,7 @@ import (
 
 	"github.com/credstack/credstack/internal/repository"
 	"github.com/credstack/credstack/internal/services/oauth/jwk"
-	"github.com/credstack/credstack/pkg/header"
+	"github.com/credstack/credstack/pkg/models/header"
 	"github.com/credstack/credstack/pkg/models/oauth/resourceserver"
 	"github.com/credstack/credstack/pkg/server"
 	"go.mongodb.org/mongo-driver/v2/bson"

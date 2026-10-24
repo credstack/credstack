@@ -1,7 +1,7 @@
 package resourceserver
 
 import (
-	"github.com/credstack/credstack/pkg/header"
+	"github.com/credstack/credstack/pkg/models/header"
 	"github.com/go-playground/validator/v10"
 )
 

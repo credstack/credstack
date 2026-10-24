@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/credstack/credstack/pkg/header"
+	"github.com/credstack/credstack/pkg/models/header"
 	"github.com/credstack/credstack/pkg/secret"
 )
 
