@@ -4,14 +4,18 @@ import (
 	"strconv"
 
 	"github.com/credstack/credstack/internal/middleware"
-	"github.com/credstack/credstack/pkg/oauth/client"
+	"github.com/credstack/credstack/internal/services/oauth/client"
+	clientModel "github.com/credstack/credstack/pkg/models/oauth/client"
 	"github.com/credstack/credstack/pkg/server"
 	"github.com/gin-gonic/gin"
 )
 
 type ClientRouteHandler struct {
-	// server - Dependencies required by all API handlers
+	// server Dependencies required by all API handlers
 	server *server.Server
+
+	// svc OAuth Client service
+	svc *client.Service
 }
 
 func (handler *ClientRouteHandler) Prefix() string {
@@ -38,19 +42,23 @@ func (handler *ClientRouteHandler) GetClientHandler() gin.HandlerFunc {
 			limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
 			if err != nil {
 				middleware.HandleError(c, err)
+				return
 			}
 
-			apps, err := client.List(handler.server, limit, true)
+			apps, err := handler.svc.List(c.Request.Context(), limit)
 			if err != nil {
 				middleware.HandleError(c, err)
+				return
 			}
 
 			c.JSON(200, apps)
+			return
 		}
 
-		app, err := client.Get(handler.server, clientId, true)
+		app, err := handler.svc.Get(c.Request.Context(), clientId)
 		if err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
 		c.JSON(200, app)
@@ -65,17 +73,18 @@ TODO: Authentication handler needs to happen here
 */
 func (handler *ClientRouteHandler) PostClientHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		model := new(client.Client)
+		model := new(clientModel.Client)
 		if err := c.BindJSON(model); err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
-		clientId, err := client.New(handler.server, model.Name, model.IsPublic, model.GrantTypes...)
-		if err != nil {
+		if err := handler.svc.New(c.Request.Context(), model); err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
-		c.JSON(200, gin.H{"message": "Created application successfully", "client_id": clientId})
+		c.JSON(200, gin.H{"message": "Created application successfully", "client_id": model.ClientId})
 	}
 }
 
@@ -85,13 +94,15 @@ func (handler *ClientRouteHandler) PostClientHandler() gin.HandlerFunc {
 // TODO: Authentication handler needs to happen here
 func (handler *ClientRouteHandler) PatchClientHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		model := new(client.Client)
+		model := new(clientModel.Client)
 		if err := c.BindJSON(model); err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
-		if err := client.Update(handler.server, c.Query("client_id"), model); err != nil {
+		if err := handler.svc.Update(c.Request.Context(), c.Query("client_id"), model); err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
 		c.JSON(200, gin.H{"message": "Updated application successfully"})
@@ -101,11 +112,13 @@ func (handler *ClientRouteHandler) PatchClientHandler() gin.HandlerFunc {
 // DeleteClientHandler - Provides a Gin handler for processing a DELETE request to /client This should
 // not be called directly
 //
-// TODO: Authentication handler needs to happen here
+// TODO: Authentication handler needs to happen here\
+// TODO: This is still returning a 200 even when the object does not exist
 func (handler *ClientRouteHandler) DeleteClientHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := client.Delete(handler.server, c.Query("client_id")); err != nil {
+		if err := handler.svc.Delete(c.Request.Context(), c.Query("client_id")); err != nil {
 			middleware.HandleError(c, err)
+			return
 		}
 
 		c.JSON(200, gin.H{"message": "Deleted application successfully"})
@@ -115,5 +128,6 @@ func (handler *ClientRouteHandler) DeleteClientHandler() gin.HandlerFunc {
 func NewClientRouteHandler(server *server.Server) *ClientRouteHandler {
 	return &ClientRouteHandler{
 		server: server,
+		svc:    client.New(server),
 	}
 }
