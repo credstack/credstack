@@ -14,7 +14,7 @@ type TokenRequest struct {
 	ClientId string `json:"client_id" bson:"client_id" form:"client_id" validate:"required"`
 
 	// ClientSecret - The client secret of the application. Can be null in some cases
-	ClientSecret string `json:"client_secret" bson:"client_secret" form:"client_secret"`
+	ClientSecret string `json:"client_secret" bson:"client_secret" form:"client_secret" validate:"clientCredentialsFlow"`
 
 	// Audience - The audience for the API you are requesting a token for
 	Audience string `json:"audience" bson:"audience" form:"audience" validate:"required"`
@@ -26,8 +26,23 @@ type TokenRequest struct {
 	RedirectUri string `json:"redirect_uri" bson:"redirect_uri" form:"redirect_uri"`
 }
 
+func (request *TokenRequest) validateClientCredentials(fl validator.FieldLevel) bool {
+	if request.GrantType == "client_credentials" {
+		if fl.Field().String() == "" { // request.ClientSecret must be populated for client_credentials
+			return false
+		}
+	}
+
+	return true
+}
+
 func (request *TokenRequest) Validate() error {
 	validate := validator.New(validator.WithRequiredStructEnabled())
+
+	if err := validate.RegisterValidation("clientCredentialsFlow", request.validateClientCredentials); err != nil {
+		return err
+	}
+
 	if err := validate.Struct(request); err != nil {
 		return err
 	}
