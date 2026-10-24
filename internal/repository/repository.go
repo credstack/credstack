@@ -84,7 +84,7 @@ func (repo *Repository[T]) List(ctx context.Context, limit int, projection ...st
 	}
 
 	ret := make([]*T, 0, limit)
-	if err := result.All(ctx, ret); err != nil {
+	if err := result.All(ctx, &ret); err != nil {
 		return nil, repo.handleError(err)
 	}
 
