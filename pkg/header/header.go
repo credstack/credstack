@@ -2,7 +2,7 @@ package header
 
 import (
 	internalTime "github.com/credstack/credstack/internal/time"
-	"github.com/credstack/credstack/pkg/secret"
+	"github.com/google/uuid"
 )
 
 /*
@@ -36,7 +36,7 @@ func New(basis string) *Header {
 	timestamp := internalTime.UnixTimestamp()
 
 	return &Header{
-		Identifier: secret.GenerateUUID(basis),
+		Identifier: uuid.NewSHA1(uuid.NameSpaceURL, []byte(basis)).String(),
 		CreatedAt:  timestamp,
 		UpdatedAt:  timestamp,
 		AccessedAt: timestamp,
