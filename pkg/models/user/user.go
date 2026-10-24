@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/credstack/credstack/pkg/credential"
+	"github.com/credstack/credstack/internal/credential"
 	"github.com/credstack/credstack/pkg/header"
 	"github.com/go-playground/validator/v10"
 )

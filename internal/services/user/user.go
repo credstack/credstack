@@ -3,8 +3,8 @@ package user
 import (
 	"context"
 
+	"github.com/credstack/credstack/internal/credential"
 	"github.com/credstack/credstack/internal/repository"
-	"github.com/credstack/credstack/pkg/credential"
 	"github.com/credstack/credstack/pkg/header"
 	"github.com/credstack/credstack/pkg/models/request"
 	"github.com/credstack/credstack/pkg/models/user"
