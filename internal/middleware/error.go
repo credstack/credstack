@@ -34,7 +34,7 @@ func HandleError(c *gin.Context, err error) {
 			formattedErrors = append(formattedErrors, e.Error())
 		}
 
-		c.AbortWithStatusJSON(422, gin.H{"error": "Model failed validation", "validation": formattedErrors})
+		c.AbortWithStatusJSON(400, gin.H{"error": "Model failed validation", "validation": formattedErrors})
 		return
 	}
 
