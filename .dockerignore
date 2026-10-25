@@ -1,0 +1,32 @@
+# Documentation
+docs/
+*.md
+LICENSE
+
+# Config
+config/
+*.json
+*.yaml
+
+# Git
+.git/
+.github/
+.gitignore
+
+# IDE
+.idea/
+.vscode
+
+# Misc
+.DS_Store
+
+# K8s
+helm/
+kustomize/
+
+# Build Artifacts
+dist/
+build/
+
+# Misc
+.ignored/

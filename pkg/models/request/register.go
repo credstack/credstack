@@ -1,19 +1,60 @@
 package request
 
-/*
-UserRegisterRequest - Provides a way for user's to register there accounts on a service. Any values not provided in this
-request must be modified after user-registration
-*/
+import (
+	"regexp"
+
+	"github.com/go-playground/validator/v10"
+)
+
+// UserRegisterRequest Provides a generalized structure for processing user registration requests
 type UserRegisterRequest struct {
 	// Email - The primary email address for the user. Must be unique
-	Email string `json:"email" bson:"email"`
-
-	// Username - The username of the user. Does not need to be unique as primary lookup for the user is done via email
-	Username string `json:"username" bson:"username"`
+	Email string `json:"email" bson:"email" validate:"required,email"`
 
 	// Password - The plain text password for the user. Will be hashed on the server-side using Argonv2ID
-	Password string `json:"password" bson:"password"`
+	Password string `json:"password" bson:"password" validate:"required,password"`
+}
 
-	// PhoneNumber - The users phone number in the following format +1800-555-5555
-	PhoneNumber string `json:"phone_number" bson:"phone_number"`
+// validateEmail Ensures that the user has provided a valid email address
+func (request *UserRegisterRequest) validateEmail(fl validator.FieldLevel) bool {
+	if !regexp.MustCompile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$").MatchString(fl.Field().String()) {
+		return false
+	}
+
+	return true
+}
+
+// validatePassword Ensures that the user has not provided a password that was too short/long.
+//
+// TODO: This should be exposed as configuration
+func (request *UserRegisterRequest) validatePassword(fl validator.FieldLevel) bool {
+	val := fl.Field().String()
+	if len(val) < 12 {
+		return false
+	}
+
+	if len(val) > 64 {
+		return false
+	}
+
+	return true
+}
+
+// Validate Ensures the user has provided a valid registration request
+func (request *UserRegisterRequest) Validate() error {
+	validate := validator.New(validator.WithRequiredStructEnabled())
+
+	if err := validate.RegisterValidation("email", request.validateEmail); err != nil {
+		return err
+	}
+
+	if err := validate.RegisterValidation("password", request.validatePassword); err != nil {
+		return err
+	}
+
+	if err := validate.Struct(request); err != nil {
+		return err
+	}
+
+	return nil
 }

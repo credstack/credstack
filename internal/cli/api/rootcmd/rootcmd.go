@@ -12,6 +12,8 @@ import (
 
 	"github.com/credstack/credstack/internal/api"
 	"github.com/credstack/credstack/internal/cli/api/versioncmd"
+	"github.com/credstack/credstack/internal/handler"
+	"github.com/credstack/credstack/internal/server"
 	"github.com/credstack/credstack/pkg/config"
 	"github.com/spf13/cobra"
 )
@@ -34,11 +36,35 @@ func NewRootCmd() *cobra.Command {
 			}
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-			defer cancel()
-
-			err := api.New(globalConfig).Start(ctx)
+			api, err := api.New(globalConfig)
 			if err != nil {
+				return err
+			}
+
+			srv := server.New(globalConfig)
+			if err := srv.Start(); err != nil {
+				return err
+			}
+
+			// TODO: This should really get its own abstraction so that other server components
+			// can have preflights
+			if err := srv.Database().PreFlight(); len(err) > 0 {
+				return fmt.Errorf("got the following errors during DB preflight: %v", err)
+			}
+
+			api.RegisterRouteHandlers(
+				handler.NewWellKnownRouteHandler(srv),
+				handler.NewOAuthRouteHandler(srv),
+				handler.NewUserRouteHandler(srv),
+				handler.NewResourceServerRouteHandler(srv),
+				handler.NewClientRouteHandler(srv),
+			)
+
+			if err := api.Run(context.Background()); err != nil {
+				return err
+			}
+
+			if err := srv.Stop(); err != nil {
 				return err
 			}
 
@@ -51,7 +77,6 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "~/.credstack/config.json", "Set the the config file to load")
 	rootCmd.Flags().IntP("api.port", "p", 8080, "The default port that the API is going to listen for requests at")
 	rootCmd.Flags().Bool("api.debug", false, "Enables debug mode for the API and disables various options in Fiber. See the docs for more details")
-	rootCmd.Flags().Bool("api.prefork", false, "Allows the API to serve requests on multiple processes")
 	rootCmd.Flags().Bool("api.skip_preflight", false, "If set to true, then skip API pre-flight checks")
 	rootCmd.Flags().StringP("issuer", "i", "https://credstack.issuer.change.me", "The issuer to insert into the claims of issued JWT tokens")
 
@@ -70,9 +95,7 @@ func NewRootCmd() *cobra.Command {
 	/*
 		Log - Provides options that control how logging is handled
 	*/
-	rootCmd.Flags().String("log.level", "", "The level of logging to use. Can be one of: debug, warn, info. Defaults to info")
-	rootCmd.Flags().String("log.path", "/var/log/credstack", "The directory to write log files too")
-	rootCmd.Flags().Bool("log.use_file_logging", false, "If set to true, then log files will be written. Otherwise, only STDOUT logging will be used")
+	rootCmd.Flags().String("log.level", "info", "The level of logging to use. Can be one of: debug, warn, info. Defaults to info")
 
 	/*
 		Credential - Provides options that control how user credentials are hashed

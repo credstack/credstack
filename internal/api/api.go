@@ -2,164 +2,144 @@ package api
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
+	"log/slog"
+	"net"
+	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
-	"syscall"
 
-	"github.com/credstack/credstack/internal/service"
+	"github.com/credstack/credstack/internal/handler"
 	"github.com/credstack/credstack/pkg/config"
-	credstackError "github.com/credstack/credstack/pkg/errors"
-	"github.com/credstack/credstack/pkg/server"
-	"github.com/gofiber/fiber/v3"
-	"github.com/gofiber/fiber/v3/middleware/pprof"
-	"github.com/gofiber/fiber/v3/middleware/recover"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/sys/unix"
 )
 
-// ErrPreflightFailed - Gets returned when a pre-flight check has failed
-var ErrPreflightFailed = credstackError.NewError(500, "PREFLIGHT_FAILED", "One or more preflight checks have failed")
-
 type Api struct {
-	// options - Universal options for the API
+	// config The API Configuration options passed at construction
 	config *config.ServerConfig
 
-	// app - An instance of a Fiber Application
-	app *fiber.App
+	// router The Gin API router
+	router *gin.Engine
 
-	// server - Dependencies required by all API handlers
-	server *server.Server
+	// srv The API Server
+	srv *http.Server
 }
 
-func (api *Api) RegisterHandlers() {
-	service.NewUserService(api.server, api.app).RegisterHandlers()
-	service.NewClientService(api.server, api.app).RegisterHandlers()
-	service.NewResourceServerService(api.server, api.app).RegisterHandlers()
-	service.NewOAuthService(api.server, api.app).RegisterHandlers()
-	service.NewWellKnownService(api.server, api.app).RegisterHandlers()
-}
+func (api *Api) handleSignal(ctx context.Context) {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, unix.SIGQUIT, unix.SIGTERM, unix.SIGINT)
 
-/*
-preFlight - Executes a series of pre-flight checks and initializes API dependencies. An error is returned if pre-flight
-checks fail for whatever reason. This phase can be skipped by settings api.skip_preflight == true
-*/
-func (api *Api) preFlight() error {
-	api.server.Log().LogStartupEvent("PreflightCheck", "Executing pre-flight checks on database")
-	dbErrors := api.server.Database().PreFlight()
-	if len(dbErrors) != 0 {
-		for coll, err := range dbErrors {
-			api.server.Log().LogErrorEvent("Preflight validation for collection failed: "+coll, err)
-		}
-
-		return fmt.Errorf("%w: %s", ErrPreflightFailed, dbErrors)
-	}
-
-	// TODO: Initialize resource server and client for credstack authentication
-
-	return nil
-}
-
-/*
-Stop - Gracefully terminates the API, closes database connections and flushes existing logs to sync
-*/
-func (api *Api) Stop(ctx context.Context) error {
-	api.server.Log().LogShutdownEvent("API", "Shutting down API. New requests will not be allowed")
-
-	/*
-		First we shut down the API to ensure that any currently processing requests
-		finish. Additionally, we don't want new requests coming in as we are shutting
-		down the server
-	*/
-	err := api.app.ShutdownWithContext(ctx)
-	if err != nil {
-		return err // log here
-	}
-
-	err = api.server.Stop()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-/*
-Start - Connects to MongoDB and starts the API
-*/
-func (api *Api) Start(ctx context.Context) error {
-	err := api.server.Start() // this needs to go.
-	if err != nil {
-		return err
-	}
-
-	if api.config.ApiConfig.SkipPreflight == false {
-		api.server.Log().LogStartupEvent("PreflightCheck", "Starting preflight checks")
-
-		err = api.preFlight()
-		if err != nil {
-			return err
-		}
-
-		api.server.Log().LogStartupEvent("PreflightCheck", "Preflight checks finished")
-	} else {
-		api.server.Log().LogStartupEvent("PreflightCheck", "Preflight checks skipped. Set api.skip_preflight == false to enforce pre-flight checks")
-	}
-
-	api.RegisterHandlers()
-
-	errChan := make(chan error, 1)
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
-	go func() {
+	for {
 		select {
 		case <-ctx.Done():
-			return
-		default:
-			api.server.Log().LogStartupEvent("API", "API is now listening for requests on port "+strconv.Itoa(api.config.ApiConfig.Port))
-			err := api.app.Listen(":"+strconv.Itoa(api.config.ApiConfig.Port), api.config.ApiConfig.ListenerConfig())
-			if err != nil {
-				errChan <- err
-				return
+			if err := api.shutdown(ctx); err != nil {
+				slog.Error("error on shutdown: %v", "err", err.Error())
 			}
-		}
-	}()
 
-	select {
-	case err := <-errChan:
-		return err
-	case <-quit:
-		err = api.Stop(ctx)
-		if err != nil {
-			return err
+			return
+		case <-sig:
+			slog.Info("received either SIGTERM or SIGINT. Shutting down API Server")
+			if err := api.shutdown(ctx); err != nil {
+				slog.Error("error on shutdown: %v", "err", err.Error())
+			}
+
+			return
 		}
+	}
+}
+
+// shutdown Gracefully stops the API Server
+func (api *Api) shutdown(ctx context.Context) error {
+	if err := api.srv.Shutdown(ctx); err != nil {
+		return fmt.Errorf("failed to shutdown API Server: %v", err.Error())
 	}
 
 	return nil
 }
 
-/*
-New - Constructs a new fiber.api.app with recommended configurations
-*/
-func New(config *config.ServerConfig) *Api {
-	app := fiber.New(config.ApiConfig.FiberConfig())
+// RegisterRouteHandlers Registers a list of route handlers with the API
+func (api *Api) RegisterRouteHandlers(handlers ...handler.RouteHandler) {
+	for _, h := range handlers {
+		h.Group(api.router)
+	}
+}
 
-	// recovery middleware is always added to ensure that the API does not crash due to a stray panic
-	app.Use(
-		recover.New(),
+// Run Start the API Server and return errors resulting from its execution
+func (api *Api) Run(ctx context.Context) error {
+	go api.handleSignal(ctx)
+
+	if api.config.ApiConfig.UseTLS {
+		if err := api.srv.ListenAndServeTLS(api.config.ApiConfig.TLSCert, api.config.ApiConfig.TLSKey); err != nil {
+			return fmt.Errorf("failed to start API Server with TLS: %v", err.Error())
+		}
+
+		return nil
+	}
+
+	listener, err := net.Listen("tcp", api.config.ApiConfig.Addr())
+	if err != nil {
+		return fmt.Errorf("failed to create listener: %v", err.Error())
+	}
+
+	if err := api.srv.Serve(listener); err != nil {
+		return fmt.Errorf("failed to start API Server: %v", err.Error())
+	}
+
+	return nil
+}
+
+// New Initializes a new Api with the provided Config and returns a pointer to it
+func New(config *config.ServerConfig) (*Api, error) {
+	if err := config.ApiConfig.Validate(); err != nil {
+		return nil, err
+	}
+
+	router := gin.Default()
+	router.SetTrustedProxies(config.ApiConfig.TrustedIPs)
+	router.TrustedPlatform = config.ApiConfig.TrustedPlatform
+
+	// Always initialize the API with recovery middleware. Catches `panic()` mid execution
+	router.Use(
+		gin.Recovery(),
 	)
 
-	// only register pprof if options.debug == true
+	gin.SetMode(gin.ReleaseMode)
 	if config.ApiConfig.Debug {
-		app.Use(
-			pprof.New(),
-		)
+		gin.SetMode(gin.DebugMode)
+		// TODO: Inject pprof here
 	}
 
 	api := &Api{
 		config: config,
-		server: server.New(config),
-		app:    app,
+		router: router,
+		srv: &http.Server{
+			Handler: router.Handler(),
+			Addr:    config.ApiConfig.Addr(),
+		},
 	}
 
-	return api
+	if config.ApiConfig.UseTLS {
+
+		// This majority of this is not exposed to the end user as what is defined below represents the
+		// most secure options that you can configure. Very few use cases depend on having to change the
+		// perferred cipher suites or minimum TLS version as most of these options have been deprecated
+		// for quite some time.
+		//
+		// See here for recommendations around TLS: https://csrc.nist.gov/news/2019/nist-publishes-sp-800-52-revision-2
+		api.srv.TLSConfig = &tls.Config{
+			MinVersion:       tls.VersionTLS12,
+			CurvePreferences: []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+			CipherSuites: []uint16{
+				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+				tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, // required for HTTP/2
+			},
+		}
+	}
+
+	return api, nil
 }
